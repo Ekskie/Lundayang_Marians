@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import io
+import requests
 
 # Load environment variables
 load_dotenv()
@@ -12,82 +13,61 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "lundayang_marians_default_secret
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+# Service role key bypasses RLS — required for server-side operations
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 
-# Initialize Supabase client
+# Initialize Supabase client with service role key (bypasses RLS)
+# Falls back to anon key if service key not provided
 supabase: Client = None
-if SUPABASE_URL and SUPABASE_KEY:
+_supa_key = SUPABASE_SERVICE_KEY or SUPABASE_KEY
+if SUPABASE_URL and _supa_key:
     try:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        supabase = create_client(SUPABASE_URL, _supa_key)
     except Exception as e:
         print("Error initializing Supabase client:", e)
 
-# Hardcoded High-Fidelity Mock Database for Fallbacks
-MOCK_PAPERS = [
-    {
-        "id": "mock-paper-stem-1",
-        "title": "KALAT MO, SAGOT KO: THE ACCEPTABILITY OF THE PROTOTYPE WASTE SEGREGATOR MACHINE IN SANTA MARIA, LAGUNA",
-        "abstract": "A prototype waste segregator machine designed to automatically classify garbage into biodegradable, non-biodegradable, and recyclable materials using inductive, capacitive, and photoelectric sensors controlled by an Arduino microcontroller. The acceptability testing was conducted within the local barangays of Santa Maria, Laguna to evaluate its efficacy, reliability, and social impact.",
-        "strand": "STEM",
-        "academic_year": "2023-2024",
-        "research_type": "Experimental / Quantitative",
-        "subject_area": "Applied Engineering & Electronics",
-        "authors": [
-            "Gabrielle A. Dimatatac",
-            "Bridgette S. Panaligan",
-            "Mark Andrew Y. Montales",
-            "Fiona Sheryn A. Hernandez",
-            "Kristel Anne Nicole L. Jaen",
-            "Godwel Ivan D. Razon",
-            "Fatima Victoria I. Valentino"
-        ],
-        "adviser": "Ms. Maureen L. Cruz",
-        "awards": "Best in Research (STEM)",
-        "keywords": ["waste segregator", "arduino", "automation", "recycling"],
-        "pdf_path": "mock/waste_segregator.pdf"
-    },
-    {
-        "id": "mock-paper-humss-1",
-        "title": "PAWSITIVE LIFESTYLE: THE EFFECTS OF PETS ON TEENAGERS' WELL-BEING AS PERCEIVED BY THEIR BIOLOGICAL SEX",
-        "abstract": "This study examines how pet ownership impacts the mental health and emotional well-being of teenagers, comparative between biological sexes. Utilizing a descriptive research design, data was gathered from junior and senior high school students to analyze gender-based differences in coping strategies and companion animal attachment scales.",
-        "strand": "HUMSS",
-        "academic_year": "2024-2025",
-        "research_type": "Descriptive / Quantitative",
-        "subject_area": "Social Psychology & Adolescent Well-being",
-        "authors": ["Aiah Arceta", "Mikha Lim", "Stacey Sevilleja"],
-        "adviser": "Mr. Jose R. Santos",
-        "awards": "Best in Research (HUMSS)",
-        "keywords": ["pets", "teenagers", "biological sex", "mental health"],
-        "pdf_path": "mock/pawsitive_lifestyle.pdf"
-    },
-    {
-        "id": "mock-paper-stem-2",
-        "title": "ECO-BRICKS: SOLID WASTE MANAGEMENT STRATEGY IN BARANGAY POBLACION",
-        "abstract": "The research explores the production of eco-bricks from shredded plastics as an alternative building material, validating its load-bearing capacity and cost-effectiveness. The physical structural strength of plastic-stuffed bottles was tested against traditional hollow blocks to assess durability and community safety factors.",
-        "strand": "STEM",
-        "academic_year": "2024-2025",
-        "research_type": "Experimental",
-        "subject_area": "Environmental Science",
-        "authors": ["Xian Yvan V. Evangelio", "Carlene Jane P. Dela Cruz"],
-        "adviser": "Mrs. Elena M. Reyes",
-        "awards": "Outstanding STEM Project",
-        "keywords": ["eco-bricks", "plastic waste", "structural engineering"],
-        "pdf_path": "mock/eco_bricks.pdf"
-    },
-    {
-        "id": "mock-paper-abm-1",
-        "title": "FINANCIAL LITERACY AND SPENDING HABITS OF SENIOR HIGH SCHOOL STUDENTS",
-        "abstract": "This descriptive research evaluates the correlation between financial literacy programs and personal budgeting behaviors of SHS students. It outlines key financial stressors, savings triggers, and impulse spending patterns in order to draft financial education curricula recommendations.",
-        "strand": "ABM",
-        "academic_year": "2024-2025",
-        "research_type": "Descriptive Correlational",
-        "subject_area": "Financial Management",
-        "authors": ["Jean Mary E. De Torres", "Jhandy Faye B. Consignado"],
-        "adviser": "Mr. Allan B. Perez",
-        "awards": "Best Business Research",
-        "keywords": ["financial literacy", "budgeting", "spending habits", "savings"],
-        "pdf_path": "mock/financial_literacy.pdf"
+# Separate client with anon key for auth operations (sign_up, sign_in)
+supabase_auth: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase_auth = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print("Error initializing Supabase auth client:", e)
+
+# Direct requests-based Supabase Storage helpers to avoid HTTPX SSL bugs on Windows
+def storage_upload(bucket, path, file_bytes, content_type):
+    url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{path}"
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY or SUPABASE_KEY}",
+        "apikey": SUPABASE_SERVICE_KEY or SUPABASE_KEY,
+        "Content-Type": content_type,
+        "x-upsert": "true"
     }
-]
+    response = requests.post(url, headers=headers, data=file_bytes)
+    if response.status_code != 200:
+        raise Exception(f"Storage upload failed: {response.text}")
+    return response.json()
+
+def storage_download(bucket, path):
+    url = f"{SUPABASE_URL}/storage/v1/object/authenticated/{bucket}/{path}"
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY or SUPABASE_KEY}",
+        "apikey": SUPABASE_SERVICE_KEY or SUPABASE_KEY
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        raise Exception(f"Storage download failed: {response.text}")
+    return response.content
+
+def storage_remove(bucket, path):
+    url = f"{SUPABASE_URL}/storage/v1/object/{bucket}"
+    headers = {
+        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY or SUPABASE_KEY}",
+        "apikey": SUPABASE_SERVICE_KEY or SUPABASE_KEY,
+        "Content-Type": "application/json"
+    }
+    response = requests.delete(url, headers=headers, json={"prefixes": [path]})
+    return response
 
 # Helper to verify if user is logged in
 def is_logged_in():
@@ -130,7 +110,7 @@ def signup():
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         
-        # Derive email and roles
+        # Derive email
         email = f"{student_id}@smapi.edu"
         role = "student"
 
@@ -140,23 +120,23 @@ def signup():
             error = "Passwords do not match."
         elif len(password) < 6:
             error = "Password must be at least 6 characters."
+        elif not supabase or not supabase_auth:
+            error = "Database connection unavailable. Please try again later."
         else:
             try:
-                # Sign up in Supabase if client is configured, otherwise simulate successful signup
-                if supabase:
-                    auth_res = supabase.auth.sign_up({
+                auth_res = supabase_auth.auth.sign_up({
+                    "email": email,
+                    "password": password
+                })
+                if auth_res and auth_res.user:
+                    supabase.table("profiles").insert({
+                        "id": auth_res.user.id,
+                        "student_id": student_id,
+                        "name": name,
+                        "grade_section": grade_section,
                         "email": email,
-                        "password": password
-                    })
-                    if auth_res and auth_res.user:
-                        supabase.table("profiles").insert({
-                            "id": auth_res.user.id,
-                            "student_id": student_id,
-                            "name": name,
-                            "grade_section": grade_section,
-                            "email": email,
-                            "role": role
-                        }).execute()
+                        "role": role
+                    }).execute()
                 return redirect(url_for('login', msg="Account created successfully! Please log in."))
             except Exception as e:
                 error = f"Error during sign up: {str(e)}"
@@ -177,45 +157,33 @@ def login():
 
         if not student_id or not password:
             error = "Student ID and Password are required."
+        elif not supabase or not supabase_auth:
+            error = "Database connection unavailable. Please try again later."
         else:
-            # Fallback for development/demonstration using mock admin details
-            if student_id == "0966789529" and password == "password":
-                session['user'] = {
-                    'id': "demo-user-aiah",
-                    'email': "biniaiah@gmail.com",
-                    'student_id': "0966789529"
-                }
-                session['access_token'] = "demo-token"
-                session['role'] = "admin"
-                return redirect(url_for('home'))
-            
             try:
-                if supabase:
-                    profile_res = supabase.table("profiles").select("email, role").eq("student_id", student_id).execute()
-                    if not profile_res.data:
-                        error = "Invalid Student ID."
-                    else:
-                        email = profile_res.data[0]['email']
-                        role = profile_res.data[0]['role']
-                        
-                        auth_res = supabase.auth.sign_in_with_password({
-                            "email": email,
-                            "password": password
-                        })
-                        
-                        if auth_res and auth_res.session:
-                            session['user'] = {
-                                'id': auth_res.user.id,
-                                'email': auth_res.user.email,
-                                'student_id': student_id
-                            }
-                            session['access_token'] = auth_res.session.access_token
-                            session['role'] = role
-                            return redirect(url_for('home'))
-                        else:
-                            error = "Incorrect password."
+                profile_res = supabase.table("profiles").select("email, role").eq("student_id", student_id).execute()
+                if not profile_res.data:
+                    error = "Invalid Student ID."
                 else:
-                    error = "Supabase client not connected. Use '0966789529' and 'password' for demo login."
+                    email = profile_res.data[0]['email']
+                    role = profile_res.data[0]['role']
+                    
+                    auth_res = supabase_auth.auth.sign_in_with_password({
+                        "email": email,
+                        "password": password
+                    })
+                    
+                    if auth_res and auth_res.session:
+                        session['user'] = {
+                            'id': auth_res.user.id,
+                            'email': auth_res.user.email,
+                            'student_id': student_id
+                        }
+                        session['access_token'] = auth_res.session.access_token
+                        session['role'] = role
+                        return redirect(url_for('home'))
+                    else:
+                        error = "Incorrect password."
             except Exception as e:
                 error = f"Login failed: {str(e)}"
                 
@@ -224,9 +192,9 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()
-    if supabase:
+    if supabase_auth:
         try:
-            supabase.auth.sign_out()
+            supabase_auth.auth.sign_out()
         except:
             pass
     return redirect(url_for('login'))
@@ -246,13 +214,12 @@ def change_password():
             error = "Passwords do not match."
         elif len(password) < 6:
             error = "Password must be at least 6 characters."
+        elif not supabase:
+            error = "Database connection unavailable."
         else:
             try:
-                if supabase:
-                    supabase.auth.update_user({"password": password})
-                    success = "Password updated successfully!"
-                else:
-                    success = "Demo Password updated successfully!"
+                supabase_auth.auth.update_user({"password": password})
+                success = "Password updated successfully!"
             except Exception as e:
                 error = f"Failed to update password: {str(e)}"
                 
@@ -263,20 +230,20 @@ def change_password():
 @app.route('/')
 @login_required
 def home():
-    recent_papers = MOCK_PAPERS
-    best_in_research = [MOCK_PAPERS[1], MOCK_PAPERS[2], MOCK_PAPERS[3], MOCK_PAPERS[0]] # matching mockup list of rows
+    recent_papers = []
+    best_in_research = []
     
     if supabase:
         try:
-            papers_res = supabase.table("research_papers").select("*").execute()
+            papers_res = supabase.table("research_papers").select("*").order("created_at", desc=True).execute()
             if papers_res.data:
                 recent_papers = papers_res.data
                 
-            best_res = supabase.table("research_papers").select("*").not_.is_("awards", "null").not_.eq("awards", "").execute()
+            best_res = supabase.table("research_papers").select("*").not_.is_("awards", "null").neq("awards", "").execute()
             if best_res.data:
                 best_in_research = best_res.data
         except Exception as e:
-            print("DB read failed, running with fallbacks:", e)
+            print("DB read failed:", e)
             
     return render_template('home.html', recent_papers=recent_papers, best_in_research=best_in_research)
 
@@ -286,15 +253,16 @@ def profile():
     error = None
     success = None
     user_id = session['user']['id']
-    student_id = session['user']['student_id']
     
+    # Default profile data from session
     profile_data = {
         "id": user_id,
-        "student_id": student_id,
-        "name": "Aiah Arceta",
-        "grade_section": "12- SJP II",
+        "student_id": session['user']['student_id'],
+        "name": "",
+        "grade_section": "",
         "email": session['user']['email'],
-        "role": session.get('role', 'student')
+        "role": session.get('role', 'student'),
+        "avatar_url": None
     }
     
     if request.method == 'POST':
@@ -304,41 +272,49 @@ def profile():
         
         if not name or not grade_section or not email:
             error = "All fields are required."
+        elif not supabase:
+            error = "Database connection unavailable."
         else:
-            profile_data["name"] = name
-            profile_data["grade_section"] = grade_section
-            profile_data["email"] = email
-            session['user']['email'] = email
-            
-            if supabase and not user_id.startswith("demo-"):
-                try:
-                    supabase.table("profiles").update({
-                        "name": name,
-                        "grade_section": grade_section,
-                        "email": email
-                    }).eq("id", user_id).execute()
-                    success = "Profile updated successfully!"
-                except Exception as e:
-                    error = f"Error updating profile: {str(e)}"
-            else:
-                success = "Demo Profile updated successfully!"
+            try:
+                update_data = {
+                    "name": name,
+                    "grade_section": grade_section,
+                    "email": email
+                }
                 
-            # Save uploaded avatar image
-            avatar_file = request.files.get('avatar')
-            if avatar_file and avatar_file.filename:
-                ext = os.path.splitext(avatar_file.filename)[1].lower()
-                if ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                    try:
-                        static_images_path = os.path.join(app.root_path, 'static', 'images')
-                        os.makedirs(static_images_path, exist_ok=True)
-                        save_path = os.path.join(static_images_path, 'aiah.png')
-                        avatar_file.save(save_path)
-                        success = "Profile and avatar photo updated successfully!"
-                    except Exception as e:
-                        print("Error saving uploaded avatar:", e)
-                        error = f"Error saving photo: {str(e)}"
+                # Handle avatar upload to Supabase storage
+                avatar_file = request.files.get('avatar')
+                if avatar_file and avatar_file.filename:
+                    ext = os.path.splitext(avatar_file.filename)[1].lower()
+                    if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                        try:
+                            avatar_filename = f"{user_id}{ext}"
+                            file_bytes = avatar_file.read()
+                            
+                            # Try to remove old avatar first (ignore errors)
+                            try:
+                                storage_remove("avatars", avatar_filename)
+                            except:
+                                pass
+                            
+                            # Upload new avatar
+                            storage_upload("avatars", avatar_filename, file_bytes, avatar_file.content_type or "image/png")
+                            
+                            # Get public URL
+                            avatar_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{avatar_filename}"
+                            update_data["avatar_url"] = avatar_url
+                        except Exception as e:
+                            print("Error uploading avatar:", e)
+                            error = f"Error uploading photo: {str(e)}"
                 
-    if supabase and not user_id.startswith("demo-"):
+                supabase.table("profiles").update(update_data).eq("id", user_id).execute()
+                session['user']['email'] = email
+                success = "Profile updated successfully!"
+            except Exception as e:
+                error = f"Error updating profile: {str(e)}"
+    
+    # Load profile from database
+    if supabase:
         try:
             res = supabase.table("profiles").select("*").eq("id", user_id).execute()
             if res.data:
@@ -351,10 +327,9 @@ def profile():
 @app.route('/bookmarks')
 @login_required
 def bookmarks():
-    # Load bookmarks from session mock or database
-    bookmarked_papers = [MOCK_PAPERS[1]] # default mock bookmark
+    bookmarked_papers = []
     
-    if supabase and not session['user']['id'].startswith("demo-"):
+    if supabase:
         try:
             res = supabase.table("bookmarks").select("research_papers(*)").eq("user_id", session['user']['id']).execute()
             if res.data:
@@ -370,22 +345,21 @@ def toggle_bookmark():
     paper_id = request.form.get('paper_id')
     if not paper_id:
         return jsonify({"success": False, "error": "Paper ID required."}), 400
+    
+    if not supabase:
+        return jsonify({"success": False, "error": "Database connection unavailable."}), 500
         
-    if supabase and not session['user']['id'].startswith("demo-"):
-        try:
-            user_id = session['user']['id']
-            check_res = supabase.table("bookmarks").select("id").eq("user_id", user_id).eq("paper_id", paper_id).execute()
-            if check_res.data:
-                supabase.table("bookmarks").delete().eq("user_id", user_id).eq("paper_id", paper_id).execute()
-                return jsonify({"success": True, "bookmarked": False})
-            else:
-                supabase.table("bookmarks").insert({"user_id": user_id, "paper_id": paper_id}).execute()
-                return jsonify({"success": True, "bookmarked": True})
-        except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 500
-    else:
-        # Simulate local session bookmark toggle
-        return jsonify({"success": True, "bookmarked": True})
+    try:
+        user_id = session['user']['id']
+        check_res = supabase.table("bookmarks").select("id").eq("user_id", user_id).eq("paper_id", paper_id).execute()
+        if check_res.data:
+            supabase.table("bookmarks").delete().eq("user_id", user_id).eq("paper_id", paper_id).execute()
+            return jsonify({"success": True, "bookmarked": False})
+        else:
+            supabase.table("bookmarks").insert({"user_id": user_id, "paper_id": paper_id}).execute()
+            return jsonify({"success": True, "bookmarked": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/strand/<strand_name>')
 @login_required
@@ -397,8 +371,8 @@ def strand(strand_name):
     search_query = request.args.get('q', '').strip()
     year_filter = request.args.get('year', '').strip()
     
-    # Load papers from mock
-    papers = [p for p in MOCK_PAPERS if p['strand'] == strand_name]
+    papers = []
+    academic_years = []
     
     if supabase:
         try:
@@ -408,10 +382,15 @@ def strand(strand_name):
             res = query.execute()
             if res.data:
                 papers = res.data
+            
+            # Get distinct academic years for this strand
+            years_res = supabase.table("research_papers").select("academic_year").eq("strand", strand_name).execute()
+            if years_res.data:
+                academic_years = sorted(list(set(r['academic_year'] for r in years_res.data)), reverse=True)
         except Exception as e:
             print("DB search error:", e)
             
-    # Apply search filter
+    # Apply search filter client-side
     if search_query:
         q = search_query.lower()
         filtered = []
@@ -427,23 +406,15 @@ def strand(strand_name):
                 filtered.append(p)
         papers = filtered
         
-    academic_years = sorted(list(set(p['academic_year'] for p in MOCK_PAPERS if p['strand'] == strand_name)), reverse=True)
-    
     return render_template('strand.html', strand=strand_name, papers=papers, search_query=search_query, selected_year=year_filter, academic_years=academic_years)
 
 @app.route('/paper/<paper_id>')
 @login_required
 def paper_detail(paper_id):
     paper = None
-    # Find in mock
-    for p in MOCK_PAPERS:
-        if p['id'] == paper_id:
-            paper = p
-            break
-            
-    is_bookmarked = (paper_id == "mock-paper-humss-1") # default bookmark mock state
+    is_bookmarked = False
     
-    if supabase and not paper_id.startswith("mock-"):
+    if supabase:
         try:
             res = supabase.table("research_papers").select("*").eq("id", paper_id).execute()
             if res.data:
@@ -463,30 +434,20 @@ def paper_detail(paper_id):
 @app.route('/api/paper/<paper_id>/pdf')
 @login_required
 def stream_pdf(paper_id):
-    # If a mock paper is requested, serve a simple blank/styled mock PDF binary stream
-    if paper_id.startswith("mock-"):
-        # Create a mock 1-page PDF using minimal bytes or send a dummy file stream
-        # This allows testing the PDF canvas renderer immediately without having a real PDF uploaded!
-        # Standard minimal PDF structure bytes (just enough for pdf.js to show "Mock PDF Document" text)
-        mock_pdf_data = b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n3 0 obj<</Type/Page/MediaBox[0 0 595 842]/Parent 2 0 R/Resources<<>>/Contents 4 0 R>>endobj\n4 0 obj<</Length 48>>stream\nBT /F1 12 Tf 72 712 Td (Lundayang Marians Secure PDF Copy) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000111 00000 n\n0000000212 00000 n\ntrailer<</Size 5/Root 1 0 R>>\nstartxref\n309\n%%EOF"
-        return Response(
-            io.BytesIO(mock_pdf_data),
-            mimetype="application/pdf",
-            headers={"Content-Disposition": "inline; filename=mock_research.pdf"}
-        )
-        
+    if not supabase:
+        return jsonify({"error": "Database connection unavailable."}), 500
+    
     try:
-        if supabase:
-            res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
-            if res.data:
-                pdf_path = res.data[0]['pdf_path']
-                pdf_data = supabase.storage.from_("research_papers").download(pdf_path)
-                return Response(
-                    io.BytesIO(pdf_data),
-                    mimetype="application/pdf",
-                    headers={"Content-Disposition": "inline; filename=research.pdf"}
-                )
-        return jsonify({"error": "Supabase storage error."}), 404
+        res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
+        if res.data:
+            pdf_path = res.data[0]['pdf_path']
+            pdf_data = storage_download("research_papers", pdf_path)
+            return Response(
+                io.BytesIO(pdf_data),
+                mimetype="application/pdf",
+                headers={"Content-Disposition": "inline; filename=research.pdf"}
+            )
+        return jsonify({"error": "Paper not found."}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -530,38 +491,60 @@ def admin_upload():
             error = "All fields except Awards are required, including the PDF file."
         elif not pdf_file.filename.endswith('.pdf'):
             error = "File must be a PDF."
+        elif not supabase:
+            error = "Database connection unavailable."
         else:
             try:
-                if supabase:
-                    safe_filename = f"{strand}/{academic_year.replace('/', '_')}_{pdf_file.filename.replace(' ', '_')}"
-                    file_bytes = pdf_file.read()
-                    supabase.storage.from_("research_papers").upload(
-                        path=safe_filename,
-                        file=file_bytes,
-                        file_options={"content-type": "application/pdf"}
-                    )
-                    
-                    supabase.table("research_papers").insert({
-                        "title": title,
-                        "abstract": abstract,
-                        "strand": strand,
-                        "academic_year": academic_year,
-                        "research_type": research_type,
-                        "subject_area": subject_area,
-                        "authors": authors,
-                        "adviser": adviser,
-                        "awards": awards,
-                        "keywords": keywords,
-                        "pdf_path": safe_filename,
-                        "created_by": session['user']['id']
-                    }).execute()
-                    success = "Research paper successfully uploaded and indexed!"
-                else:
-                    success = "Demo Upload: Research paper successfully uploaded!"
+                safe_filename = f"{strand}/{academic_year.replace('/', '_')}_{pdf_file.filename.replace(' ', '_')}"
+                file_bytes = pdf_file.read()
+                storage_upload("research_papers", safe_filename, file_bytes, "application/pdf")
+                
+                supabase.table("research_papers").insert({
+                    "title": title,
+                    "abstract": abstract,
+                    "strand": strand,
+                    "academic_year": academic_year,
+                    "research_type": research_type,
+                    "subject_area": subject_area,
+                    "authors": authors,
+                    "adviser": adviser,
+                    "awards": awards,
+                    "keywords": keywords,
+                    "pdf_path": safe_filename,
+                    "created_by": session['user']['id']
+                }).execute()
+                success = "Research paper successfully uploaded and indexed!"
             except Exception as e:
                 error = f"Upload failed: {str(e)}"
                 
     return render_template('admin_upload.html', error=error, success=success)
+
+@app.route('/admin/paper/<paper_id>/delete', methods=['POST'])
+@admin_required
+def delete_paper(paper_id):
+    if not supabase:
+        return jsonify({"success": False, "error": "Database connection unavailable."}), 500
+        
+    try:
+        # 1. Fetch paper details to get the pdf_path
+        res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
+        if not res.data:
+            return jsonify({"success": False, "error": "Paper not found."}), 404
+            
+        pdf_path = res.data[0]['pdf_path']
+        
+        # 2. Delete the PDF file from storage
+        try:
+            storage_remove("research_papers", pdf_path)
+        except Exception as e:
+            print("Failed to delete PDF from storage:", e)
+            
+        # 3. Delete database row (bookmarks cascade automatically)
+        supabase.table("research_papers").delete().eq("id", paper_id).execute()
+        
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

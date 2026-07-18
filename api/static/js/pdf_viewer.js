@@ -135,4 +135,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Disable Drag/Drop of contents
     window.addEventListener('dragstart', e => e.preventDefault());
+
+    // --- FULLSCREEN VIEW CONTROLS ---
+    const fullscreenBtn = document.getElementById("pdf-fullscreen-btn");
+    const mainViewport = document.getElementById("pdf-main-viewport");
+
+    if (fullscreenBtn && mainViewport) {
+        fullscreenBtn.addEventListener("click", () => {
+            if (!document.fullscreenElement) {
+                mainViewport.requestFullscreen().catch(err => {
+                    alert(`Error enabling fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Update icon and title when fullscreen state changes
+        document.addEventListener("fullscreenchange", () => {
+            if (document.fullscreenElement === mainViewport) {
+                fullscreenBtn.setAttribute("title", "Exit Fullscreen");
+                fullscreenBtn.innerHTML = '<i data-lucide="minimize" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i>';
+            } else {
+                fullscreenBtn.setAttribute("title", "Fullscreen");
+                fullscreenBtn.innerHTML = '<i data-lucide="maximize" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i>';
+            }
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
+    }
 });

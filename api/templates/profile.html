@@ -172,6 +172,10 @@
 
     /* Responsiveness */
     @media (max-width: 850px) {
+        .profile-title-container {
+            justify-content: center;
+        }
+
         .profile-content-container {
             grid-template-columns: 1fr;
             gap: 2.5rem;
@@ -184,10 +188,17 @@
 
         .profile-right-col {
             align-items: center;
+            width: 100%;
+        }
+
+        .profile-details-list {
+            margin: 0 auto;
+            width: 100%;
         }
 
         .profile-action-container {
             justify-content: center;
+            margin: 1.5rem auto 0 auto;
         }
 
         .profile-title-bar {
@@ -233,8 +244,7 @@
             <!-- Left Column: Circular Avatar with camera hover trigger -->
             <div class="profile-left-col">
                 <div class="profile-avatar-container" onclick="document.getElementById('avatar-input').click();" title="Click to change photo">
-                    <!-- Append random query param to prevent browser cache of the uploaded image -->
-                    <img src="{{ url_for('static', filename='images/aiah.png') }}?t={{ range(1, 999999)|random }}" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/Logo_s/Logo.png') }}'; this.style.width='60%'; this.style.height='60%'; this.style.objectFit='contain';">
+                    <img src="{% if profile.avatar_url %}{{ profile.avatar_url }}{% else %}{{ url_for('static', filename='images/Logo_s/Logo.png') }}{% endif %}?t={{ range(1, 999999)|random }}" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/Logo_s/Logo.png') }}'; this.style.width='60%'; this.style.height='60%'; this.style.objectFit='contain';">
                     <div class="avatar-hover-overlay">
                         <i data-lucide="camera" style="width: 28px; height: 28px; color: white;"></i>
                         <span>Change Photo</span>

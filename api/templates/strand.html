@@ -328,6 +328,16 @@
             width: 100%;
         }
     }
+
+    @media (max-width: 480px) {
+        .strand-paper-row-card {
+            flex-direction: column;
+            text-align: center;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -359,7 +369,7 @@
                 <div class="strand-crest-container">
                     {% if strand == 'HUMSS' %}
                     <div class="crest-box large"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMMSS_no.png') }}');">
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}');">
                     </div>
                     {% elif strand == 'ABM' %}
                     <div class="crest-box large"

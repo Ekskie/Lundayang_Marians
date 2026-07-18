@@ -383,6 +383,16 @@ footer {
   margin-bottom: 1.5rem;
 }
 
+.form-label {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
 .form-control {
   width: 100%;
   padding: 0.8rem 1.2rem;
@@ -802,23 +812,129 @@ footer {
 }
 
 /* Responsive adjustments */
+/* Responsive adjustments (Tablets and Mobiles) */
 @media (max-width: 900px) {
+  body::before {
+    background-size: 280px;
+    background-position: center 25%;
+    opacity: 0.1;
+  }
+
   .home-split-grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;
   }
 
-  .header-banner {
-    grid-template-columns: 1fr;
-    height: auto;
-    padding: 1.5rem 0;
-  }
-
-  .banner-right {
-    display: none;
-  }
-
   .detail-layout {
     grid-template-columns: 1fr;
   }
+  
+  .browse-cards-container {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  /* Header banner mobile styling */
+  .header-banner {
+    height: auto;
+    padding: 1.25rem 0;
+  }
+
+  .header-banner::before {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(to right, rgba(238, 238, 238, 0.94) 20%, rgba(238, 238, 238, 0.75) 80%),
+      url('../images/Photos/Front2.jpg') center center / cover no-repeat;
+    opacity: 0.5;
+  }
+
+  .banner-content {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0 1rem;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .banner-content .school-logo {
+    height: 55px;
+    margin: 0;
+  }
+
+  /* Hide vertical line on mobile */
+  .banner-content .divider {
+    display: none;
+  }
+
+  /* Hide secondary Humss emblem in header on mobile */
+  .banner-content .icon-logo {
+    display: none;
+  }
+
+  .banner-content .text-container {
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .banner-content .text-container img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Sticky navbar link adjustment */
+  .navbar {
+    height: auto;
+    padding: 0.5rem 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-links {
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Form containers */
+  .auth-card {
+    padding: 1.5rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .search-block-container {
+    max-width: 100%;
+  }
+}
+
+.delete-paper-btn {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 12px;
+  padding: 0.55rem 1.25rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.delete-paper-btn:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }

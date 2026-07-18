@@ -57,7 +57,7 @@
         font-family: monospace;
         font-weight: bold;
         text-decoration: none;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         transition: all 0.2s;
         border: none;
         cursor: pointer;
@@ -149,7 +149,7 @@
         border: 2.5px solid #002060;
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -175,7 +175,7 @@
         border-radius: 4px;
         letter-spacing: 0.05em;
         pointer-events: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     .pdf-card-loader {
@@ -192,7 +192,7 @@
     .pdf-card-loader .spinner {
         width: 35px;
         height: 35px;
-        border: 3.5px solid rgba(255,255,255,0.15);
+        border: 3.5px solid rgba(255, 255, 255, 0.15);
         border-top-color: #fbbf24;
         border-radius: 50%;
         animation: spin 1s infinite linear;
@@ -208,14 +208,51 @@
     .pdf-canvas-wrapper {
         position: relative;
         width: 100%;
+        max-height: 520px;
+        overflow: auto;
         z-index: 2;
     }
 
     #pdf-canvas {
-        width: 100% !important;
-        height: auto !important;
         display: block;
+        margin: 0 auto;
         border-radius: 4px;
+        max-width: none;
+    }
+
+    /* Fullscreen Mode Styling */
+    #pdf-main-viewport:fullscreen {
+        background-color: #0f172a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        width: 100%;
+        height: 100%;
+    }
+
+    #pdf-main-viewport:fullscreen .pdf-viewer-container {
+        max-width: 900px;
+        height: calc(100% - 60px);
+        width: 100%;
+        max-height: none;
+        min-height: unset;
+        flex: 1;
+    }
+
+    #pdf-main-viewport:fullscreen .pdf-canvas-wrapper {
+        max-height: 100%;
+    }
+
+    #pdf-main-viewport:fullscreen .pdf-minimal-controls {
+        max-width: 900px;
+        margin-top: 1rem;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     }
 
     /* Minimal controls below card */
@@ -362,28 +399,52 @@
 
     /* CSS Spinner Animation */
     @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     /* Responsive styling overrides */
     @media (max-width: 1024px) {
         .detail-three-cols {
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 2.5rem;
         }
 
-        .detail-col-left, .detail-col-right {
+        .detail-col-right {
+            order: -1;
             align-items: center;
             text-align: center;
+            width: 100%;
         }
 
-        .detail-actions-header {
-            justify-content: center;
+        .detail-col-center {
+            order: 1;
+            width: 100%;
+        }
+
+        .detail-col-left {
+            order: 2;
+            align-items: center;
+            text-align: center;
+            width: 100%;
         }
 
         .detail-abstract-text {
             text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .detail-actions-row {
+            flex-direction: column !important;
+            gap: 1rem !important;
+            align-items: center !important;
         }
     }
 </style>
@@ -406,16 +467,17 @@
         <div class="detail-header-center">
             {% set strand_fullname = "" %}
             {% if paper.strand == 'HUMSS' %}
-                {% set strand_fullname = "Humanities and Social Sciences" %}
-                {% set crest_filename = "images/Logo_s/HUMSS_no.png" %}
+            {% set strand_fullname = "Humanities and Social Sciences" %}
+            {% set crest_filename = "images/Logo_s/HUMSS_no.png" %}
             {% elif paper.strand == 'ABM' %}
-                {% set strand_fullname = "Accountancy, Business, and Management" %}
-                {% set crest_filename = "images/Logo_s/ABM_no.png" %}
+            {% set strand_fullname = "Accountancy, Business, and Management" %}
+            {% set crest_filename = "images/Logo_s/ABM_no.png" %}
             {% else %}
-                {% set strand_fullname = "Science, Technology, Engineering, and Mathematics" %}
-                {% set crest_filename = "images/Logo_s/STEM_no.png" %}
+            {% set strand_fullname = "Science, Technology, Engineering, and Mathematics" %}
+            {% set crest_filename = "images/Logo_s/STEM_no.png" %}
             {% endif %}
-            <div class="detail-strand-crest" style="background-image: url('{{ url_for('static', filename=crest_filename) }}');"></div>
+            <div class="detail-strand-crest"
+                style="background-image: url('{{ url_for('static', filename=crest_filename) }}');"></div>
             <h3 class="detail-strand-name">{{ strand_fullname }}</h3>
         </div>
 
@@ -428,12 +490,12 @@
 
         <!-- Column 1 (Left): Authors, Adviser, Awards -->
         <div class="detail-col-left">
-            
+
             <div class="detail-meta-block">
                 <h4 class="detail-meta-label">AUTHOR</h4>
                 <p class="detail-meta-text">
                     {% for author in paper.authors %}
-                        {{ author }}<br>
+                    {{ author }}<br>
                     {% endfor %}
                 </p>
             </div>
@@ -453,7 +515,7 @@
         </div>
 
         <!-- Column 2 (Center): PDF Document Card -->
-        <div class="detail-col-center">
+        <div class="detail-col-center" id="pdf-main-viewport">
             <div class="pdf-viewer-container">
                 <!-- Watermark Overlay -->
                 <div class="pdf-watermark">LUNDAYANG MARIANS VIEW-ONLY</div>
@@ -477,35 +539,53 @@
                     Page <span id="page-num">1</span> of <span id="page-count">-</span>
                 </span>
                 <button id="next-page" class="pdf-ctrl-btn" title="Next Page">&gt;</button>
-                
+
                 <span style="color: #cbd5e1; font-weight: bold; margin: 0 0.2rem;">|</span>
 
                 <button id="zoom-out" class="pdf-zoom-btn" title="Zoom Out">-</button>
                 <button id="zoom-in" class="pdf-zoom-btn" title="Zoom In">+</button>
+
+                <span style="color: #cbd5e1; font-weight: bold; margin: 0 0.2rem;">|</span>
+
+                <button id="pdf-fullscreen-btn" class="pdf-zoom-btn" title="Fullscreen"
+                    style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0;">
+                    <i data-lucide="maximize"
+                        style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i>
+                </button>
             </div>
         </div>
 
         <!-- Column 3 (Right): Actions & Abstract -->
         <div class="detail-col-right">
-            
-            <!-- Bookmark Ribbon & PDF Copy Button -->
-            <div class="detail-actions-row">
-                <div class="bookmark-ribbon-container">
-                    <button id="detail-bookmark-btn" class="bookmark-ribbon-btn {% if is_bookmarked %}active{% endif %}" data-paper-id="{{ paper.id }}" title="Bookmark this paper">
+
+            <!-- Bookmark Ribbon & PDF Copy/Delete Buttons -->
+            <div class="detail-actions-row" style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <div class="bookmark-ribbon-container" style="flex-shrink: 0;">
+                    <button id="detail-bookmark-btn" class="bookmark-ribbon-btn {% if is_bookmarked %}active{% endif %}"
+                        data-paper-id="{{ paper.id }}" title="Bookmark this paper">
                         <svg viewBox="0 0 24 30" class="bookmark-ribbon-svg">
                             <path d="M4 2v26l8-5.5 8 5.5V2H4z" fill="currentColor" stroke="#002060" stroke-width="2" />
                         </svg>
                     </button>
                 </div>
 
-                <a href="{{ url_for('stream_pdf', paper_id=paper.id) }}" target="_blank" class="pdf-copy-btn">
-                    PDF COPY
-                </a>
+                {% if session.get('role') == 'admin' %}
+                <div style="display: flex; gap: 0.75rem; flex: 1;">
+                    <a href="{{ url_for('stream_pdf', paper_id=paper.id) }}" target="_blank" class="pdf-copy-btn"
+                        style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; margin: 0;">
+                        PDF COPY
+                    </a>
+                    <button id="delete-research-btn" class="delete-paper-btn" data-paper-id="{{ paper.id }}"
+                        style="flex: 1;">
+                        DELETE
+                    </button>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Abstract Paragraph block -->
             <div class="detail-abstract-block">
-                <h4 class="detail-abstract-header">ASBSTRACT</h4>
+                <h4 class="detail-abstract-header">ABSTRACT</h4>
                 <p class="detail-abstract-text">{{ paper.abstract }}</p>
             </div>
 
@@ -553,6 +633,37 @@
                     alert("An error occurred. Please try again.");
                 } finally {
                     bookmarkBtn.disabled = false;
+                }
+            });
+        }
+
+        // Admin delete research handler
+        const deleteBtn = document.getElementById("delete-research-btn");
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", async () => {
+                const paperId = deleteBtn.getAttribute("data-paper-id");
+                if (!paperId) return;
+
+                if (confirm("⚠️ WARNING: Are you sure you want to permanently delete this research paper? This action cannot be undone.")) {
+                    try {
+                        deleteBtn.disabled = true;
+                        const response = await fetch(`/admin/paper/${paperId}/delete`, {
+                            method: "POST"
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            alert("Research paper successfully deleted.");
+                            window.location.href = "/";
+                        } else {
+                            alert("Error deleting paper: " + result.error);
+                        }
+                    } catch (err) {
+                        console.error("Delete request failed:", err);
+                        alert("An error occurred. Please try again.");
+                    } finally {
+                        deleteBtn.disabled = false;
+                    }
                 }
             });
         }

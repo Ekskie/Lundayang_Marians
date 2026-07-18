@@ -397,6 +397,27 @@
             max-width: 100%;
         }
     }
+
+    @media (max-width: 768px) {
+        .browse-cards-container {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .best-paper-row-card {
+            flex-direction: column;
+            text-align: center;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+
+        .best-details-desc {
+            text-align: center;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -423,25 +444,25 @@
 
             <!-- BROWSE RESEARCH Section -->
             <div>
-                <h2 class="browse-header-title">BROWSE RESEARCH</h2>
+                <h2 class="browse-header-title" style="font-style: italic;">BROWSE RESEARCH</h2>
 
                 <div class="browse-cards-container">
 
                     <!-- HUMSS Card -->
                     <a href="{{ url_for('strand', strand_name='HUMSS') }}" class="browse-crest-card"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}'); background-size:contain; background-position: center; background-repeat: no-repeat;">
                         <span class="crest-label">HUMANITIES AND SOCIAL SCIENCE</span>
                     </a>
 
                     <!-- ABM Card -->
                     <a href="{{ url_for('strand', strand_name='ABM') }}" class="browse-crest-card"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}'); background-size:contain; background-position: center; background-repeat: no-repeat;">
                         <span class="crest-label">ACCOUNTANCY AND BUSINESS MANAGEMENT</span>
                     </a>
 
                     <!-- STEM Card -->
                     <a href="{{ url_for('strand', strand_name='STEM') }}" class="browse-crest-card"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}'); background-size:contain; background-position: center; background-repeat: no-repeat;">
                         <span class="crest-label">SCIENCE, TECHNOLOGY, ENGINEERING, AND MATHEMATICS</span>
                     </a>
 
@@ -490,7 +511,7 @@
 
             <!-- RESEARCH RECOGNITION Block -->
             <div class="rec-box-container">
-                <h3 class="rec-title-header">RESEARCH RECOGNITION</h3>
+                <h3 class="rec-title-header" style="font-style: italic;">RESEARCH RECOGNITION</h3>
                 <p class="rec-title-sub">This Research has been officially Recognized by the Municipality of Santa
                     Maria, Laguna</p>
 
@@ -531,7 +552,8 @@
 
             <!-- BEST IN RESEARCH Rows -->
             <div>
-                <h3 class="best-header-title">BEST IN RESEARCH</h3>
+                <hr style="border-top: 3px solid #002060; margin-bottom: 1rem;" class="w-full">
+                <h3 class="best-header-title" style="font-style: italic;">BEST IN RESEARCH</h3>
                 <p class="best-header-sub">Recognizing Outstanding Research Achievements Through the Years</p>
 
                 <div class="best-card-list">
