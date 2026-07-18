@@ -62,19 +62,12 @@
         flex-direction: column;
         gap: 2rem;
         margin-bottom: 3rem;
-        min-height: 420px; /* Pre-allocates space to minimize vertical layout shifts */
     }
 
     .faq-item-card {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .faq-item-card.show {
-        opacity: 1;
     }
 
     .faq-question-text {
@@ -92,51 +85,7 @@
         line-height: 1.6;
     }
 
-    /* Pagination controls */
-    .faq-pagination {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1.5rem;
-        margin-top: 3rem;
-        margin-bottom: 4rem;
-    }
 
-    .faq-page-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 2px solid #002060;
-        background-color: transparent;
-        color: #002060;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .faq-page-btn:hover:not(:disabled) {
-        background-color: #002060;
-        color: #ffffff;
-        transform: scale(1.05);
-    }
-
-    .faq-page-btn:disabled {
-        border-color: #cbd5e1;
-        color: #cbd5e1;
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-
-    .faq-page-info {
-        font-family: 'Poppins', sans-serif;
-        font-weight: 600;
-        color: #002060;
-        font-size: 1rem;
-        min-width: 110px;
-        text-align: center;
-    }
 
     /* Responsive styling */
     @media (max-width: 768px) {
@@ -346,76 +295,9 @@
 
     </div>
 
-    <!-- Pagination Controls -->
-    <div class="faq-pagination">
-        <button id="faq-prev-btn" class="faq-page-btn" aria-label="Previous Page">
-            <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i>
-        </button>
-        <span class="faq-page-info" id="faq-page-info">Page 1 of 6</span>
-        <button id="faq-next-btn" class="faq-page-btn" aria-label="Next Page">
-            <i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i>
-        </button>
-    </div>
+
 
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const faqItems = document.querySelectorAll(".faq-item-card");
-        const prevBtn = document.getElementById("faq-prev-btn");
-        const nextBtn = document.getElementById("faq-next-btn");
-        const pageInfo = document.getElementById("faq-page-info");
-        
-        const itemsPerPage = 4;
-        let currentPage = 1;
-        const totalPages = Math.ceil(faqItems.length / itemsPerPage);
 
-        function showPage(page) {
-            currentPage = page;
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-
-            // Show or hide items
-            faqItems.forEach((item, index) => {
-                if (index >= startIndex && index < endIndex) {
-                    item.style.display = "flex";
-                    // Trigger reflow then add 'show' class for smooth fade-in
-                    item.offsetHeight; 
-                    item.classList.add("show");
-                } else {
-                    item.style.display = "none";
-                    item.classList.remove("show");
-                }
-            });
-
-            // Update page number label
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-
-            // Handle button states
-            prevBtn.disabled = (currentPage === 1);
-            nextBtn.disabled = (currentPage === totalPages);
-
-            // Scroll to the top of the FAQ section smoothly
-            document.querySelector(".faq-page-container").scrollIntoView({ behavior: "smooth" });
-        }
-
-        // Event listeners
-        prevBtn.addEventListener("click", () => {
-            if (currentPage > 1) {
-                showPage(currentPage - 1);
-            }
-        });
-
-        nextBtn.addEventListener("click", () => {
-            if (currentPage < totalPages) {
-                showPage(currentPage + 1);
-            }
-        });
-
-        // Initialize page 1
-        showPage(1);
-    });
-</script>
-{% endblock %}

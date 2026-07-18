@@ -187,14 +187,15 @@
     }
 
     .rec-content-split {
-        display: grid;
-        grid-template-columns: 140px 1fr;
-        gap: 1.5rem;
-        align-items: start;
+        display: block;
+        overflow: hidden;
     }
 
     .rec-doc-img {
-        width: 100%;
+        float: left;
+        width: 140px;
+        margin-right: 1.5rem;
+        margin-bottom: 0.75rem;
         border: 2px solid #002060;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         background-color: #ffffff;
@@ -402,9 +403,10 @@
 {% block content %}
 <div class="main-container">
 
+    <!-- Top Grid Section (Search, Strands, Slideshow, Description) -->
     <div class="home-split-grid">
 
-        <!-- Left Column: Search, Strands, and Recognition -->
+        <!-- Left Column: Search and Strands -->
         <div class="home-left-col">
 
             <!-- Search Block -->
@@ -446,6 +448,46 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- Right Column: Slideshow & Description -->
+        <div class="home-right-col">
+
+            <!-- Slideshow Carousel Wrapper with outer navigation arrows -->
+            <div class="carousel-wrapper">
+                <span class="carousel-arrow arrow-left">&lt;</span>
+                <div class="carousel-container">
+                    <img class="carousel-img" src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
+                        alt="Sta. Maria Academy Facade">
+                </div>
+                <span class="carousel-arrow arrow-right">&gt;</span>
+            </div>
+
+            <!-- Descriptive paragraph matching layout -->
+            <p class="repo-desc-text">
+                <strong>Lundayang Marians</strong> is the web-based research repository of Santa Maria (Laguna) Academy
+                Inc., envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or
+                focal point, with "Marians", the collective identity of the academy's students. This platform
+                centralizes academic outputs, offering a simple interface and organized categories for easy access and
+                exploration.
+            </p>
+            <p class="repo-desc-text" style="margin-top: -1rem;">
+                By preserving research in a digital archive, Lundayang Marians fosters collaboration, supports future
+                studies, and strengthens the Marian community's commitment to academic excellence. It serves not only as
+                a repository but also as a symbol of innovation and inclusivity, ensuring that the scholarly
+                contributions of Marians remain accessible and impactful for years to come.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Bottom Grid Section (Research Recognition and Best in Research perfectly aligned) -->
+    <div class="home-split-grid" style="margin-top: 2rem;">
+
+        <!-- Left Column: Research Recognition -->
+        <div class="home-left-col">
+
             <!-- RESEARCH RECOGNITION Block -->
             <div class="rec-box-container">
                 <h3 class="rec-title-header">RESEARCH RECOGNITION</h3>
@@ -453,11 +495,10 @@
                     Maria, Laguna</p>
 
                 <div class="rec-content-split">
-                    <!-- Real JPG cover preview -->
-                    <img src="{{ url_for('static', filename='images/municipality recognises/KALAT MO, SAGOT KO_ THE ACCEPTABILITY OF THE_PROTOTYPE WASTE SEGREGATOR MACHINE_IN SANTA MARIA, LAGUNA.jpg') }}"
-                        alt="Research Recognition Document" class="rec-doc-img">
-
                     <div class="rec-content-text">
+                        <!-- Real JPG cover preview -->
+                        <img src="{{ url_for('static', filename='images/municipality_recognises/KALAT_MO_SAGOT_KO_THE_ACCEPTABILITY_OF_THE_PROTOTYPE_WASTE_SEGREGATOR_MACHINE_IN_SANTA_MARIA_LAGUNA.jpg') }}"
+                            alt="Research Recognition Document" class="rec-doc-img">
                         <p>
                             <strong>SK Chairman Angel Mangundayao of the Municipality of Santa Maria, Laguna</strong>
                             proudly acknowledges the outstanding efforts of the student researchers of Santa Maria
@@ -485,33 +526,8 @@
 
         </div>
 
-        <!-- Right Column: Slideshow, Description, and Best in Research -->
+        <!-- Right Column: Best in Research -->
         <div class="home-right-col">
-
-            <!-- Slideshow Carousel Wrapper with outer navigation arrows -->
-            <div class="carousel-wrapper">
-                <span class="carousel-arrow arrow-left">&lt;</span>
-                <div class="carousel-container">
-                    <img class="carousel-img" src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
-                        alt="Sta. Maria Academy Facade">
-                </div>
-                <span class="carousel-arrow arrow-right">&gt;</span>
-            </div>
-
-            <!-- Descriptive paragraph matching layout -->
-            <p class="repo-desc-text">
-                <strong>Lundayang Marians</strong> is the web-based research repository of Santa Maria (Laguna) Academy
-                Inc., envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or
-                focal point, with "Marians", the collective identity of the academy's students. This platform
-                centralizes academic outputs, offering a simple interface and organized categories for easy access and
-                exploration.
-            </p>
-            <p class="repo-desc-text" style="margin-top: -1rem;">
-                By preserving research in a digital archive, Lundayang Marians fosters collaboration, supports future
-                studies, and strengthens the Marian community's commitment to academic excellence. It serves not only as
-                a repository but also as a symbol of innovation and inclusivity, ensuring that the scholarly
-                contributions of Marians remain accessible and impactful for years to come.
-            </p>
 
             <!-- BEST IN RESEARCH Rows -->
             <div>
@@ -558,13 +574,13 @@
         // Dynamic premium slide list using all photos inside the "school photos" and facade image
         const slides = [
             "{{ url_for('static', filename='images/Photos/School_P.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/741481012_1033089102523494_5220187940140632359_n.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/742997668_1704114644246167_6551245720162600764_n.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/743796266_1527611965725908_6500501796955139832_n.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/746660483_1005253982424329_5662788526906682934_n.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/746715677_1716137346299532_5212130155329073556_n.jpg') }}",
-            "{{ url_for('static', filename='images/school photos/b49d6ac161686b265bae60c376f9047c.jpeg') }}",
-            "{{ url_for('static', filename='images/school photos/fa78647b324ea46e043f5ec0bde6837b.jpeg') }}"
+            "{{ url_for('static', filename='images/school_photos/741481012_1033089102523494_5220187940140632359_n.jpg') }}",
+            "{{ url_for('static', filename='images/school_photos/742997668_1704114644246167_6551245720162600764_n.jpg') }}",
+            "{{ url_for('static', filename='images/school_photos/743796266_1527611965725908_6500501796955139832_n.jpg') }}",
+            "{{ url_for('static', filename='images/school_photos/746660483_1005253982424329_5662788526906682934_n.jpg') }}",
+            "{{ url_for('static', filename='images/school_photos/746715677_1716137346299532_5212130155329073556_n.jpg') }}",
+            "{{ url_for('static', filename='images/school_photos/b49d6ac161686b265bae60c376f9047c.jpeg') }}",
+            "{{ url_for('static', filename='images/school_photos/fa78647b324ea46e043f5ec0bde6837b.jpeg') }}"
         ];
 
         let currentIndex = 0;

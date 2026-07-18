@@ -577,17 +577,19 @@ footer {
 }
 
 .rec-content-split {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 1.5rem;
-  align-items: start;
+  display: block;
+  overflow: hidden;
 }
 
-.document-preview-thumbnail {
-  width: 100%;
+.rec-doc-img {
+  float: left;
+  width: 140px;
+  margin-right: 1.25rem;
+  margin-bottom: 0.75rem;
   border: 1px solid #78716c;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
   background-color: #ffffff;
+  border-radius: 4px;
 }
 
 .rec-content-text {
