@@ -93,6 +93,25 @@ document.addEventListener("DOMContentLoaded", () => {
         queueRenderPage(pageNum);
     });
 
+    // Fit to Width layout handler
+    const canvasWrapper = document.querySelector(".pdf-canvas-wrapper");
+    function fitToWidth() {
+        if (!pdfDoc || !canvasWrapper) return;
+        pdfDoc.getPage(pageNum).then((page) => {
+            const viewport1 = page.getViewport({ scale: 1.0 });
+            const wrapperWidth = canvasWrapper.clientWidth;
+            // Subtract offset padding/border for a safe fit
+            const targetWidth = wrapperWidth - 16;
+            scale = targetWidth / viewport1.width;
+            queueRenderPage(pageNum);
+        });
+    }
+
+    const fitWidthBtn = document.getElementById("pdf-fit-width-btn");
+    if (fitWidthBtn) {
+        fitWidthBtn.addEventListener("click", fitToWidth);
+    }
+
     // Load Document
     pdfjsLib.getDocument(pdfUrl).promise.then((pdfDoc_) => {
         pdfDoc = pdfDoc_;
@@ -102,7 +121,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('pdf-loader').style.display = 'none';
         canvas.style.display = 'block';
         
-        renderPage(pageNum);
+        // Automatically fit PDF to canvas wrapper width on load
+        fitToWidth();
     }).catch((err) => {
         console.error("Error loading PDF document:", err);
         document.getElementById('pdf-loader').innerHTML = `
@@ -165,4 +185,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // Automatically re-scale PDF width on screen/window size changes
+    window.addEventListener("resize", () => {
+        if (pdfDoc) {
+            fitToWidth();
+        }
+    });
 });
