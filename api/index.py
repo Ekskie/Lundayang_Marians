@@ -361,6 +361,52 @@ def toggle_bookmark():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route('/search')
+@login_required
+def search():
+    search_query = request.args.get('q', '').strip()
+    strand_filter = request.args.get('strand', '').strip().upper()
+    year_filter = request.args.get('year', '').strip()
+    
+    papers = []
+    academic_years = []
+    
+    if supabase:
+        try:
+            query = supabase.table("research_papers").select("*")
+            if strand_filter in ('HUMSS', 'ABM', 'STEM'):
+                query = query.eq("strand", strand_filter)
+            if year_filter:
+                query = query.eq("academic_year", year_filter)
+            res = query.execute()
+            if res.data:
+                papers = res.data
+            
+            # Get distinct academic years for all papers to populate filters
+            years_res = supabase.table("research_papers").select("academic_year").execute()
+            if years_res.data:
+                academic_years = sorted(list(set(r['academic_year'] for r in years_res.data)), reverse=True)
+        except Exception as e:
+            print("DB search error:", e)
+            
+    # Apply search filter client-side
+    if search_query:
+        q = search_query.lower()
+        filtered = []
+        for p in papers:
+            authors_str = " ".join(p.get('authors', [])).lower()
+            keywords_str = " ".join(p.get('keywords', [])).lower()
+            if (q in p.get('title', '').lower() or
+                q in p.get('abstract', '').lower() or
+                q in p.get('adviser', '').lower() or
+                q in p.get('subject_area', '').lower() or
+                q in authors_str or
+                q in keywords_str):
+                filtered.append(p)
+        papers = filtered
+        
+    return render_template('search_results.html', papers=papers, search_query=search_query, selected_strand=strand_filter, selected_year=year_filter, academic_years=academic_years)
+
 @app.route('/strand/<strand_name>')
 @login_required
 def strand(strand_name):

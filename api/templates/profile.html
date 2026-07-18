@@ -244,7 +244,17 @@
             <!-- Left Column: Circular Avatar with camera hover trigger -->
             <div class="profile-left-col">
                 <div class="profile-avatar-container" onclick="document.getElementById('avatar-input').click();" title="Click to change photo">
-                    <img src="{% if profile.avatar_url %}{{ profile.avatar_url }}{% else %}{{ url_for('static', filename='images/Logo_s/Logo.png') }}{% endif %}?t={{ range(1, 999999)|random }}" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/Logo_s/Logo.png') }}'; this.style.width='60%'; this.style.height='60%'; this.style.objectFit='contain';">
+                    {% if profile.avatar_url %}
+                    <img src="{{ profile.avatar_url }}?t={{ range(1, 999999)|random }}" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='flex';">
+                    <div id="avatar-fallback" style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: #cbd5e1; color: #002060;">
+                        <i data-lucide="user-circle" style="width: 150px; height: 150px; stroke-width: 1;"></i>
+                    </div>
+                    {% else %}
+                    <img src="" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" style="display: none;">
+                    <div id="avatar-fallback" style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: #cbd5e1; color: #002060;">
+                        <i data-lucide="user-circle" style="width: 150px; height: 150px; stroke-width: 1;"></i>
+                    </div>
+                    {% endif %}
                     <div class="avatar-hover-overlay">
                         <i data-lucide="camera" style="width: 28px; height: 28px; color: white;"></i>
                         <span>Change Photo</span>
@@ -343,6 +353,11 @@
                 reader.onload = (event) => {
                     // Update preview source
                     avatarPreview.src = event.target.result;
+                    avatarPreview.style.display = 'block';
+                    const fallbackEl = document.getElementById("avatar-fallback");
+                    if (fallbackEl) {
+                        fallbackEl.style.display = 'none';
+                    }
                     // Reset styling layout if it was showing fallback logo
                     avatarPreview.onerror = null;
                     avatarPreview.style.width = '100%';

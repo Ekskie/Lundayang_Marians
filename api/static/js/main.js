@@ -1,23 +1,28 @@
 // Global Javascript functionality for Lundayang Marians
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. FAQ Accordion Collapse/Expand
-    const faqQuestions = document.querySelectorAll(".faq-question");
-    faqQuestions.forEach(q => {
-        q.addEventListener("click", () => {
-            const item = q.parentElement;
-            const isActive = item.classList.contains("active");
-            
-            // Close all other FAQ items
-            document.querySelectorAll(".faq-item").forEach(i => i.classList.remove("active"));
-            
-            // Toggle current FAQ item
-            if (!isActive) {
-                item.classList.add("active");
-            }
-        });
-    });
+// Password visibility eye toggle handler
+window.togglePasswordVisibility = function(inputId, buttonEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    const icon = buttonEl.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.setAttribute('data-lucide', 'eye-off');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.setAttribute('data-lucide', 'eye');
+        }
+    }
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+};
 
+document.addEventListener("DOMContentLoaded", () => {
     // 2. Bookmark Button Async Handler
     const bookmarkToggleBtn = document.getElementById("bookmark-toggle-btn");
     if (bookmarkToggleBtn) {
