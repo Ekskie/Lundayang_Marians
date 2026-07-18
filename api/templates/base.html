@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lundayang Marians - Digital Research Repository{% endblock %}</title>
+
+    <!-- Premium Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" type="image/x-icon">
+    <!-- Lucide Icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Sticky Navbar Top Header -->
+    <header>
+        <div class="navbar">
+            <div class="nav-links">
+                <div class="dropdown-container">
+                    <button class="btn-profile-dropdown" style="display: flex; align-items: center; gap: 4px;">
+                        <span>English</span>
+                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline-block;"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="#" class="dropdown-item">English</a>
+                    </div>
+                </div>
+
+                {% if session.get('user') %}
+                <a href="{{ url_for('home') }}" class="nav-item">Home</a>
+                <a href="{{ url_for('developers') }}" class="nav-item">Developers</a>
+                <a href="{{ url_for('faq') }}" class="nav-item">FAQ</a>
+                {% if session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_upload') }}" class="nav-item">Upload</a>
+                {% endif %}
+
+                <div class="dropdown-container">
+                    <button class="btn-profile-dropdown" title="Account Settings">
+                        <i data-lucide="user-circle" style="width: 24px; height: 24px;"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">My Profile</a>
+                        <a href="{{ url_for('bookmarks') }}" class="dropdown-item">Bookmarks</a>
+                        <a href="{{ url_for('change_password') }}" class="dropdown-item">Change Password</a>
+                        <div style="border-top: 1px solid #e2e8f0; margin: 0.25rem 0;"></div>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: #dc2626;">Log Out</a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Header Banner Component -->
+    <!-- Header Banner Component (copied from test.html layout) -->
+    <div class="header-banner">
+        <div class="banner-content">
+            <!-- Left Logo -->
+            <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="School Logo" class="school-logo">
+
+            <!-- Vertical Line -->
+            <div class="divider"></div>
+
+            <!-- Right Icon -->
+            <!-- <img src="{{ url_for('static', filename='images/Logo_s/Humms_Stroke.jpg') }}" alt="Icon" class="icon-logo"> -->
+
+            <div class="text-container">
+                <img src="{{ url_for('static', filename='images/logo_photos/LUNDAYANG_MARIANS-removebg.png') }}"
+                    alt="Logo">
+                <!-- <h1 class="main-title">
+                    <span class="bold">Lundayang</span> <span class="light">Marians</span>
+                </h1>
+
+                 By putting characters in spans, flexbox evenly spreads them
+                <div class="banner-baybayin">
+                    <span>lu</span><span>n</span><span>da</span><span>ya</span><span>G</span><span>ma</span><span>ri</span><span>ya</span><span>n</span><span>s</span>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main style="flex: 1; position: relative; z-index: 1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Academy Footer -->
+    <footer>
+        <div class="footer-content">
+            <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="SMMA Seal" class="footer-logo">
+            <div class="footer-text">
+                <h3>Sta. Maria (Laguna) Academy Inc.</h3>
+                <p>Brgy. Poblacion II, Santa Maria, Laguna</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <!-- Global scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

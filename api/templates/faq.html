@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Custom container for FAQ page */
+    .faq-page-container {
+        max-width: 1200px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 70vh;
+    }
+
+    .faq-header-container {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .faq-back-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: #4b5563; /* Dark gray circle background */
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.2s, transform 0.2s;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+
+    .faq-back-btn:hover {
+        background-color: #374151; /* Darker gray */
+        transform: scale(1.05);
+    }
+
+    .faq-title-bar {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 10px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        min-width: 380px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 550px;
+    }
+
+    /* FAQ List layout */
+    .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        min-height: 420px; /* Pre-allocates space to minimize vertical layout shifts */
+    }
+
+    .faq-item-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .faq-item-card.show {
+        opacity: 1;
+    }
+
+    .faq-question-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #002060;
+    }
+
+    .faq-answer-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 400;
+        color: #000000;
+        line-height: 1.6;
+    }
+
+    /* Pagination controls */
+    .faq-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 3rem;
+        margin-bottom: 4rem;
+    }
+
+    .faq-page-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #002060;
+        background-color: transparent;
+        color: #002060;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .faq-page-btn:hover:not(:disabled) {
+        background-color: #002060;
+        color: #ffffff;
+        transform: scale(1.05);
+    }
+
+    .faq-page-btn:disabled {
+        border-color: #cbd5e1;
+        color: #cbd5e1;
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .faq-page-info {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #002060;
+        font-size: 1rem;
+        min-width: 110px;
+        text-align: center;
+    }
+
+    /* Responsive styling */
+    @media (max-width: 768px) {
+        .faq-header-container {
+            flex-direction: row;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .faq-title-bar {
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            min-width: unset;
+        }
+
+        .faq-back-btn {
+            width: 38px;
+            height: 38px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="faq-page-container">
+
+    <!-- Header bar with back button and title -->
+    <div class="faq-header-container">
+        <a href="{{ url_for('home') }}" class="faq-back-btn" title="Go Back">
+            <i data-lucide="chevron-left" style="width: 24px; height: 24px;"></i>
+        </a>
+        <div class="faq-title-bar">
+            FREQUENTLY ASKED QUESTIONS
+        </div>
+    </div>
+
+    <!-- FAQ Items List -->
+    <div class="faq-list" id="faq-list-container">
+        
+        <!-- Q1 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">What is Lundayang Marians?</div>
+            <div class="faq-answer-text">
+                Lundayang Marians is a school-based digital research repository developed by Santa Maria (Laguna) Academy Inc. It serves as a centralized online archive that stores, organizes, preserves, and provides access to approved student research papers. The repository allows users to conveniently search and view previous studies while ensuring that valuable academic outputs are preserved for future generations of students.
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">What is the main purpose of the repository?</div>
+            <div class="faq-answer-text">
+                The primary purpose of Lundayang Marians is to preserve student research outputs and make them more accessible to the school community. It also aims to support future researchers by providing reliable academic references, reducing the risk of lost or damaged printed copies, encouraging quality research, and promoting a stronger culture of research within the institution.
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Who can access the repository?</div>
+            <div class="faq-answer-text">
+                The repository is intended for authorized users of Santa Maria (Laguna) Academy Inc., including students, teachers, research advisers, librarians, and designated school administrators. Access to certain features may depend on the user’s account and the policies implemented by the school.
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">What types of research papers are available in the repository?</div>
+            <div class="faq-answer-text">
+                Only approved student research papers completed at Santa Maria (Laguna) Academy Inc. are included in the repository. These may consist of quantitative, qualitative, mixed-method, experimental, descriptive, and other research studies that have successfully passed the school’s research requirements.
+            </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Why does the repository only contain student research?</div>
+            <div class="faq-answer-text">
+                The repository was specifically developed to preserve and showcase the academic work of students. By focusing solely on student research, the system provides a dedicated collection that future students can use as references while highlighting the research achievements of the school’s learners.
+            </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How can I search for a research paper?</div>
+            <div class="faq-answer-text">
+                Users can search for research papers using various search options, including the research title, author’s name, adviser, strand, academic year, subject area, or keywords. These search features allow users to quickly locate studies related to their research interests.
+            </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Can I browse research papers by category?</div>
+            <div class="faq-answer-text">
+                Yes. Research papers are organized into categories such as academic year, strand, research type, and subject area. This organization allows users to explore studies more efficiently without needing to know the exact title of a paper.
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Can I download research papers?</div>
+            <div class="faq-answer-text">
+                No. Research papers are available for viewing only. Downloading is restricted to protect the intellectual property rights of student authors and to minimize plagiarism and unauthorized distribution of research outputs.
+            </div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Why are downloads not allowed?</div>
+            <div class="faq-answer-text">
+                Restricting downloads helps ensure that student research is used responsibly. It protects the originality of academic work, discourages plagiarism, and respects the rights of the student researchers who authored the studies.
+            </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How are research papers submitted to the repository?</div>
+            <div class="faq-answer-text">
+                Only the final, approved versions of student research papers are submitted to the repository through the designated school office or repository administrator. Papers are reviewed before they are uploaded to ensure that they meet the school’s submission requirements.
+            </div>
+        </div>
+
+        <!-- Q11 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Who manages the repository?</div>
+            <div class="faq-answer-text">
+                The repository is managed by authorized school personnel, such as the research coordinator, librarian, or designated system administrator. They are responsible for uploading approved research papers, maintaining the database, ensuring system security, and assisting users when necessary.
+            </div>
+        </div>
+
+        <!-- Q12 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How does the repository help students?</div>
+            <div class="faq-answer-text">
+                The repository provides students with convenient access to previous research studies that can serve as references during the preparation of research proposals, literature reviews, and final papers. It also helps students identify research gaps, avoid duplication of topics, and improve the quality of their own research.
+            </div>
+        </div>
+
+        <!-- Q13 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How does the repository help teachers and research advisers?</div>
+            <div class="faq-answer-text">
+                Teachers and research advisers can use the repository to guide students in selecting research topics, recommend relevant previous studies, evaluate research trends, and monitor the development of student research within the school.
+            </div>
+        </div>
+
+        <!-- Q14 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Is the information stored in the repository secure?</div>
+            <div class="faq-answer-text">
+                Yes. The repository includes security measures such as user authentication, controlled access, and regular system maintenance to protect both research documents and user information. These measures help ensure that the repository remains secure and reliable.
+            </div>
+        </div>
+
+        <!-- Q15 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How does the repository protect student authors?</div>
+            <div class="faq-answer-text">
+                Each research paper clearly identifies its authors and advisers. Users are reminded to properly cite all referenced works and to comply with the school’s policies on academic honesty, intellectual property, and responsible use of research materials.
+            </div>
+        </div>
+
+        <!-- Q16 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Can research papers be edited after they are uploaded?</div>
+            <div class="faq-answer-text">
+                If errors are discovered or updates are required, corrections may only be made by the repository administrator after obtaining approval from the appropriate school authorities. Unauthorized users cannot modify uploaded research papers.
+            </div>
+        </div>
+
+        <!-- Q17 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">What should I do if I cannot find the research paper I need?</div>
+            <div class="faq-answer-text">
+                If you are unable to locate a specific research paper, you may contact the repository administrator, school librarian, or research coordinator for assistance. They can verify whether the research has been archived or if there are restrictions affecting its availability.
+            </div>
+        </div>
+
+        <!-- Q18 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Can I use the research papers as references for my own study?</div>
+            <div class="faq-answer-text">
+                Yes. Research papers in the repository are intended to serve as academic references for future student researchers. However, users must properly cite all sources and follow the school’s academic integrity and plagiarism policies.
+            </div>
+        </div>
+
+        <!-- Q19 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">Why is preserving student research important?</div>
+            <div class="faq-answer-text">
+                Student research represents valuable academic knowledge and reflects the efforts and achievements of learners. Preserving these studies ensures that they remain available for future students, prevents the loss of important academic work, and contributes to the continuous improvement of research within the school.
+            </div>
+        </div>
+
+        <!-- Q20 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">What makes Lundayang Marians different from printed research archives?</div>
+            <div class="faq-answer-text">
+                Unlike traditional printed archives, Lundayang Marians provides a searchable digital platform that allows users to locate research papers quickly using keywords, categories, filters, and metadata. It also reduces the need to manually browse physical copies while helping preserve research documents from deterioration or loss.
+            </div>
+        </div>
+
+        <!-- Q21 -->
+        <div class="faq-item-card">
+            <div class="faq-question-text">How does Lundayang Marians contribute to the school’s research culture?</div>
+            <div class="faq-answer-text">
+                By making student research more accessible, organized, and preserved, Lundayang Marians encourages students to conduct meaningful studies, promotes collaboration and academic excellence, supports evidence-based learning, and inspires future researchers to build upon previous student research while maintaining ethical research practices.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="faq-pagination">
+        <button id="faq-prev-btn" class="faq-page-btn" aria-label="Previous Page">
+            <i data-lucide="chevron-left" style="width: 20px; height: 20px;"></i>
+        </button>
+        <span class="faq-page-info" id="faq-page-info">Page 1 of 6</span>
+        <button id="faq-next-btn" class="faq-page-btn" aria-label="Next Page">
+            <i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i>
+        </button>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const faqItems = document.querySelectorAll(".faq-item-card");
+        const prevBtn = document.getElementById("faq-prev-btn");
+        const nextBtn = document.getElementById("faq-next-btn");
+        const pageInfo = document.getElementById("faq-page-info");
+        
+        const itemsPerPage = 4;
+        let currentPage = 1;
+        const totalPages = Math.ceil(faqItems.length / itemsPerPage);
+
+        function showPage(page) {
+            currentPage = page;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            // Show or hide items
+            faqItems.forEach((item, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    item.style.display = "flex";
+                    // Trigger reflow then add 'show' class for smooth fade-in
+                    item.offsetHeight; 
+                    item.classList.add("show");
+                } else {
+                    item.style.display = "none";
+                    item.classList.remove("show");
+                }
+            });
+
+            // Update page number label
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+            // Handle button states
+            prevBtn.disabled = (currentPage === 1);
+            nextBtn.disabled = (currentPage === totalPages);
+
+            // Scroll to the top of the FAQ section smoothly
+            document.querySelector(".faq-page-container").scrollIntoView({ behavior: "smooth" });
+        }
+
+        // Event listeners
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+
+        // Initialize page 1
+        showPage(1);
+    });
+</script>
+{% endblock %}

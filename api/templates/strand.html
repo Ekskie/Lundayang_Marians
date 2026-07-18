@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ strand }} Strand - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Premium Strand Split Grid Layout */
+    .strand-page-container {
+        max-width: 1400px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 70vh;
+    }
+
+    .strand-split-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 3.5rem;
+        align-items: start;
+    }
+
+    .strand-left-col {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .strand-right-col {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    /* SEARCH Block Component */
+    .search-block-container {
+        width: 100%;
+    }
+
+    .search-block-header {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 8px 20px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-block-body {
+        border: 2px solid #002060;
+        border-top: none;
+        background-color: transparent;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-block-label {
+        font-size: 0.9rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #000000;
+    }
+
+    .search-form-row {
+        display: flex;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .search-input-box {
+        flex: 1;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.95rem;
+        font-family: 'Poppins', sans-serif;
+        background-color: #ffffff;
+        min-width: 0;
+    }
+
+    .search-submit-btn {
+        background-color: #f1f5f9;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        color: #002060;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .search-submit-btn:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    /* Strand Crest & Description */
+    .strand-info-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .strand-crest-container {
+        width: 180px;
+        height: 180px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .crest-box.large {
+        width: 180px;
+        height: 180px;
+        border: 2px solid #a8a29e;
+        border-radius: 18px;
+        background-color: #ffffff;
+        background-size: 85% 85%;
+        background-repeat: no-repeat;
+        background-position: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .strand-desc-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.7;
+        color: #000000;
+        text-align: justify;
+    }
+
+    .strand-desc-text strong {
+        color: #002060;
+    }
+
+    /* Right Column Header */
+    .strand-right-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        width: 100%;
+    }
+
+    .strand-results-title {
+        font-family: 'Lora', serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #002060;
+    }
+
+    /* Custom Year Select dropdown */
+    .strand-year-filter {
+        background-color: #ffffff;
+        border: 3px solid #000000;
+        padding: 0.3rem 2.5rem 0.3rem 1rem;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        color: #000000;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 14px;
+        box-sizing: border-box;
+    }
+
+    /* Paper listings */
+    .strand-paper-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        width: 100%;
+    }
+
+    .strand-paper-row-card {
+        background-color: #ffffff;
+        border: 2px solid #002060;
+        border-radius: 8px;
+        padding: 0.8rem 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .strand-paper-row-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.12);
+    }
+
+    .strand-paper-row-card .mock-doc-cover {
+        width: 60px;
+        height: 85px;
+        border: 1.5px solid #002060;
+        border-radius: 3px;
+        background-color: #ffffff;
+        padding: 6px 4px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        margin: 0;
+    }
+
+    .strand-paper-row-card .mock-doc-title {
+        font-size: 6px;
+        line-height: 1.15;
+        color: #002060;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    .strand-paper-row-card .mock-doc-line {
+        width: 80%;
+        height: 1px;
+        background-color: #cbd5e1;
+        margin: 1.5px 0;
+    }
+
+    .strand-paper-row-card .mock-doc-footer {
+        font-size: 5px;
+        color: #64748b;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+    }
+
+    .strand-paper-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        flex: 1;
+    }
+
+    .strand-paper-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: bold;
+        color: #002060;
+        text-decoration: underline;
+        text-transform: uppercase;
+        line-height: 1.35;
+    }
+
+    .strand-paper-desc {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.78rem;
+        color: #475569;
+        line-height: 1.4;
+        text-align: justify;
+    }
+
+    .strand-empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background-color: #eaedf2;
+        border: 2px solid #002060;
+        border-radius: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        color: #002060;
+        margin-bottom: 1rem;
+    }
+
+    .btn-reset-filters {
+        display: inline-block;
+        margin-top: 1rem;
+        background-color: #ffffff;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.4rem 1.2rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        color: #002060;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-reset-filters:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    /* Responsiveness adjustments */
+    @media (max-width: 900px) {
+        .strand-split-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .strand-right-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .strand-year-filter {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="strand-page-container">
+
+    <div class="strand-split-grid">
+
+        <!-- Left Column: Search, Strand Crest & Description -->
+        <div class="strand-left-col">
+
+            <!-- Search Block -->
+            <div class="search-block-container">
+                <div class="search-block-header">SEARCH</div>
+                <div class="search-block-body">
+                    <span class="search-block-label">Enter search item:</span>
+                    <form action="{{ url_for('strand', strand_name=strand) }}" method="GET" class="search-form-row">
+                        <input type="text" name="q" value="{{ search_query }}" class="search-input-box">
+                        {% if selected_year %}
+                        <input type="hidden" name="year" value="{{ selected_year }}">
+                        {% endif %}
+                        <button type="submit" class="search-submit-btn">Search</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Crest Emblem & Info -->
+            <div class="strand-info-card">
+                <div class="strand-crest-container">
+                    {% if strand == 'HUMSS' %}
+                    <div class="crest-box large"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMMSS_no.png') }}');">
+                    </div>
+                    {% elif strand == 'ABM' %}
+                    <div class="crest-box large"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}');">
+                    </div>
+                    {% else %}
+                    <div class="crest-box large"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}');">
+                    </div>
+                    {% endif %}
+                </div>
+
+                <p class="strand-desc-text">
+                    {% if strand == 'HUMSS' %}
+                    <strong>Humanities and Social Sciences (HUMSS)</strong> is the branch of knowledge that studies
+                    human beings, their culture, society, behavior, relationships, and experiences. It combines the
+                    humanities, which focus on human culture, values, history, literature, philosophy, and the arts,
+                    with the social sciences, which examine how individuals and groups interact within society through
+                    disciplines such as sociology, psychology, economics, political science, and anthropology.
+                    {% elif strand == 'ABM' %}
+                    <strong>Accountancy, Business, and Management (ABM)</strong> is a Senior High School strand that
+                    prepares students for careers in business, entrepreneurship, accounting, marketing, finance, and
+                    management. It develops skills in leadership, problem-solving, communication, and decision-making,
+                    making it ideal for students who want to pursue business-related courses or start their own
+                    businesses.
+                    {% else %}
+                    <strong>Science, Technology, Engineering, and Mathematics (STEM)</strong> is a Senior High School
+                    strand designed for students who are interested in science, technology, engineering, and
+                    mathematics. It develops critical thinking, problem-solving, and analytical skills, preparing
+                    students for college courses and careers such as engineering, medicine, architecture, information
+                    technology, and other science-related fields.
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Results & Year Filter -->
+        <div class="strand-right-col">
+
+            <div class="strand-right-header">
+                <h2 class="strand-results-title">Research Papers ({{ papers|length }})</h2>
+
+                <!-- Academic Year Filter Form -->
+                <form action="{{ url_for('strand', strand_name=strand) }}" method="GET" id="year-filter-form">
+                    {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    {% endif %}
+
+                    <select name="year" class="strand-year-filter"
+                        onchange="document.getElementById('year-filter-form').submit()">
+                        <option value="">Year</option>
+                        {% for year in academic_years %}
+                        <option value="{{ year }}" {% if selected_year==year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+
+            <!-- Paper Listings -->
+            <div class="strand-paper-list">
+                {% if papers %}
+                {% for paper in papers %}
+                <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="strand-paper-row-card">
+                    <div class="mock-doc-cover">
+                        <div class="mock-doc-title">
+                            {{ paper.title.split(':')[0][:25] }}...
+                        </div>
+                        <div class="mock-doc-line"></div>
+                        <div class="mock-doc-line"></div>
+                        <div class="mock-doc-line"></div>
+                        <div class="mock-doc-footer">{{ paper.strand }}</div>
+                    </div>
+                    <div class="strand-paper-details">
+                        <span class="strand-paper-title">{{ paper.title }}</span>
+                        <span class="strand-paper-desc">
+                            {% if paper.abstract %}
+                            {{ paper.abstract[:180] }}{% if paper.abstract|length > 180 %}...{% endif %}
+                            {% else %}
+                            A scholarly research paper authored by {{ paper.authors|join(', ') }} under the {{ strand }}
+                            strand.
+                            {% endif %}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+                {% else %}
+                <div class="strand-empty-state">
+                    <i data-lucide="search-code" class="empty-state-icon"></i>
+                    <h3>No Research Papers Found</h3>
+                    <p>We couldn't find any papers matching your search parameters or filter criteria. Try expanding
+                        your search queries or selecting all years.</p>
+                    {% if search_query or selected_year %}
+                    <a href="{{ url_for('strand', strand_name=strand) }}" class="btn-reset-filters">Reset Filters</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

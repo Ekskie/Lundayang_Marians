@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header Banner</title>
+    <!-- 1. Import a rounded font to match the target design -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'BagwisBaybayin';
+            src: url('api/static/font/BagwisBaybayinFontRegular-ZV3MK.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            /* Applied rounded font */
+        }
+
+        .header-banner {
+            display: flex;
+            align-items: center;
+            height: 100px;
+            border-top: 4px solid #0d1b6e;
+            /* Top border */
+            border-bottom: 4px solid #0d1b6e;
+            /* Bottom border */
+            position: relative;
+            overflow: hidden;
+            background-color: #eeeeee;
+        }
+
+        /* 2. Background image with gradient fade */
+        .header-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            /* This gradient fades from solid light gray to transparent over your image */
+            background: linear-gradient(to right, #eeeeee 40%, transparent 70%),
+                url('/api/static/images/Photos/Front2.jpg') right center / cover no-repeat;
+            z-index: 0;
+        }
+
+        .banner-content {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            /* Keeps text and logos above the background fade */
+            padding-left: 20px;
+            height: 100%;
+        }
+
+        .school-logo {
+            height: 65px;
+            width: auto;
+        }
+
+        .divider {
+            height: 55px;
+            width: 1px;
+            background-color: #333;
+            margin: 0 15px;
+        }
+
+        .icon-logo {
+            height: 55px;
+            width: auto;
+            margin-right: 15px;
+        }
+
+        .text-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 3. Brighter blue and typography contrast */
+        .main-title {
+            color: #17009c;
+            /* Matched to the vibrant blue in the target */
+            font-size: 36px;
+            margin: 0;
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+
+        .main-title .bold {
+            font-weight: 800;
+            /* Extra thick for the first word */
+        }
+
+        .main-title .light {
+            font-weight: 400;
+            /* Standard for the second word */
+        }
+
+        /* 4. Spacing out the Baybayin text */
+        .baybayin-subtitle {
+            color: #000;
+            font-size: 14px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            /* Evenly spaces the elements */
+            width: 100%;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+
+        .banner-baybayin {
+            color: #000;
+            font-size: 14px;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            /* Evenly spaces the elements */
+            width: 100%;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+
+        .banner-baybayin span {
+            font-family: 'BagwisBaybayin', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-banner">
+        <div class="banner-content">
+
+            <!-- Left Logo -->
+            <img src="api/static/images/Logo_s/Logo.png" alt="School Logo" class="school-logo">
+
+            <!-- Vertical Line -->
+            <div class="divider"></div>
+
+            <!-- Right Icon -->
+            <img src="api/static/images/Logo_s/Humms_Stroke.jpg" alt="Icon" class="icon-logo">
+
+            <div class="text-container">
+                <h1 class="main-title">
+                    <span class="bold">Lundayang</span> <span class="light">Marians</span>
+                </h1>
+
+                <!-- By putting characters in spans, flexbox evenly spreads them -->
+                <div class="banner-baybayin">
+
+                    <span>lu</span><span>n</span><span>da</span><span>ya</span><span>G</span><span>ma</span><span>ri</span><span>ya</span><span>n</span><span>s</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

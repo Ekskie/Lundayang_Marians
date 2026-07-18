@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account - Lundayang Marians{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">CREATE ACCOUNT</h1>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('signup') }}" method="POST">
+            <!-- Student ID Field -->
+            <div class="form-group">
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Student ID" required>
+            </div>
+
+            <!-- Full Name Field -->
+            <div class="form-group">
+                <input type="text" id="name" name="name" class="form-control" placeholder="Full Name" required>
+            </div>
+
+            <!-- Grade & Section Field -->
+            <div class="form-group">
+                <input type="text" id="grade_section" name="grade_section" class="form-control" placeholder="Grade & Section" required>
+            </div>
+            
+            <!-- Enter Password Field -->
+            <div class="form-group">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required>
+            </div>
+            
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="btn-auth-submit">SIGN UP</button>
+        </form>
+        
+        <!-- Login Link -->
+        <div class="auth-footer">
+            <a href="{{ url_for('login') }}">ALREADY HAVE AN ACCOUNT</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,607 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Premium Home Split Grid Layout */
+    .home-split-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 3.5rem;
+        align-items: start;
+        margin-top: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .home-left-col {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+    }
+
+    .home-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+    }
+
+    /* SEARCH Block Component */
+    .search-block-container {
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .search-block-header {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 8px 20px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-block-body {
+        border: 2px solid #002060;
+        border-top: none;
+        background-color: transparent;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-block-label {
+        font-size: 0.9rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: #000000;
+    }
+
+    .search-form-row {
+        display: flex;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .search-input-box {
+        flex: 1;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.95rem;
+        font-family: 'Poppins', sans-serif;
+        background-color: #ffffff;
+        min-width: 0;
+    }
+
+    .search-submit-btn {
+        background-color: #f1f5f9;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        color: #002060;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .search-submit-btn:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    /* BROWSE RESEARCH Section */
+    .browse-header-title {
+        font-family: 'Lora', serif;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #002060;
+        text-transform: uppercase;
+        margin-bottom: 1.2rem;
+        letter-spacing: 0.02em;
+    }
+
+    .browse-cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+
+    .browse-crest-card {
+        background-color: #eaedf2;
+        border: 2.5px solid #475569;
+        border-radius: 14px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 220px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+    }
+
+    .browse-crest-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        border-color: #002060;
+    }
+
+    .crest-box-bg {
+        width: 140px;
+        height: 140px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin-bottom: 1rem;
+        transition: transform 0.2s;
+    }
+
+    .browse-crest-card:hover .crest-box-bg {
+        transform: scale(1.05);
+    }
+
+    .crest-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #002060;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        font-family: 'Poppins', sans-serif;
+        line-height: 1.3;
+        margin-top: auto;
+    }
+
+    /* RESEARCH RECOGNITION Spotlight Block */
+    .rec-box-container {
+        background-color: #eaedf2;
+        border: 2px solid #002060;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .rec-title-header {
+        font-family: 'Lora', serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #002060;
+        margin-bottom: 0.2rem;
+    }
+
+    .rec-title-sub {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        color: #000000;
+        margin-bottom: 1.2rem;
+        line-height: 1.3;
+    }
+
+    .rec-content-split {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .rec-doc-img {
+        width: 100%;
+        border: 2px solid #002060;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        background-color: #ffffff;
+        border-radius: 4px;
+        transition: transform 0.2s;
+    }
+
+    .rec-doc-img:hover {
+        transform: scale(1.03);
+    }
+
+    .rec-content-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.8rem;
+        line-height: 1.6;
+        color: #000000;
+        text-align: justify;
+    }
+
+    /* Slideshow Carousel */
+    .carousel-wrapper {
+        position: relative;
+        padding: 0 35px;
+        width: 100%;
+        margin-bottom: 0.5rem;
+        opacity: 0.7;
+    }
+
+    .carousel-container {
+        width: 100%;
+        height: 220px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        border: 2px solid #002060;
+    }
+
+    .carousel-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity 0.4s ease-in-out;
+    }
+
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 2.5rem;
+        font-family: monospace;
+        color: #002060;
+        font-weight: bold;
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.2s, transform 0.2s;
+        z-index: 5;
+    }
+
+    .carousel-arrow:hover {
+        color: #1b3d82;
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    .arrow-left {
+        left: 5px !important;
+    }
+
+    .arrow-right {
+        right: 5px !important;
+    }
+
+    /* Repository text description */
+    .repo-desc-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.65;
+        color: #000000;
+        text-align: justify;
+    }
+
+    .repo-desc-text strong {
+        font-weight: bold;
+        color: #002060;
+    }
+
+    /* BEST IN RESEARCH section */
+    .best-header-title {
+        font-family: 'Lora', serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #002060;
+        text-transform: uppercase;
+        margin-bottom: 0.2rem;
+    }
+
+    .best-header-sub {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 1.2rem;
+    }
+
+    .best-card-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .best-paper-row-card {
+        background-color: #ffffff;
+        border: 2px solid #002060;
+        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .best-paper-row-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.12);
+    }
+
+    .best-paper-row-card .mock-doc-cover {
+        width: 48px;
+        height: 68px;
+        border: 1.5px solid #002060;
+        border-radius: 3px;
+        background-color: #ffffff;
+        padding: 4px 3px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        margin: 0;
+    }
+
+    .best-paper-row-card .mock-doc-title {
+        font-size: 5px;
+        line-height: 1.15;
+        color: #002060;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .best-paper-row-card .mock-doc-line {
+        width: 80%;
+        height: 1px;
+        background-color: #cbd5e1;
+        margin: 1px 0;
+    }
+
+    .best-paper-row-card .mock-doc-footer {
+        font-size: 4px;
+        color: #64748b;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+    }
+
+    .best-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        flex: 1;
+    }
+
+    .best-details-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: #002060;
+        text-decoration: underline;
+        text-transform: uppercase;
+        line-height: 1.35;
+    }
+
+    .best-details-desc {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.72rem;
+        color: #475569;
+        line-height: 1.3;
+        text-align: justify;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .home-split-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .search-block-container {
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+
+    <div class="home-split-grid">
+
+        <!-- Left Column: Search, Strands, and Recognition -->
+        <div class="home-left-col">
+
+            <!-- Search Block -->
+            <div class="search-block-container">
+                <div class="search-block-header">SEARCH</div>
+                <div class="search-block-body">
+                    <span class="search-block-label">Enter search item:</span>
+                    <form action="{{ url_for('strand', strand_name='STEM') }}" method="GET" class="search-form-row">
+                        <input type="text" name="q" class="search-input-box" required>
+                        <button type="submit" class="search-submit-btn">Search</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- BROWSE RESEARCH Section -->
+            <div>
+                <h2 class="browse-header-title">BROWSE RESEARCH</h2>
+
+                <div class="browse-cards-container">
+
+                    <!-- HUMSS Card -->
+                    <a href="{{ url_for('strand', strand_name='HUMSS') }}" class="browse-crest-card"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        <span class="crest-label">HUMANITIES AND SOCIAL SCIENCE</span>
+                    </a>
+
+                    <!-- ABM Card -->
+                    <a href="{{ url_for('strand', strand_name='ABM') }}" class="browse-crest-card"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        <span class="crest-label">ACCOUNTANCY AND BUSINESS MANAGEMENT</span>
+                    </a>
+
+                    <!-- STEM Card -->
+                    <a href="{{ url_for('strand', strand_name='STEM') }}" class="browse-crest-card"
+                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}'); background-size:contain; background-position: bottom; background-repeat: no-repeat;">
+                        <span class="crest-label">SCIENCE, TECHNOLOGY, ENGINEERING, AND MATHEMATICS</span>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- RESEARCH RECOGNITION Block -->
+            <div class="rec-box-container">
+                <h3 class="rec-title-header">RESEARCH RECOGNITION</h3>
+                <p class="rec-title-sub">This Research has been officially Recognized by the Municipality of Santa
+                    Maria, Laguna</p>
+
+                <div class="rec-content-split">
+                    <!-- Real JPG cover preview -->
+                    <img src="{{ url_for('static', filename='images/municipality recognises/KALAT MO, SAGOT KO_ THE ACCEPTABILITY OF THE_PROTOTYPE WASTE SEGREGATOR MACHINE_IN SANTA MARIA, LAGUNA.jpg') }}"
+                        alt="Research Recognition Document" class="rec-doc-img">
+
+                    <div class="rec-content-text">
+                        <p>
+                            <strong>SK Chairman Angel Mangundayao of the Municipality of Santa Maria, Laguna</strong>
+                            proudly acknowledges the outstanding efforts of the student researchers of Santa Maria
+                            (Laguna) Academy, INC.,
+                            Gabrielle A. Dimatatac, Bridgette S. Panaligan, Mark Andrew Y. Montales, Fiona Sheryn A.
+                            Hernandez, Kristel Anne Nicole L. Jaen, Godwel Ivan D. Razon, and Fatima Victoria I.
+                            Valentino, for their innovative study entitled
+                            <strong>“KALAT MO, SAGOT KO: THE ACCEPTABILITY OF THE PROTOTYPE WASTE SEGREGATOR MACHINE IN
+                                SANTA MARIA, LAGUNA.”</strong>
+                        </p>
+                        <p style="margin-top: 0.5rem; font-style: italic;">
+                            Special recognition is also extended to their Research Adviser, Ms. Maureen L. Cruz, whose
+                            guidance and expertise provided the necessary direction and support in the completion of
+                            this project.
+                        </p>
+                        <p style="margin-top: 0.5rem;">
+                            This initiative reflects the commitment of the youth of Santa Maria Academy to environmental
+                            responsibility and sustainable development. It also demonstrates the vital role of
+                            student-led innovation in creating solutions that can be adopted by the barangay and the
+                            wider community for the benefit of the people of Santa Maria, Laguna.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Slideshow, Description, and Best in Research -->
+        <div class="home-right-col">
+
+            <!-- Slideshow Carousel Wrapper with outer navigation arrows -->
+            <div class="carousel-wrapper">
+                <span class="carousel-arrow arrow-left">&lt;</span>
+                <div class="carousel-container">
+                    <img class="carousel-img" src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
+                        alt="Sta. Maria Academy Facade">
+                </div>
+                <span class="carousel-arrow arrow-right">&gt;</span>
+            </div>
+
+            <!-- Descriptive paragraph matching layout -->
+            <p class="repo-desc-text">
+                <strong>Lundayang Marians</strong> is the web-based research repository of Santa Maria (Laguna) Academy
+                Inc., envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or
+                focal point, with "Marians", the collective identity of the academy's students. This platform
+                centralizes academic outputs, offering a simple interface and organized categories for easy access and
+                exploration.
+            </p>
+            <p class="repo-desc-text" style="margin-top: -1rem;">
+                By preserving research in a digital archive, Lundayang Marians fosters collaboration, supports future
+                studies, and strengthens the Marian community's commitment to academic excellence. It serves not only as
+                a repository but also as a symbol of innovation and inclusivity, ensuring that the scholarly
+                contributions of Marians remain accessible and impactful for years to come.
+            </p>
+
+            <!-- BEST IN RESEARCH Rows -->
+            <div>
+                <h3 class="best-header-title">BEST IN RESEARCH</h3>
+                <p class="best-header-sub">Recognizing Outstanding Research Achievements Through the Years</p>
+
+                <div class="best-card-list">
+                    {% for paper in best_in_research %}
+                    <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="best-paper-row-card">
+                        <div class="mock-doc-cover">
+                            <div class="mock-doc-title">
+                                {{ paper.title.split(':')[0][:25] }}...
+                            </div>
+                            <div class="mock-doc-line"></div>
+                            <div class="mock-doc-line"></div>
+                            <div class="mock-doc-line"></div>
+                            <div class="mock-doc-footer">{{ paper.strand }}</div>
+                        </div>
+                        <div class="best-details">
+                            <span class="best-details-title">{{ paper.title }}</span>
+                            <span class="best-details-desc">
+                                {% if paper.abstract %}
+                                {{ paper.abstract[:110] }}{% if paper.abstract|length > 110 %}...{% endif %}
+                                {% else %}
+                                A highly distinguished research study under the {{ paper.strand }} academic strand.
+                                {% endif %}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Dynamic premium slide list using all photos inside the "school photos" and facade image
+        const slides = [
+            "{{ url_for('static', filename='images/Photos/School_P.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/741481012_1033089102523494_5220187940140632359_n.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/742997668_1704114644246167_6551245720162600764_n.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/743796266_1527611965725908_6500501796955139832_n.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/746660483_1005253982424329_5662788526906682934_n.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/746715677_1716137346299532_5212130155329073556_n.jpg') }}",
+            "{{ url_for('static', filename='images/school photos/b49d6ac161686b265bae60c376f9047c.jpeg') }}",
+            "{{ url_for('static', filename='images/school photos/fa78647b324ea46e043f5ec0bde6837b.jpeg') }}"
+        ];
+
+        let currentIndex = 0;
+        const imgEl = document.querySelector(".carousel-img");
+        const prevEl = document.querySelector(".arrow-left");
+        const nextEl = document.querySelector(".arrow-right");
+
+        function updateSlide(index) {
+            imgEl.style.opacity = "0"; // Trigger fade out
+            setTimeout(() => {
+                currentIndex = (index + slides.length) % slides.length;
+                imgEl.src = slides[currentIndex];
+                imgEl.style.opacity = "1"; // Trigger fade in
+            }, 300);
+        }
+
+        prevEl.addEventListener("click", () => {
+            updateSlide(currentIndex - 1);
+            resetAutoPlay();
+        });
+
+        nextEl.addEventListener("click", () => {
+            updateSlide(currentIndex + 1);
+            resetAutoPlay();
+        });
+
+        // Auto-rotation every 5 seconds
+        let autoPlayInterval = setInterval(() => {
+            updateSlide(currentIndex + 1);
+        }, 5000);
+
+        function resetAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = setInterval(() => {
+                updateSlide(currentIndex + 1);
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

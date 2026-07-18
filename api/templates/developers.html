@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}The Developers - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Custom container for developers page */
+    .developers-page-container {
+        max-width: 1400px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 70vh;
+    }
+
+    .developers-title-container {
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .developers-title-bar {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 10px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        min-width: 380px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .developers-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        width: 100%;
+        gap: 0;
+        margin-bottom: 4rem;
+    }
+
+    .developer-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 1.25rem 2rem 1.25rem;
+        position: relative;
+    }
+
+    /* Vertical lines between columns */
+    .developer-column:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 5%;
+        height: 90%;
+        width: 1px;
+        background-color: #000000;
+        opacity: 0.25;
+    }
+
+    .developer-image-container {
+        width: 155px;
+        height: 155px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        border: 4px solid #bce2f5;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #e0f2fe;
+    }
+
+    .developer-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .developer-column:hover .developer-image {
+        transform: scale(1.05);
+    }
+
+    .developer-details {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    .developer-row {
+        word-break: break-word;
+    }
+
+    .developer-label {
+        font-weight: bold;
+        color: #002060;
+    }
+
+    .developer-value {
+        color: #000000;
+    }
+
+    .developer-value.email {
+        word-break: break-all;
+    }
+
+    /* Responsiveness adjustments */
+    @media (max-width: 1200px) {
+        .developers-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .developer-column {
+            padding: 2rem 1.5rem;
+        }
+
+        .developer-column::after {
+            display: none !important;
+        }
+
+        .developer-column {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    @media (max-width: 850px) {
+        .developers-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 580px) {
+        .developers-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .developer-column {
+            padding: 2rem 1rem;
+        }
+
+        .developer-column:last-child {
+            border-bottom: none;
+        }
+
+        .developers-title-bar {
+            width: 100%;
+            text-align: center;
+            min-width: unset;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="developers-page-container">
+
+    <!-- Title Bar -->
+    <div class="developers-title-container">
+        <div class="developers-title-bar">
+            THE DEVELOPERS
+        </div>
+    </div>
+
+    <!-- Developers Grid -->
+    <div class="developers-grid">
+
+        <!-- Developer 1: Jhandy Faye B. Consignado -->
+        <div class="developer-column">
+            <div class="developer-image-container">
+                <img src="{{ url_for('static', filename='images/photo of developers/Jhandy Faye B. Consignado.png') }}"
+                    alt="Jhandy Faye B. Consignado" class="developer-image">
+            </div>
+            <div class="developer-details">
+                <div class="developer-row">
+                    <span class="developer-label">Name:</span>
+                    <span class="developer-value">Jhandy Faye B. Consignado</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Home Address:</span>
+                    <span class="developer-value">Brgy. Paagahan Mabitac, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthday:</span>
+                    <span class="developer-value">December 13, 2009</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthplace:</span>
+                    <span class="developer-value">Paagahan Mabitac, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Nationality:</span>
+                    <span class="developer-value">Filipino</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Gender:</span>
+                    <span class="developer-value">Female</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Civil Status:</span>
+                    <span class="developer-value">Single</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Email:</span>
+                    <span class="developer-value email">jhandyfayebalobaloconsignado@gmail.com</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Number:</span>
+                    <span class="developer-value">09533724138</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer 2: Jean Mary E. De Torres -->
+        <div class="developer-column">
+            <div class="developer-image-container">
+                <img src="{{ url_for('static', filename='images/photo of developers/Jean Mary D. De Torres.png') }}"
+                    alt="Jean Mary E. De Torres" class="developer-image">
+            </div>
+            <div class="developer-details">
+                <div class="developer-row">
+                    <span class="developer-label">Name:</span>
+                    <span class="developer-value">Jean Mary E. De Torres</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Home Address:</span>
+                    <span class="developer-value">Brgy. Cueva, Sta. Maria, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthday:</span>
+                    <span class="developer-value">October 4, 2009</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthplace:</span>
+                    <span class="developer-value">Santa Maria, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Nationality:</span>
+                    <span class="developer-value">Filipino</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Gender:</span>
+                    <span class="developer-value">Female</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Civil Status:</span>
+                    <span class="developer-value">Single</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Email:</span>
+                    <span class="developer-value email">detorresjeanmary@gmail.com</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Number:</span>
+                    <span class="developer-value">09518907116</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer 3: Carlene Jane P. Dela Cruz -->
+        <div class="developer-column">
+            <div class="developer-image-container">
+                <img src="{{ url_for('static', filename='images/photo of developers/Carlene Jane P. Dela Cruz.png') }}"
+                    alt="Carlene Jane P. Dela Cruz" class="developer-image">
+            </div>
+            <div class="developer-details">
+                <div class="developer-row">
+                    <span class="developer-label">Name:</span>
+                    <span class="developer-value">Carlene Jane P. Dela Cruz</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Home Address:</span>
+                    <span class="developer-value">Brgy. Paagahan, Mabitac, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthday:</span>
+                    <span class="developer-value">July 1, 2008</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthplace:</span>
+                    <span class="developer-value">Sta. Cruz, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Nationality:</span>
+                    <span class="developer-value">Filipino</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Gender:</span>
+                    <span class="developer-value">Female</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Civil Status:</span>
+                    <span class="developer-value">Single</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Email:</span>
+                    <span class="developer-value email">carlenedelacruz6@gmail.com</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Number:</span>
+                    <span class="developer-value">09557658000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer 4: Joshua Francis A. Delrosario -->
+        <div class="developer-column">
+            <div class="developer-image-container">
+                <img src="{{ url_for('static', filename='images/photo of developers/Joshua Francis A. Del Rosario.png') }}"
+                    alt="Joshua Francis A. Delrosario" class="developer-image">
+            </div>
+            <div class="developer-details">
+                <div class="developer-row">
+                    <span class="developer-label">Name:</span>
+                    <span class="developer-value">Joshua Francis A. Delrosario</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Home Address:</span>
+                    <span class="developer-value">Brgy. Masinao Santa Maria, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthday:</span>
+                    <span class="developer-value">July 13, 2009</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthplace:</span>
+                    <span class="developer-value">Lemery, Batangas</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Nationality:</span>
+                    <span class="developer-value">Filipino</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Gender:</span>
+                    <span class="developer-value">Male</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Civil Status:</span>
+                    <span class="developer-value">Single</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Email:</span>
+                    <span class="developer-value email">joshuadelrosario352@gmail.com</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Number:</span>
+                    <span class="developer-value">099942590689</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Developer 5: Xian Yvan V. Evangelio -->
+        <div class="developer-column">
+            <div class="developer-image-container">
+                <img src="{{ url_for('static', filename='images/photo of developers/Xian Yvan V. Evangelio.png') }}"
+                    alt="Xian Yvan V. Evangelio" class="developer-image">
+            </div>
+            <div class="developer-details">
+                <div class="developer-row">
+                    <span class="developer-label">Name:</span>
+                    <span class="developer-value">Xian Yvan V. Evangelio</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Home Address:</span>
+                    <span class="developer-value">Brgy. Bagong Pook, Santa Maria Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthday:</span>
+                    <span class="developer-value">September 9, 2009</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Birthplace:</span>
+                    <span class="developer-value">Santa Maria, Laguna</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Nationality:</span>
+                    <span class="developer-value">Filipino</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Gender:</span>
+                    <span class="developer-value">Male</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Civil Status:</span>
+                    <span class="developer-value">Single</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Email:</span>
+                    <span class="developer-value email">Xxian604@gmail.com</span>
+                </div>
+                <div class="developer-row">
+                    <span class="developer-label">Number:</span>
+                    <span class="developer-value">09936650515</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookmarks - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Custom container for bookmarks page */
+    .bookmarks-page-container {
+        max-width: 1200px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 70vh;
+    }
+
+    .bookmarks-title-container {
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .bookmarks-title-bar {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 10px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        min-width: 380px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .bookmarks-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto 4rem auto;
+    }
+
+    .bookmark-card {
+        background-color: #ffffff;
+        border: 3px solid #000000;
+        padding: 1.25rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        text-decoration: none;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .bookmark-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.1);
+        border-color: #002060;
+    }
+
+    .bookmark-ribbon-container {
+        width: 32px;
+        height: 42px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bookmark-ribbon-svg {
+        width: 100%;
+        height: 100%;
+        color: #002060;
+    }
+
+    .bookmark-card-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #000000;
+        text-transform: uppercase;
+        line-height: 1.45;
+        text-align: left;
+    }
+
+    /* Empty state styling */
+    .bookmarks-empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: #eaedf2;
+        border: 2px solid #002060;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        color: #002060;
+        margin-bottom: 1.25rem;
+    }
+
+    .btn-go-home {
+        display: inline-block;
+        margin-top: 1.5rem;
+        background-color: #ffffff;
+        border: 2px solid #002060;
+        border-radius: 4px;
+        padding: 0.5rem 1.8rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        color: #002060;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-go-home:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .bookmark-card {
+            padding: 1rem 1.25rem;
+            gap: 1.25rem;
+        }
+
+        .bookmark-card-title {
+            font-size: 0.95rem;
+        }
+
+        .bookmarks-title-bar {
+            width: 100%;
+            text-align: center;
+            min-width: unset;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bookmarks-page-container">
+
+    <!-- Title Bar -->
+    <div class="bookmarks-title-container">
+        <div class="bookmarks-title-bar">
+            BOOKMARK
+        </div>
+    </div>
+
+    <!-- Bookmark Cards List -->
+    <div class="bookmarks-list">
+        {% if papers %}
+            {% for paper in papers %}
+            <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="bookmark-card">
+                <div class="bookmark-ribbon-container">
+                    <svg viewBox="0 0 24 30" class="bookmark-ribbon-svg">
+                        <path d="M4 2v26l8-5.5 8 5.5V2H4z" fill="currentColor" stroke="#002060" stroke-width="2" />
+                    </svg>
+                </div>
+                <span class="bookmark-card-title">{{ paper.title }}</span>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="bookmarks-empty-state">
+                <i data-lucide="bookmark" class="empty-state-icon"></i>
+                <h3>No Bookmarks Saved</h3>
+                <p>You haven't saved any research papers yet. Browse strands and click "Bookmark" on papers to save them here.</p>
+                <a href="{{ url_for('home') }}" class="btn-go-home">Go to Home</a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

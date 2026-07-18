@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ paper.title }} - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<!-- PDF.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<style>
+    /* Custom container for details page */
+    .detail-page-container {
+        max-width: 1300px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 80vh;
+        position: relative;
+    }
+
+    /* Giant semi-transparent watermark of school logo in the center background */
+    .detail-watermark-bg {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 600px;
+        background-image: url('{{ url_for("static", filename="images/Logo_s/Logo.png") }}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.08;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    /* Detail Header Layout */
+    .detail-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Circular Back Button */
+    .detail-back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: #475569;
+        color: #ffffff;
+        font-size: 1.6rem;
+        font-family: monospace;
+        font-weight: bold;
+        text-decoration: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .detail-back-btn:hover {
+        background-color: #002060;
+        transform: scale(1.08);
+    }
+
+    /* Center Strand Info Section */
+    .detail-header-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .detail-strand-crest {
+        width: 70px;
+        height: 70px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin-bottom: 0.4rem;
+    }
+
+    .detail-strand-name {
+        font-family: 'Lora', Georgia, serif;
+        font-style: italic;
+        font-size: 1.15rem;
+        color: #000000;
+        font-weight: bold;
+        text-transform: capitalize;
+    }
+
+    /* Three Column Split Screen Grid */
+    .detail-three-cols {
+        display: grid;
+        grid-template-columns: 220px 1fr 320px;
+        gap: 3.5rem;
+        align-items: start;
+        position: relative;
+        z-index: 2;
+        margin-bottom: 4rem;
+    }
+
+    /* Left Metadata Column styling */
+    .detail-col-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .detail-meta-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .detail-meta-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        color: #000000;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+
+    .detail-meta-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: #000000;
+        margin: 0;
+    }
+
+    /* Center PDF Card Column styling */
+    .detail-col-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .pdf-viewer-container {
+        position: relative;
+        background-color: #525659;
+        border: 2.5px solid #002060;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 520px;
+        padding: 0.5rem;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .pdf-watermark {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.6);
+        background-color: rgba(0, 32, 96, 0.85);
+        padding: 4px 8px;
+        border-radius: 4px;
+        letter-spacing: 0.05em;
+        pointer-events: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .pdf-card-loader {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .pdf-card-loader .spinner {
+        width: 35px;
+        height: 35px;
+        border: 3.5px solid rgba(255,255,255,0.15);
+        border-top-color: #fbbf24;
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
+        margin-bottom: 0.8rem;
+    }
+
+    .pdf-card-loader .loader-text {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .pdf-canvas-wrapper {
+        position: relative;
+        width: 100%;
+        z-index: 2;
+    }
+
+    #pdf-canvas {
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+        border-radius: 4px;
+    }
+
+    /* Minimal controls below card */
+    .pdf-minimal-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .pdf-ctrl-btn {
+        background-color: #ffffff;
+        border: 1.5px solid #002060;
+        color: #002060;
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .pdf-ctrl-btn:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    .pdf-page-display {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.82rem;
+        font-weight: bold;
+        color: #000000;
+    }
+
+    .pdf-zoom-btn {
+        background-color: #ffffff;
+        border: 1.5px solid #002060;
+        color: #002060;
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .pdf-zoom-btn:hover {
+        background-color: #002060;
+        color: #ffffff;
+    }
+
+    /* Right Abstract & Actions Column styling */
+    .detail-col-right {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .detail-actions-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+
+    .bookmark-ribbon-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        outline: none;
+        color: #e2e8f0;
+        transition: color 0.2s, transform 0.2s;
+        width: 32px;
+        height: auto;
+    }
+
+    .bookmark-ribbon-btn:hover {
+        transform: scale(1.08);
+    }
+
+    .bookmark-ribbon-btn.active {
+        color: #002060;
+    }
+
+    .bookmark-ribbon-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .pdf-copy-btn {
+        background-color: #ffffff;
+        border: 2px solid #000000;
+        padding: 0.4rem 1.8rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #000000;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pdf-copy-btn:hover {
+        background-color: #f1f5f9;
+    }
+
+    .detail-abstract-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .detail-abstract-header {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 1rem;
+        color: #000000;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+
+    .detail-abstract-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        line-height: 1.65;
+        color: #000000;
+        text-align: justify;
+        margin: 0;
+    }
+
+    /* CSS Spinner Animation */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive styling overrides */
+    @media (max-width: 1024px) {
+        .detail-three-cols {
+            grid-template-columns: 1fr;
+            gap: 2.5rem;
+        }
+
+        .detail-col-left, .detail-col-right {
+            align-items: center;
+            text-align: center;
+        }
+
+        .detail-actions-header {
+            justify-content: center;
+        }
+
+        .detail-abstract-text {
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page-container">
+
+    <!-- Watermark Logo -->
+    <div class="detail-watermark-bg"></div>
+
+    <!-- Header Navigation Section -->
+    <div class="detail-header-row">
+        <!-- Back Arrow Button -->
+        <div class="detail-header-left">
+            <a href="javascript:history.back()" class="detail-back-btn" title="Go Back">&lt;</a>
+        </div>
+
+        <!-- Center Strand Info -->
+        <div class="detail-header-center">
+            {% set strand_fullname = "" %}
+            {% if paper.strand == 'HUMSS' %}
+                {% set strand_fullname = "Humanities and Social Sciences" %}
+                {% set crest_filename = "images/Logo_s/HUMSS_no.png" %}
+            {% elif paper.strand == 'ABM' %}
+                {% set strand_fullname = "Accountancy, Business, and Management" %}
+                {% set crest_filename = "images/Logo_s/ABM_no.png" %}
+            {% else %}
+                {% set strand_fullname = "Science, Technology, Engineering, and Mathematics" %}
+                {% set crest_filename = "images/Logo_s/STEM_no.png" %}
+            {% endif %}
+            <div class="detail-strand-crest" style="background-image: url('{{ url_for('static', filename=crest_filename) }}');"></div>
+            <h3 class="detail-strand-name">{{ strand_fullname }}</h3>
+        </div>
+
+        <!-- Spacer placeholder for center alignment -->
+        <div class="detail-header-right" style="width: 45px;"></div>
+    </div>
+
+    <!-- Three Column Grid Content -->
+    <div class="detail-three-cols">
+
+        <!-- Column 1 (Left): Authors, Adviser, Awards -->
+        <div class="detail-col-left">
+            
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">AUTHOR</h4>
+                <p class="detail-meta-text">
+                    {% for author in paper.authors %}
+                        {{ author }}<br>
+                    {% endfor %}
+                </p>
+            </div>
+
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">ADVISER</h4>
+                <p class="detail-meta-text">{{ paper.adviser }}</p>
+            </div>
+
+            {% if paper.awards %}
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">AWARDS</h4>
+                <p class="detail-meta-text">{{ paper.awards }}</p>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Column 2 (Center): PDF Document Card -->
+        <div class="detail-col-center">
+            <div class="pdf-viewer-container">
+                <!-- Watermark Overlay -->
+                <div class="pdf-watermark">LUNDAYANG MARIANS VIEW-ONLY</div>
+
+                <!-- Load spinner / Status -->
+                <div id="pdf-loader" class="pdf-card-loader">
+                    <div class="spinner"></div>
+                    <p class="loader-text">Streaming secure document copy...</p>
+                </div>
+
+                <!-- Canvas target viewport -->
+                <div class="pdf-canvas-wrapper">
+                    <canvas id="pdf-canvas" data-paper-id="{{ paper.id }}" style="display: none;"></canvas>
+                </div>
+            </div>
+
+            <!-- Page & Zoom Navigation controls below the card -->
+            <div class="pdf-minimal-controls">
+                <button id="prev-page" class="pdf-ctrl-btn" title="Previous Page">&lt;</button>
+                <span class="pdf-page-display">
+                    Page <span id="page-num">1</span> of <span id="page-count">-</span>
+                </span>
+                <button id="next-page" class="pdf-ctrl-btn" title="Next Page">&gt;</button>
+                
+                <span style="color: #cbd5e1; font-weight: bold; margin: 0 0.2rem;">|</span>
+
+                <button id="zoom-out" class="pdf-zoom-btn" title="Zoom Out">-</button>
+                <button id="zoom-in" class="pdf-zoom-btn" title="Zoom In">+</button>
+            </div>
+        </div>
+
+        <!-- Column 3 (Right): Actions & Abstract -->
+        <div class="detail-col-right">
+            
+            <!-- Bookmark Ribbon & PDF Copy Button -->
+            <div class="detail-actions-row">
+                <div class="bookmark-ribbon-container">
+                    <button id="detail-bookmark-btn" class="bookmark-ribbon-btn {% if is_bookmarked %}active{% endif %}" data-paper-id="{{ paper.id }}" title="Bookmark this paper">
+                        <svg viewBox="0 0 24 30" class="bookmark-ribbon-svg">
+                            <path d="M4 2v26l8-5.5 8 5.5V2H4z" fill="currentColor" stroke="#002060" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+
+                <a href="{{ url_for('stream_pdf', paper_id=paper.id) }}" target="_blank" class="pdf-copy-btn">
+                    PDF COPY
+                </a>
+            </div>
+
+            <!-- Abstract Paragraph block -->
+            <div class="detail-abstract-block">
+                <h4 class="detail-abstract-header">ASBSTRACT</h4>
+                <p class="detail-abstract-text">{{ paper.abstract }}</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Secure viewer engine script -->
+<script src="{{ url_for('static', filename='js/pdf_viewer.js') }}"></script>
+<script>
+    // Custom dynamic async bookmark handler for the ribbon toggle 
+    document.addEventListener("DOMContentLoaded", () => {
+        const bookmarkBtn = document.getElementById("detail-bookmark-btn");
+        if (bookmarkBtn) {
+            bookmarkBtn.addEventListener("click", async () => {
+                const paperId = bookmarkBtn.getAttribute("data-paper-id");
+                if (!paperId) return;
+
+                try {
+                    bookmarkBtn.disabled = true;
+                    const formData = new FormData();
+                    formData.append("paper_id", paperId);
+
+                    const response = await fetch("/bookmark/toggle", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        if (result.bookmarked) {
+                            bookmarkBtn.classList.add("active");
+                        } else {
+                            bookmarkBtn.classList.remove("active");
+                        }
+                    } else {
+                        alert("Error updating bookmark: " + result.error);
+                    }
+                } catch (err) {
+                    console.error("Bookmark request failed:", err);
+                    alert("An error occurred. Please try again.");
+                } finally {
+                    bookmarkBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

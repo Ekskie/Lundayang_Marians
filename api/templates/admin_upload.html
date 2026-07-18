@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Research Paper - Admin Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Custom container for upload page */
+    .upload-page-container {
+        max-width: 1200px;
+        margin: 2.5rem auto;
+        padding: 0 2rem;
+        width: 100%;
+        min-height: 80vh;
+    }
+
+    .upload-title-container {
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .upload-title-bar {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 10px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.4rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        min-width: 380px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-card {
+        background: #ffffff;
+        border: 3px solid #000000;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
+        width: 100%;
+        margin-bottom: 4rem;
+    }
+
+    /* 2-Column form layout */
+    .upload-form-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 3rem;
+        align-items: stretch;
+    }
+
+    .upload-grid-left {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .upload-grid-right {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .form-label {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #000000;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+
+    .form-control {
+        width: 100%;
+        border: 3px solid #000000;
+        border-radius: 8px;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.95rem;
+        font-family: 'Poppins', sans-serif;
+        background-color: #ffffff;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #002060;
+        box-shadow: 0 0 10px rgba(0, 32, 96, 0.12);
+    }
+
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    /* Premium Drag & Drop Upload Zone */
+    .drag-drop-zone {
+        border: 3px dashed #002060;
+        border-radius: 10px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.25s ease-in-out;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .drag-drop-zone:hover, .drag-drop-zone.dragover {
+        background-color: #eaedf2;
+        border-color: #1b3d82;
+        transform: translateY(-1px);
+    }
+
+    .upload-icon {
+        width: 38px;
+        height: 38px;
+        color: #002060;
+        transition: transform 0.2s;
+    }
+
+    .drag-drop-zone:hover .upload-icon {
+        transform: translateY(-4px) scale(1.05);
+    }
+
+    .upload-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #000000;
+        margin: 0;
+    }
+
+    .upload-subtext {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.75rem;
+        color: #475569;
+        margin: 0;
+    }
+
+    .upload-btn {
+        background-color: #002060;
+        color: #ffffff;
+        border: 3px solid #000000;
+        padding: 0.85rem 2rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: bold;
+        font-size: 1.05rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .upload-btn:hover {
+        background-color: #1b3d82;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.15);
+    }
+
+    /* Responsiveness */
+    @media (max-width: 992px) {
+        .upload-form-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .upload-card {
+            padding: 1.5rem;
+        }
+
+        .upload-title-bar {
+            width: 100%;
+            text-align: center;
+            min-width: unset;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-page-container">
+
+    <!-- Title Bar -->
+    <div class="upload-title-container">
+        <div class="upload-title-bar">
+            UPLOAD RESEARCH
+        </div>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="upload-card">
+        
+        <!-- Alerts -->
+        {% if success %}
+        <div class="alert alert-success" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; shrink: 0;"></i>
+            <span>{{ success }}</span>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; shrink: 0;"></i>
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('admin_upload') }}" method="POST" enctype="multipart/form-data">
+            <div class="upload-form-grid">
+
+                <!-- Left Column: Title & Abstract (Tall text fields) -->
+                <div class="upload-grid-left">
+                    <!-- Research Title -->
+                    <div class="form-group" style="margin-bottom: 1.75rem;">
+                        <label for="title" class="form-label">Research Title</label>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. KALAT MO, SAGOT KO..." required>
+                    </div>
+
+                    <!-- Research Abstract -->
+                    <div class="form-group" style="flex: 1; min-height: 480px;">
+                        <label for="abstract" class="form-label">Research Abstract</label>
+                        <textarea id="abstract" name="abstract" class="form-control" placeholder="Enter the full research abstract..." required style="resize: vertical; line-height: 1.65; flex: 1; height: 100%; min-height: 420px;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Right Column: Secondary metadata fields, upload file, and submit button -->
+                <div class="upload-grid-right">
+                    
+                    <!-- Strand Category & Academic Year -->
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="strand" class="form-label">Strand Category</label>
+                            <select id="strand" name="strand" class="form-control" style="cursor: pointer;" required>
+                                <option value="">-- Select Strand --</option>
+                                <option value="HUMSS">HUMSS (Humanities & Social Sciences)</option>
+                                <option value="ABM">ABM (Accountancy, Business & Management)</option>
+                                <option value="STEM">STEM (Science, Technology, Engineering & Math)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="academic_year" class="form-label">Academic Year</label>
+                            <input type="text" id="academic_year" name="academic_year" class="form-control" placeholder="e.g. 2025-2026" required>
+                        </div>
+                    </div>
+
+                    <!-- Research Type & Subject Area -->
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="research_type" class="form-label">Research Type</label>
+                            <input type="text" id="research_type" name="research_type" class="form-control" placeholder="e.g. Quantitative / Qualitative" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject_area" class="form-label">Subject Area</label>
+                            <input type="text" id="subject_area" name="subject_area" class="form-control" placeholder="e.g. Applied Science / Inquiries" required>
+                        </div>
+                    </div>
+
+                    <!-- Authors / Researchers -->
+                    <div class="form-group">
+                        <label for="authors" class="form-label">Authors / Researchers (Comma Separated)</label>
+                        <input type="text" id="authors" name="authors" class="form-control" placeholder="e.g. Gabrielle A. Dimatatac, Mark Andrew Y. Montales" required>
+                        <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 0.15rem; margin-bottom: -0.25rem;">Separate multiple names with commas.</small>
+                    </div>
+
+                    <!-- Adviser & Awards -->
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="adviser" class="form-label">Research Adviser</label>
+                            <input type="text" id="adviser" name="adviser" class="form-control" placeholder="e.g. Ms. Maureen L. Cruz" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="awards" class="form-label">Awards / Recognition (Optional)</label>
+                            <input type="text" id="awards" name="awards" class="form-control" placeholder="e.g. Best in Research">
+                        </div>
+                    </div>
+
+                    <!-- Keywords / Tags -->
+                    <div class="form-group">
+                        <label for="keywords" class="form-label">Keywords / Tags (Comma Separated)</label>
+                        <input type="text" id="keywords" name="keywords" class="form-control" placeholder="e.g. waste segregator, recycling, arduino">
+                    </div>
+
+                    <!-- Custom Drag & Drop PDF Upload Zone -->
+                    <div class="form-group">
+                        <label class="form-label">Upload Research PDF Copy</label>
+                        <div class="drag-drop-zone" id="drop-zone">
+                            <i data-lucide="upload-cloud" class="upload-icon"></i>
+                            <span class="upload-text" id="upload-status-text">Drag & Drop PDF here or click to browse</span>
+                            <span class="upload-subtext">Only .pdf format accepted (Max 50MB)</span>
+                            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" required style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="upload-btn">
+                        <i data-lucide="upload-cloud" style="width: 20px; height: 20px;"></i>
+                        Upload & Register Research Paper
+                    </button>
+                    
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("pdf_file");
+        const statusText = document.getElementById("upload-status-text");
+
+        // Click zone to open input
+        dropZone.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        // Prevent default drag actions
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Handle highlights
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                if (files[0].name.toLowerCase().endsWith('.pdf')) {
+                    fileInput.files = files;
+                    updateFileName(files[0].name);
+                } else {
+                    alert("Only PDF files are supported!");
+                }
+            }
+        }, false);
+
+        // Handle file selected from file dialog
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                updateFileName(fileInput.files[0].name);
+            }
+        });
+
+        function updateFileName(name) {
+            statusText.innerHTML = `Selected PDF: <strong style="color: #002060; word-break: break-all;">${name}</strong>`;
+            dropZone.style.borderStyle = "solid";
+            dropZone.style.borderColor = "#10b981"; // success green color
+            dropZone.style.backgroundColor = "#ecfdf5"; // light success background
+        }
+    });
+</script>
+{% endblock %}

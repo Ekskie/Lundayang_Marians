@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Log In - Lundayang Marians{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">LOG IN
+            </h1>
+        </div>
+
+        {% if msg %}
+        <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <span>{{ msg }}</span>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+            <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <!-- Student ID Field -->
+            <div class="form-group">
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Student ID"
+                    required>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password"
+                    required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-auth-submit">LOG IN</button>
+        </form>
+
+        <!-- Registration & FAQ links -->
+        <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
+            <div>
+                <a href="{{ url_for('signup') }}">CREATE ACCOUNT</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
