@@ -66,7 +66,7 @@ body::before {
   right: 0;
   bottom: 0;
   background-image: url('../images/Logo_s/Logo.png');
-  background-position: center 30%;
+  background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: 800px;
@@ -815,8 +815,8 @@ footer {
 /* Responsive adjustments (Tablets and Mobiles) */
 @media (max-width: 900px) {
   body::before {
-    background-size: 280px;
-    background-position: center 25%;
+    background-size: 100%;
+    background-position: center;
     opacity: 0.1;
   }
 
@@ -828,7 +828,7 @@ footer {
   .detail-layout {
     grid-template-columns: 1fr;
   }
-  
+
   .browse-cards-container {
     grid-template-columns: 1fr;
     gap: 1.25rem;
@@ -905,6 +905,7 @@ footer {
 }
 
 @media (max-width: 480px) {
+
   /* Form containers */
   .auth-card {
     padding: 1.5rem;
@@ -913,7 +914,7 @@ footer {
   .auth-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .search-block-container {
     max-width: 100%;
   }
