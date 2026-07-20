@@ -135,6 +135,63 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- SECURITY CONTROLS ---
 
+    const detailPageContainer = document.querySelector(".detail-page-container");
+    const securityLockTitle = document.getElementById("security-lock-title");
+    const securityLockText = document.getElementById("security-lock-text");
+    const securityLockMeta = document.getElementById("security-lock-meta");
+
+    const securityMessages = {
+        screenshot: {
+            title: "Screenshot unavailable",
+            text: "A screenshot attempt was detected. The viewer has locked this page to protect the research document.",
+            meta: "Capture protection engaged"
+        },
+        hidden: {
+            title: "Viewing paused",
+            text: "This protected paper is hidden while the window is not active. Return to the tab to continue reading.",
+            meta: "Secure viewing paused"
+        },
+        default: {
+            title: "Security warning",
+            text: "This protected paper is locked by the viewer if a capture attempt, focus loss, or window switch is detected.",
+            meta: "Secure viewing mode active"
+        }
+    };
+
+    const applySecurityMessage = (mode) => {
+        const nextMessage = securityMessages[mode] || securityMessages.default;
+        if (securityLockTitle) securityLockTitle.textContent = nextMessage.title;
+        if (securityLockText) securityLockText.textContent = nextMessage.text;
+        if (securityLockMeta) securityLockMeta.textContent = nextMessage.meta;
+    };
+
+    const activateBlackout = (mode = "default") => {
+        applySecurityMessage(mode);
+        detailPageContainer?.classList.add("is-blackout");
+    };
+
+    const deactivateBlackout = () => {
+        detailPageContainer?.classList.remove("is-blackout");
+        applySecurityMessage("default");
+    };
+
+    window.addEventListener("blur", () => activateBlackout("hidden"));
+    window.addEventListener("focus", deactivateBlackout);
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            activateBlackout("hidden");
+        } else {
+            deactivateBlackout();
+        }
+    });
+
+    window.addEventListener("keydown", (event) => {
+        if (event.key === "PrintScreen") {
+            activateBlackout("screenshot");
+            window.setTimeout(deactivateBlackout, 1500);
+        }
+    });
+
     // 1. Disable Right-click context menu inside PDF container
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {

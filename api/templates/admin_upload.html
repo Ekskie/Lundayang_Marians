@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload Research Paper - Admin Portal{% endblock %}
+{% block title %}{% if paper is defined and paper %}Edit Research Paper - Admin Portal{% else %}Upload Research Paper - Admin Portal{% endif %}{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -297,7 +297,7 @@
     <!-- Title Bar -->
     <div class="upload-title-container">
         <div class="upload-title-bar">
-            UPLOAD RESEARCH
+            {% if paper is defined and paper %}EDIT RESEARCH{% else %}UPLOAD RESEARCH{% endif %}
         </div>
     </div>
 
@@ -319,7 +319,7 @@
         </div>
         {% endif %}
 
-        <form action="{{ url_for('admin_upload') }}" method="POST" enctype="multipart/form-data">
+        <form action="{% if paper is defined and paper %}{{ url_for('edit_paper', paper_id=paper.id) }}{% else %}{{ url_for('admin_upload') }}{% endif %}" method="POST" enctype="multipart/form-data">
             <div class="upload-form-grid">
 
                 <!-- Left Column: Title & Abstract (Tall text fields) -->
@@ -327,13 +327,13 @@
                     <!-- Research Title -->
                     <div class="form-group" style="margin-bottom: 1.75rem;">
                         <label for="title" class="form-label">Research Title</label>
-                        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. KALAT MO, SAGOT KO..." required>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. KALAT MO, SAGOT KO..." value="{% if paper is defined and paper %}{{ paper.get('title', '') }}{% endif %}" required>
                     </div>
 
                     <!-- Research Abstract -->
                     <div class="form-group" style="flex: 1; min-height: 480px;">
                         <label for="abstract" class="form-label">Research Abstract</label>
-                        <textarea id="abstract" name="abstract" class="form-control" placeholder="Enter the full research abstract..." required style="resize: vertical; line-height: 1.65; flex: 1; height: 100%; min-height: 420px;"></textarea>
+                        <textarea id="abstract" name="abstract" class="form-control" placeholder="Enter the full research abstract..." required style="resize: vertical; line-height: 1.65; flex: 1; height: 100%; min-height: 420px;">{% if paper is defined and paper %}{{ paper.get('abstract', '') }}{% endif %}</textarea>
                     </div>
                 </div>
 
@@ -346,15 +346,15 @@
                             <label for="strand" class="form-label">Strand Category</label>
                             <select id="strand" name="strand" class="form-control" style="cursor: pointer;" required>
                                 <option value="">-- Select Strand --</option>
-                                <option value="HUMSS">HUMSS (Humanities & Social Sciences)</option>
-                                <option value="ABM">ABM (Accountancy, Business & Management)</option>
-                                <option value="STEM">STEM (Science, Technology, Engineering & Math)</option>
+                                <option value="HUMSS" {% if paper is defined and paper and paper.get('strand') == 'HUMSS' %}selected{% endif %}>HUMSS (Humanities & Social Sciences)</option>
+                                <option value="ABM" {% if paper is defined and paper and paper.get('strand') == 'ABM' %}selected{% endif %}>ABM (Accountancy, Business & Management)</option>
+                                <option value="STEM" {% if paper is defined and paper and paper.get('strand') == 'STEM' %}selected{% endif %}>STEM (Science, Technology, Engineering & Math)</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label for="academic_year" class="form-label">Academic Year</label>
-                            <input type="text" id="academic_year" name="academic_year" class="form-control" placeholder="e.g. 2025-2026" required>
+                            <input type="text" id="academic_year" name="academic_year" class="form-control" placeholder="e.g. 2025-2026" value="{% if paper is defined and paper %}{{ paper.get('academic_year', '') }}{% endif %}" required>
                         </div>
                     </div>
 
@@ -362,19 +362,19 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="research_type" class="form-label">Research Type</label>
-                            <input type="text" id="research_type" name="research_type" class="form-control" placeholder="e.g. Quantitative / Qualitative" required>
+                            <input type="text" id="research_type" name="research_type" class="form-control" placeholder="e.g. Quantitative / Qualitative" value="{% if paper is defined and paper %}{{ paper.get('research_type', '') }}{% endif %}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="subject_area" class="form-label">Subject Area</label>
-                            <input type="text" id="subject_area" name="subject_area" class="form-control" placeholder="e.g. Applied Science / Inquiries" required>
+                            <input type="text" id="subject_area" name="subject_area" class="form-control" placeholder="e.g. Applied Science / Inquiries" value="{% if paper is defined and paper %}{{ paper.get('subject_area', '') }}{% endif %}" required>
                         </div>
                     </div>
 
                     <!-- Authors / Researchers -->
                     <div class="form-group">
                         <label for="authors" class="form-label">Authors / Researchers (Comma Separated)</label>
-                        <input type="text" id="authors" name="authors" class="form-control" placeholder="e.g. Gabrielle A. Dimatatac, Mark Andrew Y. Montales" required>
+                        <input type="text" id="authors" name="authors" class="form-control" placeholder="e.g. Gabrielle A. Dimatatac, Mark Andrew Y. Montales" value="{% if paper is defined and paper %}{{ paper.get('authors', []) | join(', ') }}{% endif %}" required>
                         <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 0.15rem; margin-bottom: -0.25rem;">Separate multiple names with commas.</small>
                     </div>
 
@@ -382,19 +382,19 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="adviser" class="form-label">Research Adviser</label>
-                            <input type="text" id="adviser" name="adviser" class="form-control" placeholder="e.g. Ms. Maureen L. Cruz" required>
+                            <input type="text" id="adviser" name="adviser" class="form-control" placeholder="e.g. Ms. Maureen L. Cruz" value="{% if paper is defined and paper %}{{ paper.get('adviser', '') }}{% endif %}" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="awards" class="form-label">Awards / Recognition (Optional)</label>
-                            <input type="text" id="awards" name="awards" class="form-control" placeholder="e.g. Best in Research">
+                            <input type="text" id="awards" name="awards" class="form-control" placeholder="e.g. Best in Research" value="{% if paper is defined and paper and paper.get('awards') %}{{ paper.get('awards', '') }}{% endif %}">
                         </div>
                     </div>
 
                     <!-- Keywords / Tags -->
                     <div class="form-group">
                         <label for="keywords" class="form-label">Keywords / Tags (Comma Separated)</label>
-                        <input type="text" id="keywords" name="keywords" class="form-control" placeholder="e.g. waste segregator, recycling, arduino">
+                        <input type="text" id="keywords" name="keywords" class="form-control" placeholder="e.g. waste segregator, recycling, arduino" value="{% if paper is defined and paper %}{{ paper.get('keywords', []) | join(', ') }}{% endif %}">
                     </div>
 
                     <!-- Custom Drag & Drop PDF Upload Zone -->
@@ -402,16 +402,16 @@
                         <label class="form-label">Upload Research PDF Copy</label>
                         <div class="drag-drop-zone" id="drop-zone">
                             <i data-lucide="upload-cloud" class="upload-icon"></i>
-                            <span class="upload-text" id="upload-status-text">Drag & Drop PDF here or click to browse</span>
+                            <span class="upload-text" id="upload-status-text">{% if paper is defined and paper %}Leave blank to keep the current PDF, or drag & drop a replacement PDF here{% else %}Drag & Drop PDF here or click to browse{% endif %}</span>
                             <span class="upload-subtext">Only .pdf format accepted (Max 50MB)</span>
-                            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" required style="display: none;">
+                            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" {% if not (paper is defined and paper) %}required{% endif %} style="display: none;">
                         </div>
                     </div>
 
                     <!-- Submit Button -->
                     <button type="submit" class="upload-btn">
                         <i data-lucide="upload-cloud" style="width: 20px; height: 20px;"></i>
-                        Upload & Register Research Paper
+                        {% if paper is defined and paper %}Update Research Paper{% else %}Upload & Register Research Paper{% endif %}
                     </button>
                     
                 </div>

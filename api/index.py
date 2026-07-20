@@ -491,7 +491,13 @@ def stream_pdf(paper_id):
             return Response(
                 io.BytesIO(pdf_data),
                 mimetype="application/pdf",
-                headers={"Content-Disposition": "inline; filename=research.pdf"}
+                headers={
+                    "Content-Disposition": "inline; filename=research.pdf",
+                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                    "X-Content-Type-Options": "nosniff"
+                }
             )
         return jsonify({"error": "Paper not found."}), 404
     except Exception as e:
@@ -565,6 +571,87 @@ def admin_upload():
                 
     return render_template('admin_upload.html', error=error, success=success)
 
+@app.route('/admin/paper/<paper_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_paper(paper_id):
+    if not supabase:
+        return jsonify({"error": "Database connection unavailable."}), 500
+
+    try:
+        paper_res = supabase.table("research_papers").select("*").eq("id", paper_id).execute()
+        if not paper_res.data:
+            return redirect(url_for('home'))
+
+        paper = paper_res.data[0]
+        error = None
+        success = None
+
+        if request.method == 'POST':
+            title = request.form.get('title', '').strip()
+            abstract = request.form.get('abstract', '').strip()
+            strand = request.form.get('strand', '')
+            academic_year = request.form.get('academic_year', '').strip()
+            research_type = request.form.get('research_type', '').strip()
+            subject_area = request.form.get('subject_area', '').strip()
+            adviser = request.form.get('adviser', '').strip()
+            awards = request.form.get('awards', '').strip() or None
+
+            authors_raw = request.form.get('authors', '').split(',')
+            authors = [a.strip() for a in authors_raw if a.strip()]
+
+            keywords_raw = request.form.get('keywords', '').split(',')
+            keywords = [k.strip() for k in keywords_raw if k.strip()]
+
+            pdf_file = request.files.get('pdf_file')
+
+            if not title or not abstract or not strand or not academic_year or not research_type or not subject_area or not adviser or not authors:
+                error = "All fields except Awards are required."
+            elif pdf_file and pdf_file.filename and not pdf_file.filename.lower().endswith('.pdf'):
+                error = "File must be a PDF."
+            else:
+                try:
+                    pdf_path = paper['pdf_path']
+                    if pdf_file and pdf_file.filename:
+                        storage_upload("research_papers", pdf_path, pdf_file.read(), "application/pdf")
+
+                    updated_values = {
+                        "title": title,
+                        "abstract": abstract,
+                        "strand": strand,
+                        "academic_year": academic_year,
+                        "research_type": research_type,
+                        "subject_area": subject_area,
+                        "authors": authors,
+                        "adviser": adviser,
+                        "awards": awards,
+                        "keywords": keywords
+                    }
+
+                    supabase.table("research_papers").update(updated_values).eq("id", paper_id).execute()
+                    paper.update(updated_values)
+                    success = "Research paper updated successfully."
+                except Exception as e:
+                    error = f"Update failed: {str(e)}"
+
+            if error:
+                paper = {
+                    **paper,
+                    "title": request.form.get('title', '').strip(),
+                    "abstract": request.form.get('abstract', '').strip(),
+                    "strand": request.form.get('strand', ''),
+                    "academic_year": request.form.get('academic_year', '').strip(),
+                    "research_type": request.form.get('research_type', '').strip(),
+                    "subject_area": request.form.get('subject_area', '').strip(),
+                    "authors": [a.strip() for a in request.form.get('authors', '').split(',') if a.strip()],
+                    "adviser": request.form.get('adviser', '').strip(),
+                    "awards": request.form.get('awards', '').strip() or None,
+                    "keywords": [k.strip() for k in request.form.get('keywords', '').split(',') if k.strip()]
+                }
+
+        return render_template('admin_upload.html', error=error, success=success, paper=paper)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/admin/paper/<paper_id>/delete', methods=['POST'])
 @admin_required
 def delete_paper(paper_id):
@@ -593,4 +680,4 @@ def delete_paper(paper_id):
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')
