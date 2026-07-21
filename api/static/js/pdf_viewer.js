@@ -175,9 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
         applySecurityMessage("default");
     };
 
-    // 1. Blackout on window blur / tab switch (Snipping Tool & Window switch trigger blur)
+    // 1. Blackout on window blur / tab switch / mobile pagehide / app switcher
     window.addEventListener("blur", () => activateBlackout("hidden"));
     window.addEventListener("focus", deactivateBlackout);
+    window.addEventListener("pagehide", () => activateBlackout("hidden"));
+    window.addEventListener("pageshow", deactivateBlackout);
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             activateBlackout("hidden");
@@ -186,20 +188,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 2. Blackout on screenshot shortcut keys (PrintScreen, Win+Shift+S, Cmd+Shift+3/4/5)
-    window.addEventListener("keyup", (event) => {
-        if (event.key === "PrintScreen" || event.keyCode === 44) {
+    // 2. Blackout on desktop screenshot shortcut keys (PrintScreen / keyCode 44, Win+Shift+S, Cmd+Shift+3/4/5)
+    document.addEventListener("keyup", function (e) {
+        var keyCode = e.keyCode ? e.keyCode : e.which;
+        if (keyCode == 44 || e.key === "PrintScreen") {
+            // Hide container temporarily and show security blackout warning
             activateBlackout("screenshot");
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText("Protected Document").catch(() => {});
             }
-            window.setTimeout(deactivateBlackout, 3000);
+            alert("🔒 Screenshots are disabled on this site.");
+            window.setTimeout(deactivateBlackout, 2000);
         }
     });
 
     window.addEventListener("keydown", (event) => {
+        const keyCode = event.keyCode ? event.keyCode : event.which;
         // PrintScreen Key
-        if (event.key === "PrintScreen" || event.keyCode === 44) {
+        if (event.key === "PrintScreen" || keyCode === 44) {
             activateBlackout("screenshot");
             window.setTimeout(deactivateBlackout, 3000);
         }
@@ -222,17 +228,34 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 3. Blackout during Print preview trigger
+    // 3. Mobile Screenshot & Gesture Protection
+    // Multi-finger touches (e.g. 3-finger screenshot gesture on mobile OS) or system touch cancel
+    window.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches.length > 1) {
+            activateBlackout("screenshot");
+            window.setTimeout(deactivateBlackout, 2000);
+        }
+    }, { passive: true });
+
+    window.addEventListener("touchcancel", () => {
+        activateBlackout("screenshot");
+        window.setTimeout(deactivateBlackout, 2000);
+    });
+
+    // 4. Blackout during Print preview trigger
     window.addEventListener("beforeprint", () => activateBlackout("screenshot"));
     window.addEventListener("afterprint", deactivateBlackout);
 
-    // 4. Disable Right-click context menu inside PDF container
+    // 5. Disable Right-click context menu and callouts inside PDF container
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {
         pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
+        pdfContainer.addEventListener('touchstart', e => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
     }
 
-    // 5. Disable Drag/Drop of contents
+    // 6. Disable Drag/Drop of contents
     window.addEventListener('dragstart', e => e.preventDefault());
 
     // --- FULLSCREEN VIEW CONTROLS ---
