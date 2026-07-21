@@ -37,9 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Wait for rendering to finish
             renderTask.promise.then(() => {
-                // Apply dynamic security watermark directly to canvas matrix
-                drawCanvasWatermark(ctx, canvas.width, canvas.height);
-                
                 pageRendering = false;
                 if (pageNumPending !== null) {
                     renderPage(pageNumPending);
@@ -53,26 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Update page counters
         document.getElementById('page-num').textContent = num;
-    }
-
-    // Dynamic anti-screenshot canvas watermark
-    function drawCanvasWatermark(context, width, height) {
-        context.save();
-        context.rotate(-25 * Math.PI / 180);
-        context.font = 'bold 15px sans-serif';
-        context.fillStyle = 'rgba(0, 32, 96, 0.16)';
-        context.textAlign = 'center';
-        
-        const watermarkText = 'CONFIDENTIAL • LUNDAYANG MARIANS • PROTECTED RESEARCH';
-        const stepX = 340;
-        const stepY = 110;
-
-        for (let y = -height; y < height * 2; y += stepY) {
-            for (let x = -width; x < width * 2; x += stepX) {
-                context.fillText(watermarkText, x, y);
-            }
-        }
-        context.restore();
     }
 
     // Queue page rendering
@@ -156,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     });
 
-    // --- SECURITY & SCREENSHOT PROTECTION CONTROLS ---
+    // --- SECURITY CONTROLS ---
 
     const detailPageContainer = document.querySelector(".detail-page-container");
     const securityLockTitle = document.getElementById("security-lock-title");
@@ -198,11 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
         applySecurityMessage("default");
     };
 
-    // 1. Blackout on window blur / tab switch / mobile pagehide / app switcher
     window.addEventListener("blur", () => activateBlackout("hidden"));
     window.addEventListener("focus", deactivateBlackout);
-    window.addEventListener("pagehide", () => activateBlackout("hidden"));
-    window.addEventListener("pageshow", deactivateBlackout);
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             activateBlackout("hidden");
@@ -211,84 +185,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 2. Blackout on desktop screenshot shortcut keys (PrintScreen / keyCode 44, Win+Shift+S, Cmd+Shift+3/4/5)
-    document.addEventListener("keyup", function (e) {
-        var keyCode = e.keyCode ? e.keyCode : e.which;
-        if (keyCode == 44 || e.key === "PrintScreen") {
-            // Hide container temporarily and show security blackout warning
-            activateBlackout("screenshot");
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText("Protected Document").catch(() => {});
-            }
-            alert("🔒 Screenshots are disabled on this site.");
-            window.setTimeout(deactivateBlackout, 2000);
-        }
-    });
-
     window.addEventListener("keydown", (event) => {
-        const keyCode = event.keyCode ? event.keyCode : event.which;
-        // PrintScreen Key
-        if (event.key === "PrintScreen" || keyCode === 44) {
+        if (event.key === "PrintScreen") {
             activateBlackout("screenshot");
-            window.setTimeout(deactivateBlackout, 3000);
-        }
-
-        const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
-        const metaKey = isMac ? event.metaKey : event.ctrlKey;
-
-        // Windows Snipping Tool (Win + Shift + S) or Mac Screenshot (Cmd + Shift + 3 / 4 / 5)
-        if (event.shiftKey && (event.key === "S" || event.key === "s" || event.code === "KeyS")) {
-            activateBlackout("screenshot");
-            window.setTimeout(deactivateBlackout, 3000);
-        }
-
-        // Prevent Ctrl/Cmd + P (Print), S (Save), C (Copy), A (Select All)
-        if (metaKey && (event.key === 's' || event.key === 'p' || event.key === 'c' || event.key === 'a' || event.key === 'S' || event.key === 'P' || event.key === 'C' || event.key === 'A')) {
-            event.preventDefault();
-            activateBlackout("screenshot");
-            alert("🔒 Downloading, printing, or copying research text is restricted to preserve intellectual property.");
-            window.setTimeout(deactivateBlackout, 2000);
+            window.setTimeout(deactivateBlackout, 1500);
         }
     });
 
-    // 3. Mobile Screenshot & Gesture Protection
-    // Multi-finger touches (e.g. 3-finger screenshot gesture on mobile OS) or system touch cancel
-    window.addEventListener("touchstart", (e) => {
-        if (e.touches && e.touches.length > 1) {
-            activateBlackout("screenshot");
-            window.setTimeout(deactivateBlackout, 2000);
-        }
-    }, { passive: true });
-
-    // When physical hardware buttons (Power + Vol Down) or screen capture overlay triggers on mobile, iOS/Android fires touchcancel
-    window.addEventListener("touchcancel", () => {
-        activateBlackout("screenshot");
-        window.setTimeout(deactivateBlackout, 2500);
-    });
-
-    // Mobile orientation & screen capture dimension change protection
-    window.addEventListener("orientationchange", () => {
-        activateBlackout("hidden");
-        window.setTimeout(deactivateBlackout, 1500);
-    });
-
-    // 4. Blackout during Print preview trigger
-    window.addEventListener("beforeprint", () => activateBlackout("screenshot"));
-    window.addEventListener("afterprint", deactivateBlackout);
-
-    // 5. Disable Right-click context menu, selection callouts, and multi-touch gestures inside PDF container
+    // 1. Disable Right-click context menu inside PDF container
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {
         pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
-        pdfContainer.addEventListener('touchstart', e => {
-            if (e.touches && e.touches.length > 1) {
-                e.preventDefault();
-                activateBlackout("screenshot");
-            }
-        }, { passive: false });
     }
 
-    // 6. Disable Drag/Drop of contents
+    // 2. Prevent Common Keyboard Shortcuts (Save, Print, Copy)
+    window.addEventListener('keydown', (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const metaKey = isMac ? e.metaKey : e.ctrlKey;
+        
+        // Prevent Ctrl/Cmd + S (Save), P (Print), C (Copy), A (Select All)
+        if (metaKey && (e.key === 's' || e.key === 'p' || e.key === 'c' || e.key === 'a' || e.key === 'S' || e.key === 'P' || e.key === 'C' || e.key === 'A')) {
+            e.preventDefault();
+            alert("🔒 Downloading, printing, or copying research text is restricted to preserve intellectual property.");
+        }
+    });
+
+    // 3. Disable Drag/Drop of contents
     window.addEventListener('dragstart', e => e.preventDefault());
 
     // --- FULLSCREEN VIEW CONTROLS ---
