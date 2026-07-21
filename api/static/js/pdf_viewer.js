@@ -37,6 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Wait for rendering to finish
             renderTask.promise.then(() => {
+                // Apply dynamic security watermark directly to canvas matrix
+                drawCanvasWatermark(ctx, canvas.width, canvas.height);
+                
                 pageRendering = false;
                 if (pageNumPending !== null) {
                     renderPage(pageNumPending);
@@ -50,6 +53,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Update page counters
         document.getElementById('page-num').textContent = num;
+    }
+
+    // Dynamic anti-screenshot canvas watermark
+    function drawCanvasWatermark(context, width, height) {
+        context.save();
+        context.rotate(-25 * Math.PI / 180);
+        context.font = 'bold 15px sans-serif';
+        context.fillStyle = 'rgba(0, 32, 96, 0.16)';
+        context.textAlign = 'center';
+        
+        const watermarkText = 'CONFIDENTIAL • LUNDAYANG MARIANS • PROTECTED RESEARCH';
+        const stepX = 340;
+        const stepY = 110;
+
+        for (let y = -height; y < height * 2; y += stepY) {
+            for (let x = -width; x < width * 2; x += stepX) {
+                context.fillText(watermarkText, x, y);
+            }
+        }
+        context.restore();
     }
 
     // Queue page rendering
@@ -237,21 +260,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, { passive: true });
 
+    // When physical hardware buttons (Power + Vol Down) or screen capture overlay triggers on mobile, iOS/Android fires touchcancel
     window.addEventListener("touchcancel", () => {
         activateBlackout("screenshot");
-        window.setTimeout(deactivateBlackout, 2000);
+        window.setTimeout(deactivateBlackout, 2500);
+    });
+
+    // Mobile orientation & screen capture dimension change protection
+    window.addEventListener("orientationchange", () => {
+        activateBlackout("hidden");
+        window.setTimeout(deactivateBlackout, 1500);
     });
 
     // 4. Blackout during Print preview trigger
     window.addEventListener("beforeprint", () => activateBlackout("screenshot"));
     window.addEventListener("afterprint", deactivateBlackout);
 
-    // 5. Disable Right-click context menu and callouts inside PDF container
+    // 5. Disable Right-click context menu, selection callouts, and multi-touch gestures inside PDF container
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {
         pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
         pdfContainer.addEventListener('touchstart', e => {
-            if (e.touches.length > 1) e.preventDefault();
+            if (e.touches && e.touches.length > 1) {
+                e.preventDefault();
+                activateBlackout("screenshot");
+            }
         }, { passive: false });
     }
 
