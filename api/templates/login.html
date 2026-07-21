@@ -6,18 +6,18 @@
 <div class="auth-wrapper">
     <div class="auth-card">
         <div class="auth-header">
-            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">LOG IN
+            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 1.25rem;">LOG IN
             </h1>
         </div>
 
         {% if msg %}
-        <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-success" style="margin-bottom: 1rem;">
             <span>{{ msg }}</span>
         </div>
         {% endif %}
 
         {% if error %}
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-danger" style="margin-bottom: 1rem;">
             <span>{{ error }}</span>
         </div>
         {% endif %}
@@ -43,7 +43,7 @@
         </form>
 
         <!-- Registration & FAQ links -->
-        <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.5rem;">
+        <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.25rem;">
             <div>
                 <a href="{{ url_for('signup') }}">CREATE ACCOUNT</a>
             </div>

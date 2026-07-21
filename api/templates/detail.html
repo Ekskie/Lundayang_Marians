@@ -115,23 +115,6 @@
         }
     }
 
-    /* Giant semi-transparent watermark of school logo in the center background */
-    .detail-watermark-bg {
-        position: absolute;
-        top: 55%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 600px;
-        height: 600px;
-        background-image: url('{{ url_for("static", filename="images/Logo_s/Logo.png") }}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        opacity: 0.08;
-        pointer-events: none;
-        z-index: 0;
-    }
-
     /* Detail Header Layout */
     .detail-header-row {
         display: flex;
@@ -167,7 +150,7 @@
         transform: scale(1.08);
     }
 
-    /* Center Strand Info Section */
+    /* Center Strand Info Section (Picture 1 Design) */
     .detail-header-center {
         display: flex;
         flex-direction: column;
@@ -176,21 +159,27 @@
     }
 
     .detail-strand-crest {
-        width: 70px;
-        height: 70px;
+        width: 75px;
+        height: 75px;
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
-        margin-bottom: 0.4rem;
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 4px;
+        background-color: #ffffff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        margin-bottom: 0.5rem;
+        box-sizing: border-box;
     }
 
     .detail-strand-name {
         font-family: 'Lora', Georgia, serif;
-        font-style: italic;
         font-size: 1.15rem;
-        color: #000000;
         font-weight: bold;
+        color: #000000;
         text-transform: capitalize;
+        margin: 0;
     }
 
     /* Three Column Split Screen Grid */
@@ -552,9 +541,6 @@
 {% block content %}
 <div class="detail-page-container">
 
-    <!-- Watermark Logo -->
-    <div class="detail-watermark-bg"></div>
-
     <!-- Header Navigation Section -->
     <div class="detail-header-row">
         <!-- Back Arrow Button -->
@@ -562,7 +548,7 @@
             <a href="javascript:history.back()" class="detail-back-btn" title="Go Back">&lt;</a>
         </div>
 
-        <!-- Center Strand Info -->
+        <!-- Center Strand Info (Matching Mockup Photo Card Design) -->
         <div class="detail-header-center">
             {% set strand_fullname = "" %}
             {% if paper.strand == 'HUMSS' %}
@@ -576,7 +562,8 @@
             {% set crest_filename = "images/Logo_s/STEM_no.png" %}
             {% endif %}
             <div class="detail-strand-crest"
-                style="background-image: url('{{ url_for('static', filename=crest_filename) }}');"></div>
+                style="background-image: url('{{ url_for('static', filename=crest_filename) }}');">
+            </div>
             <h3 class="detail-strand-name">{{ strand_fullname }}</h3>
         </div>
 
@@ -587,7 +574,7 @@
     <!-- Three Column Grid Content -->
     <div class="detail-three-cols">
 
-        <!-- Column 1 (Left): Authors, Adviser, Awards -->
+        <!-- Column 1 (Left): Authors, Adviser, Academic Year, Research Type, Subject Area, Awards, Keywords -->
         <div class="detail-col-left">
 
             <div class="detail-meta-block">
@@ -604,10 +591,38 @@
                 <p class="detail-meta-text">{{ paper.adviser }}</p>
             </div>
 
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">ACADEMIC YEAR</h4>
+                <p class="detail-meta-text">{{ paper.academic_year }}</p>
+            </div>
+
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">RESEARCH TYPE</h4>
+                <p class="detail-meta-text">{{ paper.research_type }}</p>
+            </div>
+
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">SUBJECT AREA</h4>
+                <p class="detail-meta-text">{{ paper.subject_area }}</p>
+            </div>
+
             {% if paper.awards %}
             <div class="detail-meta-block">
                 <h4 class="detail-meta-label">AWARDS</h4>
                 <p class="detail-meta-text">{{ paper.awards }}</p>
+            </div>
+            {% endif %}
+
+            {% if paper.keywords %}
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">KEYWORDS</h4>
+                <div class="meta-keywords-container">
+                    {% for kw in paper.keywords %}
+                    {% if kw %}
+                    <span class="keyword-tag-pill">{{ kw }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
 
@@ -704,6 +719,38 @@
 
     </div>
 
+    <!-- Researches you might like Recommendation Section -->
+    {% if recommended_papers %}
+    <div class="rec-section-container">
+        <div class="rec-banner-bar">
+            <span>Researches you might like:</span>
+        </div>
+        <div class="rec-grid-2x2">
+            {% for rec in recommended_papers %}
+            <a href="{{ url_for('paper_detail', paper_id=rec.id) }}" class="rec-paper-card">
+                <div class="rec-thumb-box">
+                    <canvas class="rec-thumb-canvas" data-paper-id="{{ rec.id }}" style="display: none;"></canvas>
+                    <div class="rec-thumb-fallback" id="rec-fallback-{{ rec.id }}">
+                        <strong
+                            style="font-size: 0.65rem; color: #002060; display: block; margin-bottom: 2px; text-transform: uppercase;">{{
+                            rec.strand }}</strong>
+                        <span style="font-weight: bold; font-size: 0.6rem;">{{ rec.title }}</span>
+                    </div>
+                </div>
+                <div class="rec-paper-info">
+                    <h4 class="rec-paper-title">{{ rec.title }}</h4>
+                    <div class="rec-paper-meta-pills">
+                        <span class="rec-badge-strand">{{ rec.strand }}</span>
+                        <span class="rec-badge-year">{{ rec.academic_year }}</span>
+                    </div>
+                    <p class="rec-paper-abstract">{{ rec.abstract }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 
 <div class="detail-blackout-message" aria-hidden="true">
@@ -716,7 +763,8 @@
             </svg>
         </div>
         <div class="detail-blackout-title" id="security-lock-title">Security warning</div>
-        <div class="detail-blackout-text" id="security-lock-text">Screenshot unavailable. This protected paper is locked by the viewer if a capture attempt, focus loss, or window switch is detected.</div>
+        <div class="detail-blackout-text" id="security-lock-text">Screenshot unavailable. This protected paper is locked
+            by the viewer if a capture attempt, focus loss, or window switch is detected.</div>
         <div class="detail-blackout-meta" id="security-lock-meta">Secure viewing mode active</div>
     </div>
 </div>
@@ -728,6 +776,32 @@
 <script>
     // Custom dynamic async bookmark handler for the ribbon toggle 
     document.addEventListener("DOMContentLoaded", () => {
+        // Render PDF thumbnails for recommended paper cards
+        const recCanvases = document.querySelectorAll(".rec-thumb-canvas");
+        recCanvases.forEach(async (canvas) => {
+            const recId = canvas.getAttribute("data-paper-id");
+            const fallbackEl = document.getElementById(`rec-fallback-${recId}`);
+            if (!recId || typeof pdfjsLib === 'undefined') return;
+
+            try {
+                const pdfUrl = `/api/paper/${recId}/pdf`;
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdfDoc = await loadingTask.promise;
+                const page = await pdfDoc.getPage(1);
+
+                const viewport = page.getViewport({ scale: 0.3 });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                canvas.style.display = "block";
+                if (fallbackEl) fallbackEl.style.display = "none";
+            } catch (e) {
+                console.log("Rec thumbnail render fallback for " + recId);
+            }
+        });
+
         const bookmarkBtn = document.getElementById("detail-bookmark-btn");
         if (bookmarkBtn) {
             bookmarkBtn.addEventListener("click", async () => {

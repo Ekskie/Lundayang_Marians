@@ -459,6 +459,7 @@ def strand(strand_name):
 def paper_detail(paper_id):
     paper = None
     is_bookmarked = False
+    recommended_papers = []
     
     if supabase:
         try:
@@ -469,13 +470,60 @@ def paper_detail(paper_id):
             user_id = session['user']['id']
             bookmark_res = supabase.table("bookmarks").select("id").eq("user_id", user_id).eq("paper_id", paper_id).execute()
             is_bookmarked = len(bookmark_res.data) > 0
+            
+            # Recommendation Engine: fetch candidates excluding active paper
+            if paper:
+                candidates_res = supabase.table("research_papers").select("*").neq("id", paper_id).execute()
+                if candidates_res.data:
+                    candidates = candidates_res.data
+                    
+                    cur_keywords = set(k.lower().strip() for k in paper.get('keywords', []) if k)
+                    cur_strand = paper.get('strand', '').upper()
+                    cur_subject = paper.get('subject_area', '').lower()
+                    cur_type = paper.get('research_type', '').lower()
+                    title_words = set(w.lower() for w in paper.get('title', '').split() if len(w) > 3)
+                    
+                    scored_candidates = []
+                    for p in candidates:
+                        score = 0
+                        
+                        # 1. Strand matching
+                        p_strand = p.get('strand', '').upper()
+                        if p_strand and p_strand == cur_strand:
+                            score += 3
+                            
+                        # 2. Keywords overlap
+                        p_keywords = set(k.lower().strip() for k in p.get('keywords', []) if k)
+                        matching_keywords = cur_keywords.intersection(p_keywords)
+                        score += len(matching_keywords) * 2
+                        
+                        # 3. Subject area / Research type match
+                        p_subject = p.get('subject_area', '').lower()
+                        p_type = p.get('research_type', '').lower()
+                        if p_subject and cur_subject and (p_subject in cur_subject or cur_subject in p_subject):
+                            score += 2
+                        if p_type and cur_type and (p_type in cur_type or cur_type in p_type):
+                            score += 1
+                            
+                        # 4. Title term overlap
+                        p_title_words = set(w.lower() for w in p.get('title', '').split() if len(w) > 3)
+                        title_overlap = title_words.intersection(p_title_words)
+                        score += len(title_overlap)
+                        
+                        # Only consider papers with genuine similarity (score > 0)
+                        if score > 0:
+                            scored_candidates.append((score, p))
+                        
+                    # Sort candidates by relevance score descending
+                    scored_candidates.sort(key=lambda x: x[0], reverse=True)
+                    recommended_papers = [item[1] for item in scored_candidates[:4]]
         except Exception as e:
             print("DB detail load error:", e)
             
     if not paper:
         return redirect(url_for('home'))
         
-    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked)
+    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked, recommended_papers=recommended_papers)
 
 @app.route('/api/paper/<paper_id>/pdf')
 @login_required
