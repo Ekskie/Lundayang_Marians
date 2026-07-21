@@ -606,26 +606,6 @@
                 <p class="detail-meta-text">{{ paper.subject_area }}</p>
             </div>
 
-            {% if paper.awards %}
-            <div class="detail-meta-block">
-                <h4 class="detail-meta-label">AWARDS</h4>
-                <p class="detail-meta-text">{{ paper.awards }}</p>
-            </div>
-            {% endif %}
-
-            {% if paper.keywords %}
-            <div class="detail-meta-block">
-                <h4 class="detail-meta-label">KEYWORDS</h4>
-                <div class="meta-keywords-container">
-                    {% for kw in paper.keywords %}
-                    {% if kw %}
-                    <span class="keyword-tag-pill">{{ kw }}</span>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
         </div>
 
         <!-- Column 2 (Center): PDF Document Card -->
@@ -715,6 +695,26 @@
                 <p class="detail-abstract-text">{{ paper.abstract }}</p>
             </div>
 
+            {% if paper.awards %}
+            <div class="detail-meta-block" style="margin-top: 1rem;">
+                <h4 class="detail-meta-label">AWARDS</h4>
+                <p class="detail-meta-text">{{ paper.awards }}</p>
+            </div>
+            {% endif %}
+
+            {% if paper.keywords %}
+            <div class="detail-meta-block" style="margin-top: 1rem;">
+                <h4 class="detail-meta-label">KEYWORDS</h4>
+                <div class="meta-keywords-container">
+                    {% for kw in paper.keywords %}
+                    {% if kw %}
+                    <span class="keyword-tag-pill">{{ kw }}</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
         </div>
 
     </div>
@@ -750,8 +750,6 @@
         </div>
     </div>
     {% endif %}
-
-</div>
 
 <div class="detail-blackout-message" aria-hidden="true">
     <div class="detail-blackout-card">

@@ -241,7 +241,8 @@ def home():
                 
             best_res = supabase.table("research_papers").select("*").not_.is_("awards", "null").neq("awards", "").execute()
             if best_res.data:
-                best_in_research = best_res.data
+                sorted_best = sorted(best_res.data, key=lambda p: (p.get('academic_year', ''), p.get('created_at', '')), reverse=True)
+                best_in_research = sorted_best[:3]
         except Exception as e:
             print("DB read failed:", e)
             

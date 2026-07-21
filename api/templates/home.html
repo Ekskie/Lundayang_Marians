@@ -554,10 +554,10 @@
             <div>
                 <hr style="border-top: 3px solid #002060; margin-bottom: 1rem;" class="w-full">
                 <h3 class="best-header-title" style="font-style: italic;">BEST IN RESEARCH</h3>
-                <p class="best-header-sub">Recognizing Outstanding Research Achievements Through the Years</p>
+                <p class="best-header-sub">Recognizing Outstanding Research Achievements in Recent Years</p>
 
                 <div class="best-card-list">
-                    {% for paper in best_in_research %}
+                    {% for paper in best_in_research[:3] %}
                     <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="best-paper-row-card">
                         <div class="mock-doc-cover">
                             <div class="mock-doc-title">

@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     });
 
-    // --- SECURITY CONTROLS ---
+    // --- SECURITY & SCREENSHOT PROTECTION CONTROLS ---
 
     const detailPageContainer = document.querySelector(".detail-page-container");
     const securityLockTitle = document.getElementById("security-lock-title");
@@ -175,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
         applySecurityMessage("default");
     };
 
+    // 1. Blackout on window blur / tab switch (Snipping Tool & Window switch trigger blur)
     window.addEventListener("blur", () => activateBlackout("hidden"));
     window.addEventListener("focus", deactivateBlackout);
     document.addEventListener("visibilitychange", () => {
@@ -185,32 +186,53 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    window.addEventListener("keydown", (event) => {
-        if (event.key === "PrintScreen") {
+    // 2. Blackout on screenshot shortcut keys (PrintScreen, Win+Shift+S, Cmd+Shift+3/4/5)
+    window.addEventListener("keyup", (event) => {
+        if (event.key === "PrintScreen" || event.keyCode === 44) {
             activateBlackout("screenshot");
-            window.setTimeout(deactivateBlackout, 1500);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText("Protected Document").catch(() => {});
+            }
+            window.setTimeout(deactivateBlackout, 3000);
         }
     });
 
-    // 1. Disable Right-click context menu inside PDF container
+    window.addEventListener("keydown", (event) => {
+        // PrintScreen Key
+        if (event.key === "PrintScreen" || event.keyCode === 44) {
+            activateBlackout("screenshot");
+            window.setTimeout(deactivateBlackout, 3000);
+        }
+
+        const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+        const metaKey = isMac ? event.metaKey : event.ctrlKey;
+
+        // Windows Snipping Tool (Win + Shift + S) or Mac Screenshot (Cmd + Shift + 3 / 4 / 5)
+        if (event.shiftKey && (event.key === "S" || event.key === "s" || event.code === "KeyS")) {
+            activateBlackout("screenshot");
+            window.setTimeout(deactivateBlackout, 3000);
+        }
+
+        // Prevent Ctrl/Cmd + P (Print), S (Save), C (Copy), A (Select All)
+        if (metaKey && (event.key === 's' || event.key === 'p' || event.key === 'c' || event.key === 'a' || event.key === 'S' || event.key === 'P' || event.key === 'C' || event.key === 'A')) {
+            event.preventDefault();
+            activateBlackout("screenshot");
+            alert("🔒 Downloading, printing, or copying research text is restricted to preserve intellectual property.");
+            window.setTimeout(deactivateBlackout, 2000);
+        }
+    });
+
+    // 3. Blackout during Print preview trigger
+    window.addEventListener("beforeprint", () => activateBlackout("screenshot"));
+    window.addEventListener("afterprint", deactivateBlackout);
+
+    // 4. Disable Right-click context menu inside PDF container
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {
         pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    // 2. Prevent Common Keyboard Shortcuts (Save, Print, Copy)
-    window.addEventListener('keydown', (e) => {
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const metaKey = isMac ? e.metaKey : e.ctrlKey;
-        
-        // Prevent Ctrl/Cmd + S (Save), P (Print), C (Copy), A (Select All)
-        if (metaKey && (e.key === 's' || e.key === 'p' || e.key === 'c' || e.key === 'a' || e.key === 'S' || e.key === 'P' || e.key === 'C' || e.key === 'A')) {
-            e.preventDefault();
-            alert("🔒 Downloading, printing, or copying research text is restricted to preserve intellectual property.");
-        }
-    });
-
-    // 3. Disable Drag/Drop of contents
+    // 5. Disable Drag/Drop of contents
     window.addEventListener('dragstart', e => e.preventDefault());
 
     // --- FULLSCREEN VIEW CONTROLS ---
