@@ -307,14 +307,14 @@
         <!-- Alerts -->
         {% if success %}
         <div class="alert alert-success" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
-            <i data-lucide="check-circle" style="width: 18px; height: 18px; shrink: 0;"></i>
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
             <span>{{ success }}</span>
         </div>
         {% endif %}
 
         {% if error %}
         <div class="alert alert-danger" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
-            <i data-lucide="alert-circle" style="width: 18px; height: 18px; shrink: 0;"></i>
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
             <span>{{ error }}</span>
         </div>
         {% endif %}

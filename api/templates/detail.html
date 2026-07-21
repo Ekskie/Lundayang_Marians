@@ -34,12 +34,10 @@
     }
 
     /* Completely hide the PDF canvas when blacked out */
-    .detail-page-container.is-blackout .pdf-canvas-wrapper {
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
-
-    .detail-page-container.is-blackout canvas {
+    .detail-page-container.is-blackout .pdf-canvas-wrapper,
+    .detail-page-container.is-blackout canvas,
+    .detail-page-container.is-blackout #pdf-canvas {
+        display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
     }
@@ -608,7 +606,7 @@
             {% set crest_filename = "images/Logo_s/STEM_no.png" %}
             {% endif %}
             <div class="detail-strand-crest"
-                style="background-image: url('{{ url_for('static', filename=crest_filename) }}');">
+                style="background-image: url(&quot;{{ url_for('static', filename=crest_filename) }}&quot;);">
             </div>
             <h3 class="detail-strand-name">{{ strand_fullname }}</h3>
         </div>
@@ -806,10 +804,9 @@
                 <circle cx="12" cy="16.5" r="1"></circle>
             </svg>
         </div>
-        <div class="detail-blackout-title" id="security-lock-title">Security Warning</div>
-        <div class="detail-blackout-text" id="security-lock-text">This protected paper is locked
-            by the viewer if a capture attempt, focus loss, or window switch is detected.</div>
-        <div class="detail-blackout-meta" id="security-lock-meta">Secure viewing mode active</div>
+        <div class="detail-blackout-title" id="security-lock-title">Couldn't save screenshot</div>
+        <div class="detail-blackout-text" id="security-lock-text">Taking screenshots isn't allowed by the app or your organization.</div>
+        <div class="detail-blackout-meta" id="security-lock-meta">Security policy enforced</div>
         <button class="security-resume-btn" id="security-resume-btn" type="button">▶ Resume Viewing</button>
     </div>
 </div>

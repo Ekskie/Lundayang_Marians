@@ -369,15 +369,15 @@
                 <div class="strand-crest-container">
                     {% if strand == 'HUMSS' %}
                     <div class="crest-box large"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}');">
+                        style="background-image: url(&quot;{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}&quot;);">
                     </div>
                     {% elif strand == 'ABM' %}
                     <div class="crest-box large"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}');">
+                        style="background-image: url(&quot;{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}&quot;);">
                     </div>
                     {% else %}
                     <div class="crest-box large"
-                        style="background-image: url('{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}');">
+                        style="background-image: url(&quot;{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}&quot;);">
                     </div>
                     {% endif %}
                 </div>

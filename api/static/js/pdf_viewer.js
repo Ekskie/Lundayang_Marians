@@ -181,24 +181,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const securityMessages = {
         screenshot: {
-            title: "Screenshot Blocked",
-            text: "A screenshot or screen capture attempt was detected. The document content has been hidden to protect this research paper.",
-            meta: "Capture protection engaged"
+            title: "Couldn't save screenshot",
+            text: "Taking screenshots isn't allowed by the app or your organization.",
+            meta: "Security policy enforced"
         },
         hidden: {
             title: "Viewing Paused",
-            text: "This protected paper is hidden while the window or app is not active. Tap or click below to resume viewing.",
+            text: "This protected paper is hidden while the window or app is not active. Tap below to resume.",
             meta: "Secure viewing paused"
         },
         default: {
-            title: "Security Warning",
-            text: "This protected paper is locked by the viewer if a capture attempt, focus loss, or window switch is detected.",
+            title: "Couldn't save screenshot",
+            text: "Taking screenshots isn't allowed by the app or your organization.",
             meta: "Secure viewing mode active"
         }
     };
 
     let isBlackedOut = false;
     let savedCanvasData = null;
+    let isAlertActive = false;
 
     const applySecurityMessage = (mode) => {
         const nextMessage = securityMessages[mode] || securityMessages.default;
@@ -207,54 +208,86 @@ document.addEventListener("DOMContentLoaded", () => {
         if (securityLockMeta) securityLockMeta.textContent = nextMessage.meta;
     };
 
-    // Wipe the canvas content to pure black so even OS-level screenshots capture nothing
+    // Wipe and hide canvas content instantly (sub-millisecond execution)
     const destroyCanvasContent = () => {
+        // 1. Hide canvas & wrapper instantly in DOM
+        if (canvas) {
+            canvas.style.display = "none";
+        }
+        if (pdfCanvasWrapper) {
+            pdfCanvasWrapper.style.display = "none";
+        }
+        if (detailPageContainer) {
+            detailPageContainer.classList.add("is-blackout");
+        }
+        // 2. Clear canvas pixels to black
         if (canvas && ctx) {
-            // Save current content so we can restore later
-            try {
-                if (!savedCanvasData && canvas.width > 0 && canvas.height > 0) {
-                    savedCanvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                }
-            } catch (e) { /* ignore if canvas is tainted */ }
-            // Fill with black
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-        // Also hide the wrapper entirely
-        if (pdfCanvasWrapper) {
-            pdfCanvasWrapper.style.visibility = "hidden";
-        }
     };
 
-    // Restore canvas content from saved data or re-render
+    // Restore canvas content from PDF.js re-render
     const restoreCanvasContent = () => {
-        if (pdfCanvasWrapper) {
-            pdfCanvasWrapper.style.visibility = "visible";
+        if (canvas) {
+            canvas.style.display = "block";
         }
-        if (savedCanvasData && canvas && ctx) {
-            try {
-                ctx.putImageData(savedCanvasData, 0, 0);
-                savedCanvasData = null;
-            } catch (e) {
-                // Fallback: re-render the current page
-                if (pdfDoc) {
-                    savedCanvasData = null;
-                    queueRenderPage(pageNum);
-                }
-            }
-        } else if (pdfDoc) {
-            // Fallback: re-render
+        if (pdfCanvasWrapper) {
+            pdfCanvasWrapper.style.display = "block";
+        }
+        if (pdfDoc) {
             queueRenderPage(pageNum);
         }
     };
 
+    const showAndroidScreenshotToast = () => {
+        let toast = document.getElementById("android-screenshot-toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "android-screenshot-toast";
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #18181b;
+                color: #ffffff;
+                padding: 14px 20px;
+                border-radius: 14px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75);
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                z-index: 999999;
+                max-width: 92%;
+                width: 380px;
+                border-left: 4px solid #ef4444;
+                pointer-events: none;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                opacity: 0;
+            `;
+            toast.innerHTML = `
+                <div style="font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #ffffff;">Couldn't save screenshot</div>
+                <div style="font-size: 13px; color: #d1d5db; line-height: 1.4;">Taking screenshots isn't allowed by the app or your organization.</div>
+            `;
+            document.body.appendChild(toast);
+        }
+
+        toast.style.opacity = "1";
+        toast.style.transform = "translateX(-50%) translateY(0)";
+
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(-50%) translateY(12px)";
+        }, 4500);
+    };
+
     const activateBlackout = (mode = "default") => {
-        if (isBlackedOut) return; // Prevent double-activation
-        isBlackedOut = true;
-        applySecurityMessage(mode);
-        destroyCanvasContent();
-        detailPageContainer?.classList.add("is-blackout");
-        if (securityResumeBtn) securityResumeBtn.style.display = "inline-block";
+        if (!isBlackedOut) {
+            isBlackedOut = true;
+            applySecurityMessage(mode);
+            destroyCanvasContent();
+            detailPageContainer?.classList.add("is-blackout");
+            if (securityResumeBtn) securityResumeBtn.style.display = "inline-block";
+        }
     };
 
     const deactivateBlackout = () => {
@@ -278,33 +311,26 @@ document.addEventListener("DOMContentLoaded", () => {
     // VISIBILITY & FOCUS PROTECTION (PC + Mobile)
     // ═══════════════════════════════════════════
 
-    // When user switches tabs/apps, immediately black out
+    // When user switches tabs/apps or hides window
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             activateBlackout("hidden");
         }
-        // Do NOT auto-deactivate — user must click Resume
     });
 
-    // Window blur (user clicks outside browser, alt-tabs, etc.)
+    // Window blur (user clicks outside browser, alt-tabs, app switch)
     window.addEventListener("blur", () => {
         activateBlackout("hidden");
     });
 
-    // On mobile, pagehide fires when switching apps
-    window.addEventListener("pagehide", () => {
-        activateBlackout("hidden");
-    });
-
     // ═══════════════════════════════════════════
-    // KEYBOARD SCREENSHOT DETECTION (PC)
+    // KEYBOARD SCREENSHOT DETECTION (PC + Mobile Keyboards)
     // ═══════════════════════════════════════════
 
     window.addEventListener("keyup", (e) => {
-        // PrintScreen key (fires on keyup, not keydown on many browsers)
-        if (e.key === "PrintScreen") {
+        // PrintScreen / Snapshot key
+        if (e.key === "PrintScreen" || e.key === "Snapshot") {
             activateBlackout("screenshot");
-            // Also try to overwrite clipboard with blank
             try {
                 navigator.clipboard.writeText("Screenshot disabled — Lundayang Marians").catch(() => {});
             } catch (err) { /* clipboard API may not be available */ }
@@ -315,15 +341,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         const metaKey = isMac ? e.metaKey : e.ctrlKey;
 
+        // Intercept Android hardware volume buttons (Volume Down + Power screenshot combination)
+        if (['AudioVolumeDown', 'AudioVolumeUp', 'VolumeDown', 'VolumeUp', 'AudioVolumeMute'].includes(e.key) ||
+            ['VolumeDown', 'VolumeUp', 'VolumeMute'].includes(e.code)) {
+            activateBlackout("screenshot");
+            return;
+        }
+
         // PrintScreen key
-        if (e.key === "PrintScreen") {
+        if (e.key === "PrintScreen" || e.key === "Snapshot") {
             e.preventDefault();
             activateBlackout("screenshot");
             return;
         }
 
-        // Win + Shift + S (Windows Snipping Tool) — detected as Meta + Shift + S
-        if (e.shiftKey && (e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+        // Win + Shift + S or Cmd + Shift + 3/4/5 (Mac screenshot tools)
+        if (e.shiftKey && (e.metaKey || e.ctrlKey) && ['s', 'S', '3', '4', '5'].includes(e.key)) {
             e.preventDefault();
             activateBlackout("screenshot");
             return;
@@ -337,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Ctrl + Shift + I (DevTools)
-        if (metaKey && e.shiftKey && (e.key === 'i' || e.key === 'I')) {
+        if (metaKey && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) {
             e.preventDefault();
             activateBlackout("screenshot");
             return;
@@ -363,19 +396,32 @@ document.addEventListener("DOMContentLoaded", () => {
     // ═══════════════════════════════════════════
 
     if (isMobileDevice) {
-        // Multi-touch detection: some phones use volume+power combo
-        // which can sometimes be detected via rapid touch events
-        let touchCount = 0;
-        let touchTimer = null;
-
+        // Multi-touch detection: 2+ or 3+ fingers touch simultaneously (gesture screenshots)
         document.addEventListener("touchstart", (e) => {
-            // If 3+ fingers touch simultaneously, likely a gesture screenshot
-            if (e.touches.length >= 3) {
+            if (e.touches.length >= 2) {
                 activateBlackout("screenshot");
             }
         }, { passive: true });
 
-        // Detect rapid resize events (some phones trigger resize during screenshot)
+        document.addEventListener("touchmove", (e) => {
+            if (e.touches.length >= 2) {
+                activateBlackout("screenshot");
+            }
+        }, { passive: true });
+
+        // Touch cancel fires when OS takes over for screenshot / control center / app switcher
+        document.addEventListener("touchcancel", () => {
+            activateBlackout("screenshot");
+        }, { passive: true });
+
+        // Prevent long press context menu (image save) on mobile
+        document.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            activateBlackout("screenshot");
+            return false;
+        });
+
+        // Detect rapid resize/orientation events (some Android devices trigger resize during screenshot animation)
         let lastWidth = window.innerWidth;
         let lastHeight = window.innerHeight;
         let resizeDebounceTimer = null;
@@ -384,12 +430,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const widthDiff = Math.abs(window.innerWidth - lastWidth);
             const heightDiff = Math.abs(window.innerHeight - lastHeight);
 
-            // Tiny resize changes (< 5px) that happen rapidly can indicate
-            // screenshot animation on some Android devices
             if (widthDiff === 0 && heightDiff > 0 && heightDiff < 10) {
                 if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
                 resizeDebounceTimer = setTimeout(() => {
-                    // Only trigger if document was visible (not a keyboard resize)
                     if (!document.hidden && document.activeElement?.tagName !== "INPUT"
                         && document.activeElement?.tagName !== "TEXTAREA") {
                         activateBlackout("screenshot");
@@ -400,11 +443,6 @@ document.addEventListener("DOMContentLoaded", () => {
             lastWidth = window.innerWidth;
             lastHeight = window.innerHeight;
         });
-
-        // Touch cancel can fire when the OS takes over (screenshot, app switch)
-        document.addEventListener("touchcancel", () => {
-            activateBlackout("hidden");
-        }, { passive: true });
     }
 
     // ═══════════════════════════════════════════
