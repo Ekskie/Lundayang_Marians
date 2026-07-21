@@ -28,9 +28,20 @@
         inset: 0;
         background:
             radial-gradient(circle at top, rgba(251, 191, 36, 0.14), transparent 32%),
-            radial-gradient(circle at center, rgba(30, 41, 59, 0.96), rgba(2, 6, 23, 0.99));
+            radial-gradient(circle at center, rgba(30, 41, 59, 0.98), rgba(2, 6, 23, 1));
         z-index: 9999;
-        pointer-events: none;
+        pointer-events: all;
+    }
+
+    /* Completely hide the PDF canvas when blacked out */
+    .detail-page-container.is-blackout .pdf-canvas-wrapper {
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+
+    .detail-page-container.is-blackout canvas {
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
 
     .detail-blackout-message {
@@ -49,6 +60,35 @@
 
     .detail-page-container.is-blackout .detail-blackout-message {
         opacity: 1;
+        pointer-events: all;
+    }
+
+    /* Resume button styling */
+    .security-resume-btn {
+        display: none;
+        margin-top: 1.2rem;
+        padding: 0.6rem 2rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #0f172a;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+    }
+
+    .security-resume-btn:hover {
+        transform: scale(1.04);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.45);
+    }
+
+    .security-resume-btn:active {
+        transform: scale(0.98);
     }
 
     .detail-blackout-card {
@@ -766,10 +806,11 @@
                 <circle cx="12" cy="16.5" r="1"></circle>
             </svg>
         </div>
-        <div class="detail-blackout-title" id="security-lock-title">Security warning</div>
-        <div class="detail-blackout-text" id="security-lock-text">Screenshot unavailable. This protected paper is locked
+        <div class="detail-blackout-title" id="security-lock-title">Security Warning</div>
+        <div class="detail-blackout-text" id="security-lock-text">This protected paper is locked
             by the viewer if a capture attempt, focus loss, or window switch is detected.</div>
         <div class="detail-blackout-meta" id="security-lock-meta">Secure viewing mode active</div>
+        <button class="security-resume-btn" id="security-resume-btn" type="button">▶ Resume Viewing</button>
     </div>
 </div>
 {% endblock %}
