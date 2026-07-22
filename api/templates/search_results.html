@@ -309,34 +309,34 @@
         <!-- Left Column: Search & Filters Panel -->
         <div class="search-left-col">
             <div class="search-block-container">
-                <div class="search-block-header">SEARCH FILTER</div>
+                <div class="search-block-header">{{ t('SEARCH FILTER') }}</div>
                 <form action="{{ url_for('search') }}" method="GET" class="search-block-body" id="search-filter-form">
                     
                     <!-- Search Query -->
                     <div>
-                        <span class="search-block-label">Keywords:</span>
+                        <span class="search-block-label">{{ t('Keywords:') }}</span>
                         <div class="search-form-row">
-                            <input type="text" name="q" value="{{ search_query }}" class="search-input-box" placeholder="Enter keywords...">
-                            <button type="submit" class="search-submit-btn">Search</button>
+                            <input type="text" name="q" value="{{ search_query }}" class="search-input-box" placeholder="{{ t('Enter keywords...') }}">
+                            <button type="submit" class="search-submit-btn">{{ t('Search') }}</button>
                         </div>
                     </div>
 
                     <!-- Strand Filter -->
                     <div>
-                        <span class="search-block-label">Academic Strand:</span>
+                        <span class="search-block-label">{{ t('Academic Strand:') }}</span>
                         <select name="strand" class="filter-select" onchange="document.getElementById('search-filter-form').submit()">
-                            <option value="">All Strands</option>
-                            <option value="STEM" {% if selected_strand == 'STEM' %}selected{% endif %}>STEM (Science, Tech, Engineering, Math)</option>
-                            <option value="HUMSS" {% if selected_strand == 'HUMSS' %}selected{% endif %}>HUMSS (Humanities & Social Sciences)</option>
-                            <option value="ABM" {% if selected_strand == 'ABM' %}selected{% endif %}>ABM (Accountancy, Business & Management)</option>
+                            <option value="">{{ t('All Strands') }}</option>
+                            <option value="STEM" {% if selected_strand == 'STEM' %}selected{% endif %}>STEM</option>
+                            <option value="HUMSS" {% if selected_strand == 'HUMSS' %}selected{% endif %}>HUMSS</option>
+                            <option value="ABM" {% if selected_strand == 'ABM' %}selected{% endif %}>ABM</option>
                         </select>
                     </div>
 
                     <!-- Year Filter -->
                     <div>
-                        <span class="search-block-label">Academic Year:</span>
+                        <span class="search-block-label">{{ t('Academic Year:') }}</span>
                         <select name="year" class="filter-select" onchange="document.getElementById('search-filter-form').submit()">
-                            <option value="">All Years</option>
+                            <option value="">{{ t('All Years') }}</option>
                             {% for year in academic_years %}
                             <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
                             {% endfor %}
@@ -351,7 +351,7 @@
         <div class="search-right-col">
 
             <div class="search-right-header">
-                <h2 class="search-results-title">Search Results ({{ papers|length }})</h2>
+                <h2 class="search-results-title">{{ t('Search Results') }} ({{ papers|length }})</h2>
             </div>
 
             <!-- Paper Listings -->
@@ -383,10 +383,10 @@
                 {% else %}
                 <div class="search-empty-state">
                     <i data-lucide="search" class="empty-state-icon"></i>
-                    <h3>No Research Papers Found</h3>
-                    <p>We couldn't find any papers matching your search parameters or filter criteria. Try expanding your search queries or selecting different filters.</p>
+                    <h3>{{ t('No Research Papers Found') }}</h3>
+                    <p>{{ t("We couldn't find any papers matching your search parameters or filter criteria.") }}</p>
                     {% if search_query or selected_strand or selected_year %}
-                    <a href="{{ url_for('search') }}" class="btn-reset-filters">Reset Filters</a>
+                    <a href="{{ url_for('search') }}" class="btn-reset-filters">{{ t('Reset Filters') }}</a>
                     {% endif %}
                 </div>
                 {% endif %}

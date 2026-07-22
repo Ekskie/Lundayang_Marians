@@ -6,7 +6,7 @@
 <div class="auth-wrapper">
     <div class="auth-card">
         <div class="auth-header">
-            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 1.25rem;">LOG IN
+            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 1.25rem;">{{ t('Log In') }}
             </h1>
         </div>
 
@@ -25,13 +25,13 @@
         <form action="{{ url_for('login') }}" method="POST">
             <!-- Student ID Field -->
             <div class="form-group">
-                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Student ID"
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID') }}"
                     required>
             </div>
 
             <!-- Password Field -->
             <div class="form-group" style="position: relative;">
-                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="Enter Password"
+                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="{{ t('Password') }}"
                     required>
                 <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility">
                     <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
@@ -39,13 +39,13 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn-auth-submit">LOG IN</button>
+            <button type="submit" class="btn-auth-submit">{{ t('Log In') }}</button>
         </form>
 
         <!-- Registration & FAQ links -->
         <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.25rem;">
             <div>
-                <a href="{{ url_for('signup') }}">CREATE ACCOUNT</a>
+                <a href="{{ url_for('signup') }}">{{ t('Create an Account') }}</a>
             </div>
         </div>
     </div>

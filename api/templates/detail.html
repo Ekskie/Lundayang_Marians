@@ -622,7 +622,7 @@
         <div class="detail-col-left">
 
             <div class="detail-meta-block">
-                <h4 class="detail-meta-label">AUTHOR</h4>
+                <h4 class="detail-meta-label">{{ t('AUTHOR') }}</h4>
                 <p class="detail-meta-text">
                     {% for author in paper.authors %}
                     {{ author }}<br>
@@ -631,22 +631,22 @@
             </div>
 
             <div class="detail-meta-block">
-                <h4 class="detail-meta-label">ADVISER</h4>
+                <h4 class="detail-meta-label">{{ t('ADVISER') }}</h4>
                 <p class="detail-meta-text">{{ paper.adviser }}</p>
             </div>
 
             <div class="detail-meta-block">
-                <h4 class="detail-meta-label">ACADEMIC YEAR</h4>
+                <h4 class="detail-meta-label">{{ t('ACADEMIC YEAR') }}</h4>
                 <p class="detail-meta-text">{{ paper.academic_year }}</p>
             </div>
 
             <div class="detail-meta-block">
-                <h4 class="detail-meta-label">RESEARCH TYPE</h4>
+                <h4 class="detail-meta-label">{{ t('RESEARCH TYPE') }}</h4>
                 <p class="detail-meta-text">{{ paper.research_type }}</p>
             </div>
 
             <div class="detail-meta-block">
-                <h4 class="detail-meta-label">SUBJECT AREA</h4>
+                <h4 class="detail-meta-label">{{ t('SUBJECT AREA') }}</h4>
                 <p class="detail-meta-text">{{ paper.subject_area }}</p>
             </div>
 
@@ -735,20 +735,20 @@
 
             <!-- Abstract Paragraph block -->
             <div class="detail-abstract-block">
-                <h4 class="detail-abstract-header">ABSTRACT</h4>
+                <h4 class="detail-abstract-header">{{ t('ABSTRACT') }}</h4>
                 <p class="detail-abstract-text">{{ paper.abstract }}</p>
             </div>
 
             {% if paper.awards %}
             <div class="detail-meta-block" style="margin-top: 1rem;">
-                <h4 class="detail-meta-label">AWARDS</h4>
+                <h4 class="detail-meta-label">{{ t('AWARDS') }}</h4>
                 <p class="detail-meta-text">{{ paper.awards }}</p>
             </div>
             {% endif %}
 
             {% if paper.keywords %}
             <div class="detail-meta-block" style="margin-top: 1rem;">
-                <h4 class="detail-meta-label">KEYWORDS</h4>
+                <h4 class="detail-meta-label">{{ t('KEYWORDS') }}</h4>
                 <div class="meta-keywords-container">
                     {% for kw in paper.keywords %}
                     {% if kw %}
@@ -767,7 +767,7 @@
     {% if recommended_papers %}
     <div class="rec-section-container">
         <div class="rec-banner-bar">
-            <span>Researches you might like:</span>
+            <span>{{ t('Researches you might like:') }}</span>
         </div>
         <div class="rec-grid-2x2">
             {% for rec in recommended_papers %}

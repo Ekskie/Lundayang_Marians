@@ -216,7 +216,7 @@
     <!-- Title Bar -->
     <div class="profile-title-container">
         <div class="profile-title-bar">
-            PROFILE
+            {{ t('PROFILE') if t('PROFILE') != 'PROFILE' else 'PROFILE' }}
         </div>
     </div>
 
@@ -257,7 +257,7 @@
                     {% endif %}
                     <div class="avatar-hover-overlay">
                         <i data-lucide="camera" style="width: 28px; height: 28px; color: white;"></i>
-                        <span>Change Photo</span>
+                        <span>{{ t('Change Photo') }}</span>
                     </div>
                 </div>
                 <!-- Hidden file selector input -->
@@ -270,35 +270,35 @@
                     
                     <!-- Field 1: Name -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">Name:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Name:') }}&nbsp;</span>
                         <span class="view-value">{{ profile.name }}</span>
                         <input type="text" name="name" class="edit-input profile-detail-input" value="{{ profile.name }}" required style="display: none;">
                     </div>
 
                     <!-- Field 2: Grade and Section -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">Grade and Section:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Grade & Section') }}:&nbsp;</span>
                         <span class="view-value">{{ profile.grade_section }}</span>
                         <input type="text" name="grade_section" class="edit-input profile-detail-input" value="{{ profile.grade_section }}" required style="display: none;">
                     </div>
 
                     <!-- Field 3: Email -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">Email:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Email') }}:&nbsp;</span>
                         <span class="view-value">{{ profile.email }}</span>
                         <input type="email" name="email" class="edit-input profile-detail-input" value="{{ profile.email }}" required style="display: none;">
                     </div>
 
                     <!-- Field 4: School ID (Read-only) -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">School ID:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Student ID') }}:&nbsp;</span>
                         <span>{{ profile.student_id }}</span>
                     </div>
 
                     <!-- Action Button Container -->
                     <div class="profile-action-container">
-                        <button type="button" id="edit-toggle-btn" class="profile-btn">Edit Profile</button>
-                        <button type="submit" id="save-submit-btn" class="profile-btn" style="display: none;">Save Changes</button>
+                        <button type="button" id="edit-toggle-btn" class="profile-btn">{{ t('Edit Profile') }}</button>
+                        <button type="submit" id="save-submit-btn" class="profile-btn" style="display: none;">{{ t('Save Changes') }}</button>
                     </div>
 
                 </div>

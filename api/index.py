@@ -69,6 +69,132 @@ def storage_remove(bucket, path):
     response = requests.delete(url, headers=headers, json={"prefixes": [path]})
     return response
 
+# ----------------- TRANSLATION SYSTEM -----------------
+TRANSLATIONS = {
+    'tl': {
+        "English": "English",
+        "Tagalog": "Tagalog",
+        "Home": "Tahanan",
+        "Developers": "Mga Tagapag-unlad",
+        "FAQ": "Mga Madalas Itanong",
+        "Upload": "I-upload",
+        "My Profile": "Aking Profile",
+        "Bookmarks": "Mga Naka-bookmark",
+        "Change Password": "Palitan ang Password",
+        "Log Out": "Mag-log Out",
+        "Log In": "Mag-log In",
+        "Sign Up": "Mag-rehistro",
+        "SEARCH": "MAGHANAP",
+        "Enter search item:": "Ipasok ang hahanapin:",
+        "Search": "Maghanap",
+        "Search Research Papers...": "Maghanap ng mga Papel Pananaliksik...",
+        "All Strands": "Lahat ng Strand",
+        "All Types": "Lahat ng Uri",
+        "Sort by:": "I-sort ayon sa:",
+        "Latest": "Pinakabagong",
+        "Oldest": "Pinakalumang",
+        "Title A-Z": "Pamagat A-Z",
+        "Filter Results": "I-filter ang mga Resulta",
+        "Clear Filters": "Alisin ang Filter",
+        "Found": "Nakatagpo ng",
+        "research papers": "mga papel pananaliksik",
+        "research paper": "papel pananaliksik",
+        "No research papers found matching your criteria.": "Walang natagpuang papel pananaliksik na tumutugma sa iyong pamantayan.",
+        "BROWSE RESEARCH": "MAG-BROWSE NG PANANALIKSIK",
+        "RECENT RESEARCH PAPERS": "MGA BAGONG PAPEL PANANALIKSIK",
+        "BEST IN RESEARCH": "PINAKAMAHUSAY SA PANANALIKSIK",
+        "View All": "Tingnan Lahat",
+        "Read Paper": "Basahin ang Papel",
+        "No research papers available yet.": "Wala pang available na papel pananaliksik.",
+        "No awarded research papers found.": "Walang natagpuang ginawarang papel pananaliksik.",
+        "STEM": "STEM",
+        "ABM": "ABM",
+        "HUMSS": "HUMSS",
+        "TVL": "TVL",
+        "GAS": "GAS",
+        "Science, Technology, Engineering, & Mathematics": "Agham, Teknolohiya, Inhenyeriya, at Matematika",
+        "Accountancy, Business, & Management": "Akawntansi, Negosyo, at Pamamahala",
+        "Humanities & Social Sciences": "Humanidades at Agham Panlipunan",
+        "Technical-Vocational-Livelihood": "Teknikal-Bokasyonal-Pangkabuhayan",
+        "General Academic Strand": "Pangkalahatang Akademikong Strand",
+        "Abstract": "Buod (Abstract)",
+        "Authors": "Mga May-akda",
+        "Adviser": "Tagapayo",
+        "Academic Year": "Taong Akademiko",
+        "Strand": "Strand",
+        "Research Type": "Uri ng Pananaliksik",
+        "Subject Area": "Larangan ng Paksa",
+        "Awards": "Mga Parangal",
+        "Keywords": "Mga Susing Salita",
+        "Citation": "Sitasyon",
+        "Copy Citation": "Kopyahin ang Sitasyon",
+        "Bookmark": "I-bookmark",
+        "Bookmarked": "Naka-bookmark",
+        "Download PDF": "I-download ang PDF",
+        "Read Online": "Basahin Online",
+        "Back to Home": "Bumalik sa Tahanan",
+        "Back to Search": "Bumalik sa Paghahanap",
+        "Sta. Maria (Laguna) Academy Inc.": "Sta. Maria (Laguna) Academy Inc.",
+        "Brgy. Poblacion II, Santa Maria, Laguna": "Brgy. Poblacion II, Santa Maria, Laguna",
+        "Digital Research Repository": "Dihital na Imbakan ng Pananaliksik",
+        "Student ID": "ID ng Mag-aaral",
+        "Full Name": "Buong Pangalan",
+        "Grade & Section": "Baitang at Seksyon",
+        "Role": "Gampanin",
+        "Email": "Email",
+        "Save Changes": "I-save ang mga Pagbabago",
+        "Current Password": "Kasalukuyang Password",
+        "New Password": "Bagong Password",
+        "Confirm New Password": "Kumpirmahin ang Bagong Password",
+        "Update Password": "I-update ang Password",
+        "Upload Research Paper": "I-upload ang Papel Pananaliksik",
+        "Edit Research Paper": "I-edit ang Papel Pananaliksik",
+        "Title": "Pamagat",
+        "PDF Document": "Dokumentong PDF",
+        "Submit Paper": "Isumite ang Papel",
+        "Development Team": "Koponan ng Tagapag-unlad",
+        "Meet the creators behind Lundayang Marians": "Kilalanin ang mga lumikha sa likod ng Lundayang Marians",
+        "Frequently Asked Questions": "Mga Madalas Itanong (FAQ)",
+        "Got questions? We've got answers.": "May mga tanong? Mayroon kaming mga sagot.",
+        "Select Strand": "Pumili ng Strand",
+        "Select Type": "Pumili ng Uri",
+        "Select Academic Year": "Pumili ng Taong Akademiko",
+        "Search papers, authors, keywords...": "Maghanap ng mga papel, may-akda, susing salita...",
+        "All Academic Years": "Lahat ng Taong Akademiko",
+        "My Bookmarks": "Aking Mga Naka-bookmark",
+        "You haven't bookmarked any research papers yet.": "Wala ka pang nai-bookmark na papel pananaliksik.",
+        "Browse Papers": "Mag-browse ng mga Papel",
+        "Remove": "Alisin",
+        "View Paper": "Tingnan ang Papel",
+        "Search Results": "Mga Resulta ng Paghahanap",
+        "Enter your student credentials to continue": "Ipasok ang iyong student credentials upang magpatuloy",
+        "Password": "Password",
+        "Don't have an account?": "Wala pang account?",
+        "Already have an account?": "Mayroon nang account?",
+        "Create an Account": "Likhain ang Account",
+        "Join the Lundayang Marians research community": "Sumali sa komunidad ng pananaliksik ng Lundayang Marians",
+        "Confirm Password": "Kumpirmahin ang Password"
+    }
+}
+
+@app.context_processor
+def inject_translations():
+    lang = session.get('lang', 'en')
+    def t(key):
+        if lang == 'tl' and key in TRANSLATIONS.get('tl', {}):
+            return TRANSLATIONS['tl'][key]
+        return key
+    return dict(t=t)
+
+@app.route('/set-language/<lang>')
+def set_language(lang):
+    if lang in ['en', 'tl']:
+        session['lang'] = lang
+    referrer = request.referrer
+    if referrer:
+        return redirect(referrer)
+    return redirect(url_for('home'))
+
 # Helper to verify if user is logged in
 def is_logged_in():
     return 'user' in session

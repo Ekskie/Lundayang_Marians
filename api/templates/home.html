@@ -432,26 +432,26 @@
 
             <!-- Search Block -->
             <div class="search-block-container">
-                <div class="search-block-header">SEARCH</div>
+                <div class="search-block-header">{{ t('SEARCH') }}</div>
                 <div class="search-block-body">
-                    <span class="search-block-label">Enter search item:</span>
+                    <span class="search-block-label">{{ t('Enter search item:') }}</span>
                     <form action="{{ url_for('search') }}" method="GET" class="search-form-row">
                         <input type="text" name="q" class="search-input-box" required>
-                        <button type="submit" class="search-submit-btn">Search</button>
+                        <button type="submit" class="search-submit-btn">{{ t('Search') }}</button>
                     </form>
                 </div>
             </div>
 
             <!-- BROWSE RESEARCH Section -->
             <div>
-                <h2 class="browse-header-title" style="font-style: italic;">BROWSE RESEARCH</h2>
+                <h2 class="browse-header-title" style="font-style: italic;">{{ t('BROWSE RESEARCH') }}</h2>
 
                 <div class="browse-cards-container">
 
                     <!-- HUMSS Card -->
                     <a href="{{ url_for('strand', strand_name='HUMSS') }}" class="browse-crest-card"
                         style="background-image: url(&quot;{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}&quot;); background-size:contain; background-position: center; background-repeat: no-repeat;">
-                        <span class="crest-label">HUMANITIES AND SOCIAL SCIENCE</span>
+                        <span class="crest-label">{{ t('HUMANITIES AND SOCIAL SCIENCE') if t('HUMANITIES AND SOCIAL SCIENCE') != 'HUMANITIES AND SOCIAL SCIENCE' else 'HUMANITIES AND SOCIAL SCIENCE' }}</span>
                     </a>
 
                     <!-- ABM Card -->
@@ -511,9 +511,8 @@
 
             <!-- RESEARCH RECOGNITION Block -->
             <div class="rec-box-container">
-                <h3 class="rec-title-header" style="font-style: italic;">RESEARCH RECOGNITION</h3>
-                <p class="rec-title-sub">This Research has been officially Recognized by the Municipality of Santa
-                    Maria, Laguna</p>
+                <h3 class="rec-title-header" style="font-style: italic;">{{ t('RESEARCH RECOGNITION') }}</h3>
+                <p class="rec-title-sub">{{ t('This Research has been officially Recognized by the Municipality of Santa Maria, Laguna') }}</p>
 
                 <div class="rec-content-split">
                     <div class="rec-content-text">
@@ -553,8 +552,8 @@
             <!-- BEST IN RESEARCH Rows -->
             <div>
                 <hr style="border-top: 3px solid #002060; margin-bottom: 1rem;" class="w-full">
-                <h3 class="best-header-title" style="font-style: italic;">BEST IN RESEARCH</h3>
-                <p class="best-header-sub">Recognizing Outstanding Research Achievements in Recent Years</p>
+                <h3 class="best-header-title" style="font-style: italic;">{{ t('BEST IN RESEARCH') }}</h3>
+                <p class="best-header-sub">{{ t('Recognizing Outstanding Research Achievements in Recent Years') }}</p>
 
                 <div class="best-card-list">
                     {% for paper in best_in_research[:3] %}

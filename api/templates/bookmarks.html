@@ -151,7 +151,7 @@
     <!-- Title Bar -->
     <div class="bookmarks-title-container">
         <div class="bookmarks-title-bar">
-            BOOKMARK
+            {{ t('BOOKMARK') if t('BOOKMARK') != 'BOOKMARK' else 'BOOKMARK' }}
         </div>
     </div>
 
@@ -171,9 +171,9 @@
         {% else %}
             <div class="bookmarks-empty-state">
                 <i data-lucide="bookmark" class="empty-state-icon"></i>
-                <h3>No Bookmarks Saved</h3>
-                <p>You haven't saved any research papers yet. Browse strands and click "Bookmark" on papers to save them here.</p>
-                <a href="{{ url_for('home') }}" class="btn-go-home">Go to Home</a>
+                <h3>{{ t('No Bookmarks Saved') if t('No Bookmarks Saved') != 'No Bookmarks Saved' else 'No Bookmarks Saved' }}</h3>
+                <p>{{ t("You haven't bookmarked any research papers yet.") }}</p>
+                <a href="{{ url_for('home') }}" class="btn-go-home">{{ t('Back to Home') }}</a>
             </div>
         {% endif %}
     </div>

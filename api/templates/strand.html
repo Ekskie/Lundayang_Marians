@@ -351,15 +351,15 @@
 
             <!-- Search Block -->
             <div class="search-block-container">
-                <div class="search-block-header">SEARCH</div>
+                <div class="search-block-header">{{ t('SEARCH') }}</div>
                 <div class="search-block-body">
-                    <span class="search-block-label">Enter search item:</span>
+                    <span class="search-block-label">{{ t('Enter search item:') }}</span>
                     <form action="{{ url_for('strand', strand_name=strand) }}" method="GET" class="search-form-row">
                         <input type="text" name="q" value="{{ search_query }}" class="search-input-box">
                         {% if selected_year %}
                         <input type="hidden" name="year" value="{{ selected_year }}">
                         {% endif %}
-                        <button type="submit" class="search-submit-btn">Search</button>
+                        <button type="submit" class="search-submit-btn">{{ t('Search') }}</button>
                     </form>
                 </div>
             </div>
@@ -411,7 +411,7 @@
         <div class="strand-right-col">
 
             <div class="strand-right-header">
-                <h2 class="strand-results-title">Research Papers ({{ papers|length }})</h2>
+                <h2 class="strand-results-title">{{ t('Research Papers') }} ({{ papers|length }})</h2>
 
                 <!-- Academic Year Filter Form -->
                 <form action="{{ url_for('strand', strand_name=strand) }}" method="GET" id="year-filter-form">
@@ -421,7 +421,7 @@
 
                     <select name="year" class="strand-year-filter"
                         onchange="document.getElementById('year-filter-form').submit()">
-                        <option value="">Year</option>
+                        <option value="">{{ t('Year') if t('Year') != 'Year' else 'Year' }}</option>
                         {% for year in academic_years %}
                         <option value="{{ year }}" {% if selected_year==year %}selected{% endif %}>{{ year }}</option>
                         {% endfor %}
@@ -459,11 +459,10 @@
                 {% else %}
                 <div class="strand-empty-state">
                     <i data-lucide="search-code" class="empty-state-icon"></i>
-                    <h3>No Research Papers Found</h3>
-                    <p>We couldn't find any papers matching your search parameters or filter criteria. Try expanding
-                        your search queries or selecting all years.</p>
+                    <h3>{{ t('No Research Papers Found') }}</h3>
+                    <p>{{ t("We couldn't find any papers matching your search parameters or filter criteria.") }}</p>
                     {% if search_query or selected_year %}
-                    <a href="{{ url_for('strand', strand_name=strand) }}" class="btn-reset-filters">Reset Filters</a>
+                    <a href="{{ url_for('strand', strand_name=strand) }}" class="btn-reset-filters">{{ t('Reset Filters') }}</a>
                     {% endif %}
                 </div>
                 {% endif %}

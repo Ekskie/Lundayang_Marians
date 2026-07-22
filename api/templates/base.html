@@ -23,20 +23,21 @@
             <div class="nav-links">
                 <div class="dropdown-container">
                     <button class="btn-profile-dropdown" style="display: flex; align-items: center; gap: 4px;">
-                        <span>English</span>
+                        <span>{{ t('English') if session.get('lang', 'en') == 'en' else t('Tagalog') }}</span>
                         <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline-block;"></i>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item">English</a>
+                        <a href="{{ url_for('set_language', lang='en') }}" class="dropdown-item {% if session.get('lang', 'en') == 'en' %}fw-bold{% endif %}">English</a>
+                        <a href="{{ url_for('set_language', lang='tl') }}" class="dropdown-item {% if session.get('lang') == 'tl' %}fw-bold{% endif %}">Tagalog</a>
                     </div>
                 </div>
 
                 {% if session.get('user') %}
-                <a href="{{ url_for('home') }}" class="nav-item">Home</a>
-                <a href="{{ url_for('developers') }}" class="nav-item">Developers</a>
-                <a href="{{ url_for('faq') }}" class="nav-item">FAQ</a>
+                <a href="{{ url_for('home') }}" class="nav-item">{{ t('Home') }}</a>
+                <a href="{{ url_for('developers') }}" class="nav-item">{{ t('Developers') }}</a>
+                <a href="{{ url_for('faq') }}" class="nav-item">{{ t('FAQ') }}</a>
                 {% if session.get('role') == 'admin' %}
-                <a href="{{ url_for('admin_upload') }}" class="nav-item">Upload</a>
+                <a href="{{ url_for('admin_upload') }}" class="nav-item">{{ t('Upload') }}</a>
                 {% endif %}
 
                 <div class="dropdown-container">
@@ -44,11 +45,11 @@
                         <i data-lucide="user-circle" style="width: 24px; height: 24px;"></i>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="{{ url_for('profile') }}" class="dropdown-item">My Profile</a>
-                        <a href="{{ url_for('bookmarks') }}" class="dropdown-item">Bookmarks</a>
-                        <a href="{{ url_for('change_password') }}" class="dropdown-item">Change Password</a>
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">{{ t('My Profile') }}</a>
+                        <a href="{{ url_for('bookmarks') }}" class="dropdown-item">{{ t('Bookmarks') }}</a>
+                        <a href="{{ url_for('change_password') }}" class="dropdown-item">{{ t('Change Password') }}</a>
                         <div style="border-top: 1px solid #e2e8f0; margin: 0.25rem 0;"></div>
-                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: #dc2626;">Log Out</a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: #dc2626;">{{ t('Log Out') }}</a>
                     </div>
                 </div>
                 {% endif %}

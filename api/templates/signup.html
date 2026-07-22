@@ -6,7 +6,7 @@
 <div class="auth-wrapper">
     <div class="auth-card">
         <div class="auth-header">
-            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">CREATE ACCOUNT</h1>
+            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">{{ t('Create an Account') }}</h1>
         </div>
 
         {% if error %}
@@ -18,22 +18,22 @@
         <form action="{{ url_for('signup') }}" method="POST">
             <!-- Student ID Field -->
             <div class="form-group">
-                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Student ID" required>
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID') }}" required>
             </div>
 
             <!-- Full Name Field -->
             <div class="form-group">
-                <input type="text" id="name" name="name" class="form-control" placeholder="Full Name" required>
+                <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('Full Name') }}" required>
             </div>
 
             <!-- Grade & Section Field -->
             <div class="form-group">
-                <input type="text" id="grade_section" name="grade_section" class="form-control" placeholder="Grade & Section" required>
+                <input type="text" id="grade_section" name="grade_section" class="form-control" placeholder="{{ t('Grade & Section') }}" required>
             </div>
             
             <!-- Enter Password Field -->
             <div class="form-group" style="position: relative;">
-                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="Enter Password" required>
+                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="{{ t('Password') }}" required>
                 <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility">
                     <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
                 </button>
@@ -41,19 +41,19 @@
             
             <!-- Confirm Password Field -->
             <div class="form-group" style="position: relative;">
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-password" placeholder="Confirm Password" required>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-password" placeholder="{{ t('Confirm Password') }}" required>
                 <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Toggle password visibility">
                     <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
                 </button>
             </div>
             
             <!-- Submit Button -->
-            <button type="submit" class="btn-auth-submit">SIGN UP</button>
+            <button type="submit" class="btn-auth-submit">{{ t('Sign Up') }}</button>
         </form>
         
         <!-- Login Link -->
         <div class="auth-footer">
-            <a href="{{ url_for('login') }}">ALREADY HAVE AN ACCOUNT</a>
+            <a href="{{ url_for('login') }}">{{ t('Already have an account?') }}</a>
         </div>
     </div>
 </div>
