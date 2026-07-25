@@ -384,23 +384,11 @@
 
                 <p class="strand-desc-text">
                     {% if strand == 'HUMSS' %}
-                    <strong>Humanities and Social Sciences (HUMSS)</strong> is the branch of knowledge that studies
-                    human beings, their culture, society, behavior, relationships, and experiences. It combines the
-                    humanities, which focus on human culture, values, history, literature, philosophy, and the arts,
-                    with the social sciences, which examine how individuals and groups interact within society through
-                    disciplines such as sociology, psychology, economics, political science, and anthropology.
+                    <strong>{{ t('Humanities and Social Sciences (HUMSS)') }}</strong> {{ t('is the branch of knowledge that studies human beings, their culture, society, behavior, relationships, and experiences. It combines the humanities, which focus on human culture, values, history, literature, philosophy, and the arts, with the social sciences, which examine how individuals and groups interact within society through disciplines such as sociology, psychology, economics, political science, and anthropology.') }}
                     {% elif strand == 'ABM' %}
-                    <strong>Accountancy, Business, and Management (ABM)</strong> is a Senior High School strand that
-                    prepares students for careers in business, entrepreneurship, accounting, marketing, finance, and
-                    management. It develops skills in leadership, problem-solving, communication, and decision-making,
-                    making it ideal for students who want to pursue business-related courses or start their own
-                    businesses.
+                    <strong>{{ t('Accountancy, Business, and Management (ABM)') }}</strong> {{ t('is a Senior High School strand that prepares students for careers in business, entrepreneurship, accounting, marketing, finance, and management. It develops skills in leadership, problem-solving, communication, and decision-making, making it ideal for students who want to pursue business-related courses or start their own businesses.') }}
                     {% else %}
-                    <strong>Science, Technology, Engineering, and Mathematics (STEM)</strong> is a Senior High School
-                    strand designed for students who are interested in science, technology, engineering, and
-                    mathematics. It develops critical thinking, problem-solving, and analytical skills, preparing
-                    students for college courses and careers such as engineering, medicine, architecture, information
-                    technology, and other science-related fields.
+                    <strong>{{ t('Science, Technology, Engineering, and Mathematics (STEM)') }}</strong> {{ t('is a Senior High School strand designed for students who are interested in science, technology, engineering, and mathematics. It develops critical thinking, problem-solving, and analytical skills, preparing students for college courses and careers such as engineering, medicine, architecture, information technology, and other science-related fields.') }}
                     {% endif %}
                 </p>
             </div>
@@ -421,7 +409,7 @@
 
                     <select name="year" class="strand-year-filter"
                         onchange="document.getElementById('year-filter-form').submit()">
-                        <option value="">{{ t('Year') if t('Year') != 'Year' else 'Year' }}</option>
+                        <option value="">{{ t('Year') }}</option>
                         {% for year in academic_years %}
                         <option value="{{ year }}" {% if selected_year==year %}selected{% endif %}>{{ year }}</option>
                         {% endfor %}
@@ -449,8 +437,7 @@
                             {% if paper.abstract %}
                             {{ paper.abstract[:180] }}{% if paper.abstract|length > 180 %}...{% endif %}
                             {% else %}
-                            A scholarly research paper authored by {{ paper.authors|join(', ') }} under the {{ strand }}
-                            strand.
+                            {{ t('A scholarly research paper authored by') }} {{ paper.authors|join(', ') }} {{ t('under the') }} {{ strand }} {{ t('strand.') }}
                             {% endif %}
                         </span>
                     </div>

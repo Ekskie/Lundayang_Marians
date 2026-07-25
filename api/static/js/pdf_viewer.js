@@ -165,325 +165,60 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     });
 
-    // --- SECURITY CONTROLS (Comprehensive Screenshot & Capture Protection) ---
+    // --- SECURITY CONTROLS (Document & Shortcut Protection) ---
 
     const detailPageContainer = document.querySelector(".detail-page-container");
-    const securityLockTitle = document.getElementById("security-lock-title");
-    const securityLockText = document.getElementById("security-lock-text");
-    const securityLockMeta = document.getElementById("security-lock-meta");
-    const securityResumeBtn = document.getElementById("security-resume-btn");
-    const pdfCanvasWrapper = document.querySelector(".pdf-canvas-wrapper");
 
-    // Detect mobile/touch device
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-        || ('ontouchstart' in window)
-        || (navigator.maxTouchPoints > 0);
-
-    const securityMessages = {
-        screenshot: {
-            title: "Couldn't save screenshot",
-            text: "Taking screenshots isn't allowed by the app or your organization.",
-            meta: "Security policy enforced"
-        },
-        hidden: {
-            title: "Viewing Paused",
-            text: "This protected paper is hidden while the window or app is not active. Tap below to resume.",
-            meta: "Secure viewing paused"
-        },
-        default: {
-            title: "Couldn't save screenshot",
-            text: "Taking screenshots isn't allowed by the app or your organization.",
-            meta: "Secure viewing mode active"
-        }
-    };
-
-    let isBlackedOut = false;
-    let savedCanvasData = null;
-    let isAlertActive = false;
-
-    const applySecurityMessage = (mode) => {
-        const nextMessage = securityMessages[mode] || securityMessages.default;
-        if (securityLockTitle) securityLockTitle.textContent = nextMessage.title;
-        if (securityLockText) securityLockText.textContent = nextMessage.text;
-        if (securityLockMeta) securityLockMeta.textContent = nextMessage.meta;
-    };
-
-    // Wipe and hide canvas content instantly (sub-millisecond execution)
-    const destroyCanvasContent = () => {
-        // 1. Hide canvas & wrapper instantly in DOM
-        if (canvas) {
-            canvas.style.display = "none";
-        }
-        if (pdfCanvasWrapper) {
-            pdfCanvasWrapper.style.display = "none";
-        }
-        if (detailPageContainer) {
-            detailPageContainer.classList.add("is-blackout");
-        }
-        // 2. Clear canvas pixels to black
-        if (canvas && ctx) {
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-    };
-
-    // Restore canvas content from PDF.js re-render
-    const restoreCanvasContent = () => {
-        if (canvas) {
-            canvas.style.display = "block";
-        }
-        if (pdfCanvasWrapper) {
-            pdfCanvasWrapper.style.display = "block";
-        }
-        if (pdfDoc) {
-            queueRenderPage(pageNum);
-        }
-    };
-
-    const showAndroidScreenshotToast = () => {
-        let toast = document.getElementById("android-screenshot-toast");
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "android-screenshot-toast";
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 30px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: #18181b;
-                color: #ffffff;
-                padding: 14px 20px;
-                border-radius: 14px;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75);
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                z-index: 999999;
-                max-width: 92%;
-                width: 380px;
-                border-left: 4px solid #ef4444;
-                pointer-events: none;
-                transition: opacity 0.3s ease, transform 0.3s ease;
-                opacity: 0;
-            `;
-            toast.innerHTML = `
-                <div style="font-weight: 700; font-size: 15px; margin-bottom: 3px; color: #ffffff;">Couldn't save screenshot</div>
-                <div style="font-size: 13px; color: #d1d5db; line-height: 1.4;">Taking screenshots isn't allowed by the app or your organization.</div>
-            `;
-            document.body.appendChild(toast);
-        }
-
-        toast.style.opacity = "1";
-        toast.style.transform = "translateX(-50%) translateY(0)";
-
-        setTimeout(() => {
-            toast.style.opacity = "0";
-            toast.style.transform = "translateX(-50%) translateY(12px)";
-        }, 4500);
-    };
-
-    const activateBlackout = (mode = "default") => {
-        if (!isBlackedOut) {
-            isBlackedOut = true;
-            applySecurityMessage(mode);
-            destroyCanvasContent();
-            detailPageContainer?.classList.add("is-blackout");
-            if (securityResumeBtn) securityResumeBtn.style.display = "inline-block";
-        }
-    };
-
-    const deactivateBlackout = () => {
-        if (!isBlackedOut) return;
-        isBlackedOut = false;
-        detailPageContainer?.classList.remove("is-blackout");
-        if (securityResumeBtn) securityResumeBtn.style.display = "none";
-        applySecurityMessage("default");
-        restoreCanvasContent();
-    };
-
-    // Resume button handler (user must actively click to resume)
-    if (securityResumeBtn) {
-        securityResumeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            deactivateBlackout();
-        });
-    }
-
-    // ═══════════════════════════════════════════
-    // VISIBILITY & FOCUS PROTECTION (PC + Mobile)
-    // ═══════════════════════════════════════════
-
-    // When user switches tabs/apps or hides window
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            activateBlackout("hidden");
-        }
-    });
-
-    // Window blur (user clicks outside browser, alt-tabs, app switch)
-    window.addEventListener("blur", () => {
-        activateBlackout("hidden");
-    });
-
-    // ═══════════════════════════════════════════
-    // KEYBOARD SCREENSHOT DETECTION (PC + Mobile Keyboards)
-    // ═══════════════════════════════════════════
-
-    window.addEventListener("keyup", (e) => {
-        // PrintScreen / Snapshot key
-        if (e.key === "PrintScreen" || e.key === "Snapshot") {
-            activateBlackout("screenshot");
-            try {
-                navigator.clipboard.writeText("Screenshot disabled — Lundayang Marians").catch(() => {});
-            } catch (err) { /* clipboard API may not be available */ }
-        }
-    });
-
-    window.addEventListener("keydown", (e) => {
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const metaKey = isMac ? e.metaKey : e.ctrlKey;
-
-        // Intercept Android hardware volume buttons (Volume Down + Power screenshot combination)
-        if (['AudioVolumeDown', 'AudioVolumeUp', 'VolumeDown', 'VolumeUp', 'AudioVolumeMute'].includes(e.key) ||
-            ['VolumeDown', 'VolumeUp', 'VolumeMute'].includes(e.code)) {
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // PrintScreen key
-        if (e.key === "PrintScreen" || e.key === "Snapshot") {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // Win + Shift + S or Cmd + Shift + 3/4/5 (Mac screenshot tools)
-        if (e.shiftKey && (e.metaKey || e.ctrlKey) && ['s', 'S', '3', '4', '5'].includes(e.key)) {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // Prevent Ctrl/Cmd + S (Save), P (Print), C (Copy), A (Select All)
-        if (metaKey && ['s','p','c','a','S','P','C','A'].includes(e.key)) {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // Ctrl + Shift + I (DevTools)
-        if (metaKey && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // F12 (DevTools)
-        if (e.key === 'F12') {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-
-        // Ctrl + U (View Source)
-        if (metaKey && (e.key === 'u' || e.key === 'U')) {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return;
-        }
-    });
-
-    // ═══════════════════════════════════════════
-    // MOBILE-SPECIFIC PROTECTIONS
-    // ═══════════════════════════════════════════
-
-    if (isMobileDevice) {
-        // Multi-touch detection: 2+ or 3+ fingers touch simultaneously (gesture screenshots)
-        document.addEventListener("touchstart", (e) => {
-            if (e.touches.length >= 2) {
-                activateBlackout("screenshot");
-            }
-        }, { passive: true });
-
-        document.addEventListener("touchmove", (e) => {
-            if (e.touches.length >= 2) {
-                activateBlackout("screenshot");
-            }
-        }, { passive: true });
-
-        // Touch cancel fires when OS takes over for screenshot / control center / app switcher
-        document.addEventListener("touchcancel", () => {
-            activateBlackout("screenshot");
-        }, { passive: true });
-
-        // Prevent long press context menu (image save) on mobile
-        document.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            activateBlackout("screenshot");
-            return false;
-        });
-
-        // Detect rapid resize/orientation events (some Android devices trigger resize during screenshot animation)
-        let lastWidth = window.innerWidth;
-        let lastHeight = window.innerHeight;
-        let resizeDebounceTimer = null;
-
-        window.addEventListener("resize", () => {
-            const widthDiff = Math.abs(window.innerWidth - lastWidth);
-            const heightDiff = Math.abs(window.innerHeight - lastHeight);
-
-            if (widthDiff === 0 && heightDiff > 0 && heightDiff < 10) {
-                if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
-                resizeDebounceTimer = setTimeout(() => {
-                    if (!document.hidden && document.activeElement?.tagName !== "INPUT"
-                        && document.activeElement?.tagName !== "TEXTAREA") {
-                        activateBlackout("screenshot");
-                    }
-                }, 100);
-            }
-
-            lastWidth = window.innerWidth;
-            lastHeight = window.innerHeight;
-        });
-    }
-
-    // ═══════════════════════════════════════════
-    // GENERAL PROTECTIONS (PC + Mobile)
-    // ═══════════════════════════════════════════
-
-    // 1. Disable Right-click context menu inside PDF container
+    // 1. Disable Right-click context menu inside PDF container and page
     const pdfContainer = document.querySelector(".pdf-viewer-container");
     if (pdfContainer) {
         pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
     }
-
-    // 2. Disable right-click globally on the detail page
     detailPageContainer?.addEventListener('contextmenu', e => e.preventDefault());
 
-    // 3. Disable Drag/Drop of contents
+    // 2. Disable Drag/Drop of contents
     window.addEventListener('dragstart', e => e.preventDefault());
 
-    // 4. Prevent text selection via CSS is already applied, but also via JS
+    // 3. Prevent text selection
     document.addEventListener('selectstart', (e) => {
         if (detailPageContainer?.contains(e.target)) {
             e.preventDefault();
         }
     });
 
-    // 5. Detect DevTools open via debugger timing (basic)
-    let devToolsCheckInterval = null;
-    const checkDevTools = () => {
-        const start = performance.now();
-        debugger; // This pauses execution if DevTools is open
-        const end = performance.now();
-        if (end - start > 100) {
-            activateBlackout("screenshot");
-            if (devToolsCheckInterval) {
-                clearInterval(devToolsCheckInterval);
-                devToolsCheckInterval = null;
-            }
+    // 4. Intercept Keyboard Shortcuts (Print, Save, Copy, DevTools)
+    window.addEventListener("keydown", (e) => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const metaKey = isMac ? e.metaKey : e.ctrlKey;
+
+        // PrintScreen / Snapshot key
+        if (e.key === "PrintScreen" || e.key === "Snapshot") {
+            e.preventDefault();
+            alert("⚠️ Screenshots and printing are disabled for this paper.");
+            return;
         }
-    };
-    // Uncomment the line below to enable DevTools detection (causes debugger pauses):
-    // devToolsCheckInterval = setInterval(checkDevTools, 2000);
+
+        // Win + Shift + S or Cmd + Shift + 3/4/5
+        if (e.shiftKey && (e.metaKey || e.ctrlKey) && ['s', 'S', '3', '4', '5'].includes(e.key)) {
+            e.preventDefault();
+            alert("⚠️ Screenshots are disabled for this paper.");
+            return;
+        }
+
+        // Prevent Ctrl/Cmd + S (Save), P (Print), C (Copy), A (Select All)
+        if (metaKey && ['s','p','c','a','S','P','C','A'].includes(e.key)) {
+            e.preventDefault();
+            alert("⚠️ Saving, copying, and printing are disabled for this paper.");
+            return;
+        }
+
+        // Ctrl + Shift + I / J / C (DevTools), F12, Ctrl + U (View Source)
+        if ((metaKey && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) ||
+            e.key === 'F12' || (metaKey && (e.key === 'u' || e.key === 'U'))) {
+            e.preventDefault();
+            return;
+        }
+    });
 
     // --- FULLSCREEN VIEW CONTROLS ---
     const fullscreenBtn = document.getElementById("pdf-fullscreen-btn");
