@@ -495,8 +495,13 @@
     <!-- Three Column Grid Content -->
     <div class="detail-three-cols">
 
-        <!-- Column 1 (Left): Authors, Adviser, Academic Year, Research Type, Subject Area, Awards, Keywords -->
+        <!-- Column 1 (Left): Research Title, Authors, Adviser, Academic Year, Research Type, Subject Area, Awards, Keywords -->
         <div class="detail-col-left">
+
+            <div class="detail-meta-block">
+                <h4 class="detail-meta-label">{{ t('RESEARCH TITLE') }}</h4>
+                <p class="detail-meta-text" style="font-weight: 700; color: #002060; font-size: 0.95rem; line-height: 1.45;">{{ paper.title }}</p>
+            </div>
 
             <div class="detail-meta-block">
                 <h4 class="detail-meta-label">{{ t('AUTHOR') }}</h4>

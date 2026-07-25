@@ -222,6 +222,7 @@ TRANSLATIONS = {
         ", their research adviser, for her invaluable guidance, unwavering support, and encouragement throughout the conduct of the study. Her expertise, patience, and constructive feedback greatly contributed to the successful completion of the research. As one of the key individuals behind the realization of Lundayang Marians, her guidance and dedication played an essential role in bringing the project to fruition.": ", ang kanilang tagapayo sa pananaliksik, para sa kanyang mahalagang patnubay, walang matagag na suporta, at pagpapalakas ng loob sa buong panahon ng pag-aaral. Ang kanyang dalubhasa, pasensya, at nakabubuo na puna ay malaki ang naiambag sa matagumpay na pagkumpleto ng pananaliksik. Bilang isa sa mga pangunahing indibidwal sa likod ng pagsasakatuparan ng Lundayang Marians, ang kanyang patnubay at dedikasyon ay nagkaroon ng mahalagang gampanin sa pagtatagumpay ng proyekto.",
 
         # Detail Page labels
+        "RESEARCH TITLE": "PAMAGAT NG PANANALIKSIK",
         "AUTHOR": "MAY-AKDA",
         "ADVISER": "TAGAPAYO",
         "ACADEMIC YEAR": "TAONG AKADEMIKO",
