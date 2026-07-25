@@ -215,8 +215,11 @@ TRANSLATIONS = {
         "is the branch of knowledge that studies human beings, their culture, society, behavior, relationships, and experiences. It combines the humanities, which focus on human culture, values, history, literature, philosophy, and the arts, with the social sciences, which examine how individuals and groups interact within society through disciplines such as sociology, psychology, economics, political science, and anthropology.": "ay ang sangay ng kaalaman na nag-aaral sa mga tao, sa kanilang kultura, lipunan, pag-uugali, relasyon, at mga karanasan. Pinagsasama nito ang humanidades, na nakatuon sa kultura ng tao, mga halaga, kasaysayan, panitikan, pilosopiya, at mga sining, kasama ang agham panlipunan, na nagsusuri kung paano nakikipag-ugnayan ang mga indibidwal at grupo sa loob ng lipunan sa pamamagitan ng mga disiplina tulad ng sosyolohiya, sikolohiya, ekonomiks, agham pampulitika, at antropolohiya.",
         "Accountancy, Business, and Management (ABM)": "Accountancy, Business, and Management (ABM)",
         "is a Senior High School strand that prepares students for careers in business, entrepreneurship, accounting, marketing, finance, and management. It develops skills in leadership, problem-solving, communication, and decision-making, making it ideal for students who want to pursue business-related courses or start their own businesses.": "ay isang Senior High School strand na naghahanda sa mga mag-aaral para sa mga karera sa negosyo, entrepreneurship, akawntansi, marketing, pinansya, at pamamahala. Nililinang nito ang mga kasanayan sa pamumuno, paglutas ng problema, komunikasyon, at paggawa ng desisyon, na ginagawang perpekto para sa mga mag-aaral na gustong kumuha ng mga kursong nauugnay sa negosyo o magsimula ng kanilang sariling negosyo.",
-        "Science, Technology, Engineering, and Mathematics (STEM)": "Science, Technology, Engineering, and Mathematics (STEM)",
-        "is a Senior High School strand designed for students who are interested in science, technology, engineering, and mathematics. It develops critical thinking, problem-solving, and analytical skills, preparing students for college courses and careers such as engineering, medicine, architecture, information technology, and other science-related fields.": "ay isang Senior High School strand na dinisenyo para sa mga mag-aaral na interesado sa agham, teknolohiya, inhenyeriya, at matematika. Nililinang nito ang kritikal na pag-iisip, paglutas ng problema, at mga kasanayan sa pagsusuri, na naghahanda sa mga mag-aaral para sa mga kurso sa kolehiyo at mga karera tulad ng inhenyeriya, medisina, arkitektura, teknolohiyang pang-impormasyon, at iba pang larangang nauugnay sa agham.",
+        # Developers Page
+        "THE DEVELOPERS": "MGA TAGABUO",
+        "THE ADVISER": "ANG TAGAPAYO",
+        "The developers/researchers extend their sincere appreciation to": "Ang mga tagabuo/mananaliksik ay taos-pusong nagpapasalamat kay",
+        ", their research adviser, for her invaluable guidance, unwavering support, and encouragement throughout the conduct of the study. Her expertise, patience, and constructive feedback greatly contributed to the successful completion of the research. As one of the key individuals behind the realization of Lundayang Marians, her guidance and dedication played an essential role in bringing the project to fruition.": ", ang kanilang tagapayo sa pananaliksik, para sa kanyang mahalagang patnubay, walang matagag na suporta, at pagpapalakas ng loob sa buong panahon ng pag-aaral. Ang kanyang dalubhasa, pasensya, at nakabubuo na puna ay malaki ang naiambag sa matagumpay na pagkumpleto ng pananaliksik. Bilang isa sa mga pangunahing indibidwal sa likod ng pagsasakatuparan ng Lundayang Marians, ang kanyang patnubay at dedikasyon ay nagkaroon ng mahalagang gampanin sa pagtatagumpay ng proyekto.",
 
         # Detail Page labels
         "AUTHOR": "MAY-AKDA",
@@ -232,6 +235,23 @@ TRANSLATIONS = {
         "DELETE": "BURAHIN",
         "Researches you might like:": "Mga pananaliksik na maaari mong magustuhan:",
         "Streaming secure document copy...": "Tumatanggap ng ligtas na kopya ng dokumento...",
+
+        # Admin Upload Form
+        "Edit Research Paper": "I-edit ang Papel Pananaliksik",
+        "Upload Research Paper": "I-upload ang Papel Pananaliksik",
+        "Research Title": "Pamagat ng Pananaliksik",
+        "Research Abstract": "Buod ng Pananaliksik (Abstract)",
+        "Strand Category": "Kategorya ng Strand",
+        "Academic Year": "Taong Akademiko",
+        "Research Type": "Uri ng Pananaliksik",
+        "Subject Area": "Larangan ng Paksa",
+        "Authors / Researchers (Comma Separated)": "Mga May-akda / Mananaliksik (Nakahati sa Koma)",
+        "Research Adviser": "Tagapayo sa Pananaliksik",
+        "Awards / Recognition (Optional)": "Mga Parangal / Pagkilala (Opsyonal)",
+        "Keywords / Tags (Comma Separated)": "Mga Susing Salita / Tag (Nakahati sa Koma)",
+        "Upload Research PDF Copy": "I-upload ang Kopya ng PDF ng Pananaliksik",
+        "Update Research Paper": "I-update ang Papel Pananaliksik",
+        "Upload & Register Research Paper": "I-upload at I-rehistro ang Papel Pananaliksik",
 
         # FAQ Page
         "FREQUENTLY ASKED QUESTIONS": "MGA MADALAS ITANONG (FAQ)",

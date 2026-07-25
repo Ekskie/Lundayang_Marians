@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if paper is defined and paper %}Edit Research Paper - Admin Portal{% else %}Upload Research Paper - Admin Portal{% endif %}{% endblock %}
+{% block title %}{% if paper is defined and paper %}{{ t('Edit Research Paper') }} - Admin Portal{% else %}{{ t('Upload Research Paper') }} - Admin Portal{% endif %}{% endblock %}
 
 {% block extra_head %}
 <style>
     /* Custom container for upload page */
     .upload-page-container {
-        max-width: 1200px;
+        max-width: 1240px;
         margin: 2.5rem auto;
         padding: 0 2rem;
         width: 100%;
@@ -14,7 +14,7 @@
     }
 
     .upload-title-container {
-        margin-bottom: 3rem;
+        margin-bottom: 2.5rem;
         display: flex;
         justify-content: flex-start;
     }
@@ -22,26 +22,51 @@
     .upload-title-bar {
         background-color: #002060;
         color: #ffffff;
-        padding: 10px 30px;
+        padding: 12px 36px;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        font-weight: bold;
+        font-size: 1.35rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        display: inline-block;
-        min-width: 380px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 12px rgba(0, 32, 96, 0.18);
+        border-radius: 4px;
     }
 
     .upload-card {
         background: #ffffff;
-        border: 3px solid #000000;
-        border-radius: 12px;
-        padding: 2.5rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid #cbd5e1;
+        border-top: 4px solid #002060;
+        border-radius: 16px;
+        padding: 2.5rem 3rem;
+        box-shadow: 0 10px 30px rgba(0, 32, 96, 0.06);
         box-sizing: border-box;
         width: 100%;
         margin-bottom: 4rem;
+    }
+
+    /* Form Section Badges */
+    .form-section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #002060;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .form-section-icon {
+        width: 18px;
+        height: 18px;
+        color: #002060;
     }
 
     /* 2-Column form layout */
@@ -61,42 +86,63 @@
     .upload-grid-right {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
 
     .form-group {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.45rem;
         width: 100%;
     }
 
     .form-label {
         font-family: 'Poppins', sans-serif;
-        font-weight: 800;
-        font-size: 0.85rem;
-        color: #000000;
+        font-weight: 700;
+        font-size: 0.82rem;
+        color: #1e293b;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.04em;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .form-control {
         width: 100%;
-        border: 3px solid #000000;
-        border-radius: 8px;
-        padding: 0.65rem 0.9rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
         font-size: 0.95rem;
         font-family: 'Poppins', sans-serif;
-        background-color: #ffffff;
+        background-color: #f8fafc;
+        color: #0f172a;
         outline: none;
         box-sizing: border-box;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition: all 0.2s ease-in-out;
     }
 
     .form-control:focus {
         border-color: #002060;
-        box-shadow: 0 0 10px rgba(0, 32, 96, 0.12);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(0, 32, 96, 0.1);
+    }
+
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2002060' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+    }
+
+    .form-hint {
+        color: #64748b;
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 0.15rem;
     }
 
     .form-grid-2 {
@@ -105,94 +151,172 @@
         gap: 1.25rem;
     }
 
+    /* Custom Input Specify Box */
+    .custom-specify-box {
+        margin-top: 0.4rem;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Premium Drag & Drop Upload Zone */
     .drag-drop-zone {
-        border: 3px dashed #002060;
-        border-radius: 10px;
-        padding: 1.5rem 1rem;
+        border: 2px dashed #002060;
+        border-radius: 12px;
+        padding: 2rem 1.5rem;
         text-align: center;
         background-color: #f8fafc;
         cursor: pointer;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.4rem;
+        justify-content: center;
+        gap: 0.5rem;
         transition: all 0.25s ease-in-out;
         box-sizing: border-box;
         width: 100%;
+        position: relative;
     }
 
     .drag-drop-zone:hover, .drag-drop-zone.dragover {
-        background-color: #eaedf2;
+        background-color: #f1f5f9;
         border-color: #1b3d82;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 32, 96, 0.08);
     }
 
     .upload-icon {
-        width: 38px;
-        height: 38px;
+        width: 44px;
+        height: 44px;
         color: #002060;
         transition: transform 0.2s;
     }
 
     .drag-drop-zone:hover .upload-icon {
-        transform: translateY(-4px) scale(1.05);
+        transform: translateY(-4px) scale(1.08);
     }
 
     .upload-text {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: #000000;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
         margin: 0;
     }
 
     .upload-subtext {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.75rem;
-        color: #475569;
+        font-size: 0.78rem;
+        color: #64748b;
         margin: 0;
     }
 
-    .upload-btn {
-        background-color: #002060;
-        color: #ffffff;
-        border: 3px solid #000000;
-        padding: 0.85rem 2rem;
+    /* Selected File Preview Box */
+    .selected-file-badge {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #ecfdf5;
+        border: 1.5px solid #10b981;
+        border-radius: 10px;
+        padding: 0.85rem 1.2rem;
+        margin-top: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+        animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .selected-file-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow: hidden;
+    }
+
+    .file-pdf-icon {
+        width: 28px;
+        height: 28px;
+        color: #10b981;
+        flex-shrink: 0;
+    }
+
+    .selected-file-name {
         font-family: 'Poppins', sans-serif;
-        font-weight: bold;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #065f46;
+        word-break: break-all;
+    }
+
+    .selected-file-size {
+        font-size: 0.75rem;
+        color: #047857;
+        margin-top: 2px;
+    }
+
+    .remove-file-btn {
+        background: transparent;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        border-radius: 4px;
+        transition: background 0.15s;
+    }
+
+    .remove-file-btn:hover {
+        background: #fee2e2;
+    }
+
+    .upload-btn {
+        background: linear-gradient(135deg, #002060 0%, #1b3d82 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        padding: 1rem 2rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
         font-size: 1.05rem;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.25s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: 0.6rem;
         width: 100%;
-        margin-top: 0.5rem;
+        margin-top: 1rem;
+        box-shadow: 0 6px 16px rgba(0, 32, 96, 0.2);
     }
 
     .upload-btn:hover {
-        background-color: #1b3d82;
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.15);
+        box-shadow: 0 10px 24px rgba(0, 32, 96, 0.3);
     }
 
     /* Responsiveness */
     @media (max-width: 992px) {
         .upload-form-grid {
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .upload-card {
-            padding: 1.5rem;
+            padding: 1.75rem;
         }
 
         .upload-title-bar {
             width: 100%;
             text-align: center;
-            min-width: unset;
+            justify-content: center;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -208,6 +332,7 @@
         z-index: 9999;
         justify-content: center;
         align-items: center;
+        backdrop-filter: blur(4px);
     }
 
     .upload-overlay.active {
@@ -220,7 +345,7 @@
         padding: 2.5rem 3rem;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        max-width: 380px;
+        max-width: 400px;
         width: 90%;
     }
 
@@ -297,7 +422,8 @@
     <!-- Title Bar -->
     <div class="upload-title-container">
         <div class="upload-title-bar">
-            {% if paper is defined and paper %}{{ t('Edit Research Paper') }}{% else %}{{ t('Upload Research Paper') }}{% endif %}
+            <i data-lucide="file-plus" style="width: 24px; height: 24px;"></i>
+            <span>{% if paper is defined and paper %}{{ t('Edit Research Paper') }}{% else %}{{ t('Upload Research Paper') }}{% endif %}</span>
         </div>
     </div>
 
@@ -306,45 +432,58 @@
         
         <!-- Alerts -->
         {% if success %}
-        <div class="alert alert-success" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
-            <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
-            <span>{{ success }}</span>
+        <div class="alert alert-success" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; background-color: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 1rem 1.25rem; border-radius: 10px;">
+            <i data-lucide="check-circle" style="width: 20px; height: 20px; flex-shrink: 0; color: #10b981;"></i>
+            <span style="font-weight: 600;">{{ success }}</span>
         </div>
         {% endif %}
 
         {% if error %}
-        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;">
-            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
-            <span>{{ error }}</span>
+        <div class="alert alert-danger" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; background-color: #fef2f2; border: 1px solid #ef4444; color: #991b1b; padding: 1rem 1.25rem; border-radius: 10px;">
+            <i data-lucide="alert-circle" style="width: 20px; height: 20px; flex-shrink: 0; color: #ef4444;"></i>
+            <span style="font-weight: 600;">{{ error }}</span>
         </div>
         {% endif %}
 
         <form action="{% if paper is defined and paper %}{{ url_for('edit_paper', paper_id=paper.id) }}{% else %}{{ url_for('admin_upload') }}{% endif %}" method="POST" enctype="multipart/form-data">
             <div class="upload-form-grid">
 
-                <!-- Left Column: Title & Abstract (Tall text fields) -->
+                <!-- Left Column: Title & Abstract -->
                 <div class="upload-grid-left">
+                    
+                    <div class="form-section-header">
+                        <i data-lucide="book-open" class="form-section-icon"></i>
+                        <span>1. {{ t('Research Title') }} & {{ t('ABSTRACT') }}</span>
+                    </div>
+
                     <!-- Research Title -->
-                    <div class="form-group" style="margin-bottom: 1.75rem;">
-                        <label for="title" class="form-label">Research Title</label>
-                        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. KALAT MO, SAGOT KO..." value="{% if paper is defined and paper %}{{ paper.get('title', '') }}{% endif %}" required>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label for="title" class="form-label">{{ t('Research Title') }} <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. KALAT MO, SAGOT KO: THE ACCEPTABILITY OF THE PROTOTYPE..." value="{% if paper is defined and paper %}{{ paper.get('title', '') }}{% endif %}" required>
                     </div>
 
                     <!-- Research Abstract -->
                     <div class="form-group" style="flex: 1; min-height: 480px;">
-                        <label for="abstract" class="form-label">Research Abstract</label>
-                        <textarea id="abstract" name="abstract" class="form-control" placeholder="Enter the full research abstract..." required style="resize: vertical; line-height: 1.65; flex: 1; height: 100%; min-height: 420px;">{% if paper is defined and paper %}{{ paper.get('abstract', '') }}{% endif %}</textarea>
+                        <label for="abstract" class="form-label">{{ t('Research Abstract') }} <span style="color: #ef4444;">*</span></label>
+                        <textarea id="abstract" name="abstract" class="form-control" placeholder="Enter the full research abstract here..." required style="resize: vertical; line-height: 1.65; flex: 1; height: 100%; min-height: 420px;">{% if paper is defined and paper %}{{ paper.get('abstract', '') }}{% endif %}</textarea>
                     </div>
+
                 </div>
 
-                <!-- Right Column: Secondary metadata fields, upload file, and submit button -->
+                <!-- Right Column: Metadata fields, Upload zone, Submit -->
                 <div class="upload-grid-right">
+
+                    <!-- Section 2: Classification -->
+                    <div class="form-section-header">
+                        <i data-lucide="layers" class="form-section-icon"></i>
+                        <span>2. Classification & Metadata</span>
+                    </div>
                     
                     <!-- Strand Category & Academic Year -->
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label for="strand" class="form-label">Strand Category</label>
-                            <select id="strand" name="strand" class="form-control" style="cursor: pointer;" required>
+                            <label for="strand" class="form-label">{{ t('Strand Category') }} <span style="color: #ef4444;">*</span></label>
+                            <select id="strand" name="strand" class="form-control" required>
                                 <option value="">-- Select Strand --</option>
                                 <option value="HUMSS" {% if paper is defined and paper and paper.get('strand') == 'HUMSS' %}selected{% endif %}>HUMSS (Humanities & Social Sciences)</option>
                                 <option value="ABM" {% if paper is defined and paper and paper.get('strand') == 'ABM' %}selected{% endif %}>ABM (Accountancy, Business & Management)</option>
@@ -353,65 +492,117 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="academic_year" class="form-label">Academic Year</label>
-                            <input type="text" id="academic_year" name="academic_year" class="form-control" placeholder="e.g. 2025-2026" value="{% if paper is defined and paper %}{{ paper.get('academic_year', '') }}{% endif %}" required>
+                            <label for="academic_year" class="form-label">{{ t('Academic Year') }} <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="academic_year" name="academic_year" class="form-control" placeholder="e.g. 2024-2025" value="{% if paper is defined and paper %}{{ paper.get('academic_year', '') }}{% endif %}" required>
                         </div>
                     </div>
 
-                    <!-- Research Type & Subject Area -->
+                    <!-- Research Type & Subject Area (Modern Dropdowns + Custom specify) -->
                     <div class="form-grid-2">
+                        <!-- Research Type Dropdown -->
                         <div class="form-group">
-                            <label for="research_type" class="form-label">Research Type</label>
-                            <input type="text" id="research_type" name="research_type" class="form-control" placeholder="e.g. Quantitative / Qualitative" value="{% if paper is defined and paper %}{{ paper.get('research_type', '') }}{% endif %}" required>
+                            <label for="research_type_select" class="form-label">{{ t('Research Type') }} <span style="color: #ef4444;">*</span></label>
+                            <select id="research_type_select" class="form-control" onchange="toggleCustomInput('research_type')" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="Quantitative">Quantitative</option>
+                                <option value="Qualitative">Qualitative</option>
+                                <option value="Mixed Methods">Mixed Methods</option>
+                                <option value="Experimental">Experimental</option>
+                                <option value="Descriptive">Descriptive</option>
+                                <option value="Action Research">Action Research</option>
+                                <option value="__CUSTOM__">Other (Specify below)</option>
+                            </select>
+                            <input type="text" id="research_type_custom" class="form-control custom-specify-box" placeholder="Type custom research type..." style="display: none;">
+                            <!-- Final submitted form value -->
+                            <input type="hidden" id="research_type" name="research_type" value="{% if paper is defined and paper %}{{ paper.get('research_type', '') }}{% endif %}">
                         </div>
                         
+                        <!-- Subject Area Dropdown -->
                         <div class="form-group">
-                            <label for="subject_area" class="form-label">Subject Area</label>
-                            <input type="text" id="subject_area" name="subject_area" class="form-control" placeholder="e.g. Applied Science / Inquiries" value="{% if paper is defined and paper %}{{ paper.get('subject_area', '') }}{% endif %}" required>
+                            <label for="subject_area_select" class="form-label">{{ t('Subject Area') }} <span style="color: #ef4444;">*</span></label>
+                            <select id="subject_area_select" class="form-control" onchange="toggleCustomInput('subject_area')" required>
+                                <option value="">-- Select Subject Area --</option>
+                                <option value="Inquiries, Investigations, and Immersion">Inquiries, Investigations, & Immersion</option>
+                                <option value="Practical Research 1">Practical Research 1 (Qualitative)</option>
+                                <option value="Practical Research 2">Practical Research 2 (Quantitative)</option>
+                                <option value="Applied Science & Technology">Applied Science & Technology</option>
+                                <option value="Business & Entrepreneurship">Business & Entrepreneurship</option>
+                                <option value="Humanities & Social Sciences">Humanities & Social Sciences</option>
+                                <option value="Environmental Science">Environmental Science</option>
+                                <option value="__CUSTOM__">Other (Specify below)</option>
+                            </select>
+                            <input type="text" id="subject_area_custom" class="form-control custom-specify-box" placeholder="Type custom subject area..." style="display: none;">
+                            <!-- Final submitted form value -->
+                            <input type="hidden" id="subject_area" name="subject_area" value="{% if paper is defined and paper %}{{ paper.get('subject_area', '') }}{% endif %}">
                         </div>
+                    </div>
+
+                    <!-- Section 3: Authors & Adviser -->
+                    <div class="form-section-header" style="margin-top: 0.5rem;">
+                        <i data-lucide="users" class="form-section-icon"></i>
+                        <span>3. {{ t('AUTHOR') }} & {{ t('ADVISER') }}</span>
                     </div>
 
                     <!-- Authors / Researchers -->
                     <div class="form-group">
-                        <label for="authors" class="form-label">Authors / Researchers (Comma Separated)</label>
+                        <label for="authors" class="form-label">{{ t('Authors / Researchers (Comma Separated)') }} <span style="color: #ef4444;">*</span></label>
                         <input type="text" id="authors" name="authors" class="form-control" placeholder="e.g. Gabrielle A. Dimatatac, Mark Andrew Y. Montales" value="{% if paper is defined and paper %}{{ paper.get('authors', []) | join(', ') }}{% endif %}" required>
-                        <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 0.15rem; margin-bottom: -0.25rem;">Separate multiple names with commas.</small>
+                        <span class="form-hint">Separate multiple researcher names with commas.</span>
                     </div>
 
                     <!-- Adviser & Awards -->
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label for="adviser" class="form-label">Research Adviser</label>
+                            <label for="adviser" class="form-label">{{ t('Research Adviser') }} <span style="color: #ef4444;">*</span></label>
                             <input type="text" id="adviser" name="adviser" class="form-control" placeholder="e.g. Ms. Maureen L. Cruz" value="{% if paper is defined and paper %}{{ paper.get('adviser', '') }}{% endif %}" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="awards" class="form-label">Awards / Recognition (Optional)</label>
+                            <label for="awards" class="form-label">{{ t('Awards / Recognition (Optional)') }}</label>
                             <input type="text" id="awards" name="awards" class="form-control" placeholder="e.g. Best in Research" value="{% if paper is defined and paper and paper.get('awards') %}{{ paper.get('awards', '') }}{% endif %}">
                         </div>
                     </div>
 
                     <!-- Keywords / Tags -->
                     <div class="form-group">
-                        <label for="keywords" class="form-label">Keywords / Tags (Comma Separated)</label>
+                        <label for="keywords" class="form-label">{{ t('Keywords / Tags (Comma Separated)') }}</label>
                         <input type="text" id="keywords" name="keywords" class="form-control" placeholder="e.g. waste segregator, recycling, arduino" value="{% if paper is defined and paper %}{{ paper.get('keywords', []) | join(', ') }}{% endif %}">
+                    </div>
+
+                    <!-- Section 4: PDF Document -->
+                    <div class="form-section-header" style="margin-top: 0.5rem;">
+                        <i data-lucide="file-text" class="form-section-icon"></i>
+                        <span>4. {{ t('Upload Research PDF Copy') }}</span>
                     </div>
 
                     <!-- Custom Drag & Drop PDF Upload Zone -->
                     <div class="form-group">
-                        <label class="form-label">Upload Research PDF Copy</label>
                         <div class="drag-drop-zone" id="drop-zone">
                             <i data-lucide="upload-cloud" class="upload-icon"></i>
-                            <span class="upload-text" id="upload-status-text">{% if paper is defined and paper %}Leave blank to keep the current PDF, or drag & drop a replacement PDF here{% else %}Drag & Drop PDF here or click to browse{% endif %}</span>
+                            <span class="upload-text" id="upload-status-text">{% if paper is defined and paper %}Leave blank to keep current PDF, or click to replace{% else %}Drag & Drop PDF here or click to browse{% endif %}</span>
                             <span class="upload-subtext">Only .pdf format accepted (Max 50MB)</span>
                             <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" {% if not (paper is defined and paper) %}required{% endif %} style="display: none;">
+                        </div>
+
+                        <!-- Selected File Preview Badge -->
+                        <div class="selected-file-badge" id="selected-file-badge">
+                            <div class="selected-file-info">
+                                <i data-lucide="file-check" class="file-pdf-icon"></i>
+                                <div>
+                                    <div class="selected-file-name" id="badge-file-name">filename.pdf</div>
+                                    <div class="selected-file-size" id="badge-file-size">0.0 MB</div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-file-btn" id="remove-file-btn" title="Remove selected file">
+                                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="upload-btn">
-                        <i data-lucide="upload-cloud" style="width: 20px; height: 20px;"></i>
-                        {% if paper is defined and paper %}Update Research Paper{% else %}Upload & Register Research Paper{% endif %}
+                    <button type="submit" class="upload-btn" id="submit-upload-btn">
+                        <i data-lucide="upload-cloud" style="width: 22px; height: 22px;"></i>
+                        <span>{% if paper is defined and paper %}{{ t('Update Research Paper') }}{% else %}{{ t('Upload & Register Research Paper') }}{% endif %}</span>
                     </button>
                     
                 </div>
@@ -425,10 +616,88 @@
 
 {% block extra_js %}
 <script>
+    // Handle Research Type & Subject Area custom input syncing
+    function initDropdownSync(fieldPrefix, initialValue) {
+        const selectEl = document.getElementById(`${fieldPrefix}_select`);
+        const customEl = document.getElementById(`${fieldPrefix}_custom`);
+        const hiddenEl = document.getElementById(fieldPrefix);
+        if (!selectEl || !hiddenEl) return;
+
+        let matched = false;
+        if (initialValue) {
+            for (let i = 0; i < selectEl.options.length; i++) {
+                if (selectEl.options[i].value.toLowerCase() === initialValue.toLowerCase()) {
+                    selectEl.selectedIndex = i;
+                    matched = true;
+                    break;
+                }
+            }
+        }
+
+        if (initialValue && !matched) {
+            selectEl.value = "__CUSTOM__";
+            if (customEl) {
+                customEl.value = initialValue;
+                customEl.style.display = "block";
+                customEl.required = true;
+            }
+        }
+
+        syncHiddenValue(fieldPrefix);
+
+        selectEl.addEventListener("change", () => toggleCustomInput(fieldPrefix));
+        if (customEl) {
+            customEl.addEventListener("input", () => syncHiddenValue(fieldPrefix));
+        }
+    }
+
+    function toggleCustomInput(fieldPrefix) {
+        const selectEl = document.getElementById(`${fieldPrefix}_select`);
+        const customEl = document.getElementById(`${fieldPrefix}_custom`);
+        if (!selectEl) return;
+
+        if (selectEl.value === "__CUSTOM__") {
+            if (customEl) {
+                customEl.style.display = "block";
+                customEl.required = true;
+                customEl.focus();
+            }
+        } else {
+            if (customEl) {
+                customEl.style.display = "none";
+                customEl.required = false;
+            }
+        }
+        syncHiddenValue(fieldPrefix);
+    }
+
+    function syncHiddenValue(fieldPrefix) {
+        const selectEl = document.getElementById(`${fieldPrefix}_select`);
+        const customEl = document.getElementById(`${fieldPrefix}_custom`);
+        const hiddenEl = document.getElementById(fieldPrefix);
+        if (!selectEl || !hiddenEl) return;
+
+        if (selectEl.value === "__CUSTOM__") {
+            hiddenEl.value = customEl ? customEl.value.trim() : "";
+        } else {
+            hiddenEl.value = selectEl.value;
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
+        // Initial setup for Research Type and Subject Area
+        const initTypeVal = document.getElementById("research_type").value;
+        const initSubjVal = document.getElementById("subject_area").value;
+        initDropdownSync("research_type", initTypeVal);
+        initDropdownSync("subject_area", initSubjVal);
+
+        // Drag & Drop + File Upload handling
         const dropZone = document.getElementById("drop-zone");
         const fileInput = document.getElementById("pdf_file");
-        const statusText = document.getElementById("upload-status-text");
+        const fileBadge = document.getElementById("selected-file-badge");
+        const badgeName = document.getElementById("badge-file-name");
+        const badgeSize = document.getElementById("badge-file-size");
+        const removeBtn = document.getElementById("remove-file-btn");
 
         // Click zone to open input
         dropZone.addEventListener("click", () => {
@@ -460,9 +729,9 @@
             const dt = e.dataTransfer;
             const files = dt.files;
             if (files.length > 0) {
-                if (files[0].name.toLowerCase().endsWith('.pdf')) {
+                if (files[0].name.toLowerCase().endswith('.pdf') || files[0].type === "application/pdf") {
                     fileInput.files = files;
-                    updateFileName(files[0].name);
+                    updateFilePreview(files[0]);
                 } else {
                     alert("Only PDF files are supported!");
                 }
@@ -472,15 +741,26 @@
         // Handle file selected from file dialog
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
-                updateFileName(fileInput.files[0].name);
+                updateFilePreview(fileInput.files[0]);
             }
         });
 
-        function updateFileName(name) {
-            statusText.innerHTML = `Selected PDF: <strong style="color: #002060; word-break: break-all;">${name}</strong>`;
-            dropZone.style.borderStyle = "solid";
-            dropZone.style.borderColor = "#10b981"; // success green color
-            dropZone.style.backgroundColor = "#ecfdf5"; // light success background
+        // Remove selected file
+        if (removeBtn) {
+            removeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                fileInput.value = "";
+                fileBadge.style.display = "none";
+                dropZone.style.display = "flex";
+            });
+        }
+
+        function updateFilePreview(file) {
+            badgeName.textContent = file.name;
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            badgeSize.textContent = `${sizeInMB} MB`;
+            fileBadge.style.display = "flex";
+            dropZone.style.display = "none";
         }
 
         // Show upload overlay on form submit
@@ -489,7 +769,10 @@
 
         if (uploadForm && uploadOverlay) {
             uploadForm.addEventListener("submit", (e) => {
-                // Only show overlay if a PDF file is selected
+                // Ensure hidden values are synced
+                syncHiddenValue("research_type");
+                syncHiddenValue("subject_area");
+
                 if (fileInput.files.length > 0) {
                     uploadOverlay.classList.add("active");
                 }

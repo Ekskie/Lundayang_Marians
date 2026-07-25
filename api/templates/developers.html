@@ -158,6 +158,79 @@
             min-width: unset;
         }
     }
+
+    /* Adviser Section Styling */
+    .adviser-section-container {
+        margin-top: 3.5rem;
+        margin-bottom: 2.5rem;
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        width: 100%;
+        padding: 1rem 0;
+    }
+
+    .adviser-image-container {
+        width: 175px;
+        height: 175px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid #bce2f5;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        background-color: #e0f2fe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .adviser-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .adviser-content-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .adviser-title-bar {
+        background-color: #002060;
+        color: #ffffff;
+        padding: 6px 30px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .adviser-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.65;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    @media (max-width: 850px) {
+        .adviser-section-container {
+            flex-direction: column;
+            text-align: center;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .adviser-content-box {
+            align-items: center;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -167,7 +240,7 @@
     <!-- Title Bar -->
     <div class="developers-title-container">
         <div class="developers-title-bar">
-            {{ t('THE DEVELOPERS') if t('THE DEVELOPERS') != 'THE DEVELOPERS' else 'THE DEVELOPERS' }}
+            {{ t('THE DEVELOPERS') }}
         </div>
     </div>
 
@@ -404,6 +477,23 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Adviser Section -->
+    <div class="adviser-section-container">
+        <div class="adviser-image-container">
+            <img src="{{ url_for('static', filename='images/photo_of_developers/Maureen_L_Cruz.jpg') }}"
+                alt="Ms. Maureen L. Cruz, LPT" class="adviser-image">
+        </div>
+        <div class="adviser-content-box">
+            <div class="adviser-title-bar">
+                {{ t('THE ADVISER') }}
+            </div>
+            <p class="adviser-text">
+                {{ t('The developers/researchers extend their sincere appreciation to') }}
+                <strong><em>Ms. Maureen L. Cruz, LPT</em></strong>{{ t(', their research adviser, for her invaluable guidance, unwavering support, and encouragement throughout the conduct of the study. Her expertise, patience, and constructive feedback greatly contributed to the successful completion of the research. As one of the key individuals behind the realization of Lundayang Marians, her guidance and dedication played an essential role in bringing the project to fruition.') }}
+            </p>
+        </div>
     </div>
 
 </div>
