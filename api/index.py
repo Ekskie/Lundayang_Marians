@@ -20,6 +20,19 @@ class VercelPathFixMiddleware:
         self.wsgi_app = wsgi_app
 
     def __call__(self, environ, start_response):
+        invoke_path = environ.get('HTTP_X_INVOKE_PATH') or environ.get('HTTP_X_FORWARDED_PATH')
+        if invoke_path:
+            environ['PATH_INFO'] = invoke_path
+            return self.wsgi_app(environ, start_response)
+
+        qs = environ.get('QUERY_STRING', '')
+        if '__path__=' in qs:
+            from urllib.parse import parse_qs
+            parsed_qs = parse_qs(qs)
+            if '__path__' in parsed_qs and parsed_qs['__path__']:
+                environ['PATH_INFO'] = parsed_qs['__path__'][0]
+                return self.wsgi_app(environ, start_response)
+
         path_info = environ.get('PATH_INFO', '')
         if path_info in ('/api/index.py', '/api/index', '/api'):
             environ['PATH_INFO'] = '/'
@@ -27,6 +40,7 @@ class VercelPathFixMiddleware:
             environ['PATH_INFO'] = path_info[len('/api/index.py'):]
         elif path_info.startswith('/api/index/'):
             environ['PATH_INFO'] = path_info[len('/api/index'):]
+
         return self.wsgi_app(environ, start_response)
 
 app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
