@@ -1,15 +1,49 @@
 import os
+from urllib.parse import urlparse
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import io
 import requests
+import hashlib
 
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "lundayang_marians_default_secret_key_12345")
+
+# WSGI Middleware to normalize PATH_INFO for Vercel serverless rewrites
+class VercelPathFixMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        invoke_path = environ.get('HTTP_X_INVOKE_PATH') or environ.get('HTTP_X_FORWARDED_PATH')
+        if invoke_path:
+            environ['PATH_INFO'] = invoke_path
+            return self.wsgi_app(environ, start_response)
+
+        qs = environ.get('QUERY_STRING', '')
+        if '__path__=' in qs:
+            from urllib.parse import parse_qs
+            parsed_qs = parse_qs(qs)
+            if '__path__' in parsed_qs and parsed_qs['__path__']:
+                environ['PATH_INFO'] = parsed_qs['__path__'][0]
+                return self.wsgi_app(environ, start_response)
+
+        path_info = environ.get('PATH_INFO', '')
+        if path_info in ('/api/index.py', '/api/index', '/api'):
+            environ['PATH_INFO'] = '/'
+        elif path_info.startswith('/api/index.py/'):
+            environ['PATH_INFO'] = path_info[len('/api/index.py'):]
+        elif path_info.startswith('/api/index/'):
+            environ['PATH_INFO'] = path_info[len('/api/index'):]
+
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
@@ -174,6 +208,30 @@ TRANSLATIONS = {
         "Create an Account": "Likhain ang Account",
         "Join the Lundayang Marians research community": "Sumali sa komunidad ng pananaliksik ng Lundayang Marians",
         "Confirm Password": "Kumpirmahin ang Password",
+        "Email Address": "Email Address",
+        "Student ID or Email": "Student ID o Email",
+        "Forgot Password?": "Nakalimutan ang Password?",
+        "Enter your email address to receive a password reset link.": "Ipasok ang iyong email address upang makatanggap ng link sa pag-reset ng password.",
+        "Send Reset Link": "Ipadala ang Link sa Pag-reset",
+        "Back to Log In": "Bumalik sa Log In",
+        "Reset Password": "I-reset ang Password",
+        "Enter your new password below.": "Ipasok ang iyong bagong password sa ibaba.",
+        "Set New Password": "I-set ang Bagong Password",
+        "Verified": "Na-verify",
+        "Verification Pending": "Naghihintay ng Pag-verify",
+        "Unverified": "Hindi Pa Na-verify",
+        "Verification email sent to": "Naipadala ang email sa pag-verify sa",
+        "Reverted to old email until verified.": "Mananatili sa lumang email hanggang ma-verify.",
+        "Verify Your Email Address": "I-verify ang Iyong Email Address",
+        "Please check your inbox and click the link to confirm your email change.": "Paki-check ang iyong inbox at i-click ang link upang kumpirmahin ang pagbabago ng email.",
+        "Or enter 8-digit verification code:": "O ipasok ang 8-digit na code sa pag-verify:",
+        "Verify Code": "I-verify ang Code",
+        "Resend Verification Email": "Muling Ipadala ang Email",
+        "I've Verified My Email": "Na-verify Ko Na Ang Aking Email",
+        "Verification Details": "Mga Detalye ng Pag-verify",
+        "Saving Changes...": "Inipon ang mga Pagbabago...",
+        "Sending Email...": "Ipinapadala ang Email...",
+        "Verifying...": "Bina-verify...",
 
         # Strand full names
         "Humanities and Social Sciences": "Humanidades at Agham Panlipunan",
@@ -357,14 +415,13 @@ def signup():
         student_id = request.form.get('student_id', '').strip()
         name = request.form.get('name', '').strip()
         grade_section = request.form.get('grade_section', '').strip()
+        email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
         
-        # Derive email
-        email = f"{student_id}@smapi.edu"
         role = "student"
 
-        if not student_id or not name or not grade_section or not password or not confirm_password:
+        if not student_id or not name or not grade_section or not email or not password or not confirm_password:
             error = "All fields are required."
         elif password != confirm_password:
             error = "Passwords do not match."
@@ -387,7 +444,7 @@ def signup():
                         "email": email,
                         "role": role
                     }).execute()
-                return redirect(url_for('login', msg="Account created successfully! Please log in."))
+                return redirect(url_for('login', msg="Account created successfully! Please check your email for confirmation or log in."))
             except Exception as e:
                 error = f"Error during sign up: {str(e)}"
 
@@ -402,24 +459,34 @@ def login():
     msg = request.args.get('msg')
     
     if request.method == 'POST':
-        student_id = request.form.get('student_id', '').strip()
+        login_input = request.form.get('student_id', '').strip()
         password = request.form.get('password', '')
 
-        if not student_id or not password:
-            error = "Student ID and Password are required."
+        if not login_input or not password:
+            error = "Student ID/Email and Password are required."
         elif not supabase or not supabase_auth:
             error = "Database connection unavailable. Please try again later."
         else:
             try:
-                profile_res = supabase.table("profiles").select("email, role").eq("student_id", student_id).execute()
-                if not profile_res.data:
-                    error = "Invalid Student ID."
+                profile_res = supabase.table("profiles").select("id, email, role, student_id").or_(f"student_id.eq.{login_input},email.eq.{login_input.lower()}").execute()
+                
+                email_to_use = None
+                student_id_to_use = login_input
+                role = "student"
+
+                if profile_res.data:
+                    profile = profile_res.data[0]
+                    email_to_use = profile['email']
+                    student_id_to_use = profile['student_id']
+                    role = profile['role']
+                elif "@" in login_input:
+                    email_to_use = login_input.lower()
                 else:
-                    email = profile_res.data[0]['email']
-                    role = profile_res.data[0]['role']
-                    
+                    error = "Invalid Student ID or Email."
+
+                if email_to_use and not error:
                     auth_res = supabase_auth.auth.sign_in_with_password({
-                        "email": email,
+                        "email": email_to_use,
                         "password": password
                     })
                     
@@ -427,7 +494,7 @@ def login():
                         session['user'] = {
                             'id': auth_res.user.id,
                             'email': auth_res.user.email,
-                            'student_id': student_id
+                            'student_id': student_id_to_use
                         }
                         session['access_token'] = auth_res.session.access_token
                         session['role'] = role
@@ -438,6 +505,82 @@ def login():
                 error = f"Login failed: {str(e)}"
                 
     return render_template('login.html', error=error, msg=msg)
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if is_logged_in():
+        return redirect(url_for('home'))
+        
+    error = None
+    msg = None
+    
+    if request.method == 'POST':
+        email_input = request.form.get('email', '').strip().lower()
+        if not email_input:
+            error = "Email address is required."
+        elif not supabase_auth:
+            error = "Database connection unavailable. Please try again later."
+        else:
+            try:
+                redirect_url = request.url_root.rstrip('/') + url_for('reset_password')
+                supabase_auth.auth.reset_password_for_email(
+                    email_input,
+                    options={"redirect_to": redirect_url}
+                )
+                msg = "Password reset instructions have been sent to your email address."
+            except Exception as e:
+                error = f"Failed to send reset link: {str(e)}"
+                
+    return render_template('forgot_password.html', error=error, msg=msg)
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    error = None
+    msg = None
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        access_token = request.form.get('access_token', '').strip()
+        code = request.form.get('code', '').strip()
+        token_hash = request.form.get('token_hash', '').strip()
+
+        if not password or not confirm_password:
+            error = "All fields are required."
+        elif password != confirm_password:
+            error = "Passwords do not match."
+        elif len(password) < 6:
+            error = "Password must be at least 6 characters."
+        elif not supabase or not supabase_auth:
+            error = "Database connection unavailable."
+        else:
+            try:
+                user_id = None
+                
+                if access_token:
+                    res = supabase_auth.auth.get_user(access_token)
+                    if res and res.user:
+                        user_id = res.user.id
+                elif code:
+                    res = supabase_auth.auth.exchange_code_for_session({"auth_code": code})
+                    if res and res.user:
+                        user_id = res.user.id
+                elif token_hash:
+                    res = supabase_auth.auth.verify_otp({"token_hash": token_hash, "type": "recovery"})
+                    if res and res.user:
+                        user_id = res.user.id
+                elif is_logged_in():
+                    user_id = session['user']['id']
+
+                if user_id:
+                    supabase.auth.admin.update_user_by_id(user_id, {"password": password})
+                    return redirect(url_for('login', msg="Password reset successfully! Please log in with your new password."))
+                else:
+                    error = "Invalid or expired reset link. Please request a new password reset."
+            except Exception as e:
+                error = f"Failed to reset password: {str(e)}"
+
+    return render_template('reset_password.html', error=error, msg=msg)
 
 @app.route('/logout')
 def logout():
@@ -503,68 +646,11 @@ def home():
 def profile():
     error = None
     success = None
+    show_verification_modal = False
     user_id = session['user']['id']
     
-    # Default profile data from session
-    profile_data = {
-        "id": user_id,
-        "student_id": session['user']['student_id'],
-        "name": "",
-        "grade_section": "",
-        "email": session['user']['email'],
-        "role": session.get('role', 'student'),
-        "avatar_url": None
-    }
-    
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        grade_section = request.form.get('grade_section', '').strip()
-        email = request.form.get('email', '').strip()
-        
-        if not name or not grade_section or not email:
-            error = "All fields are required."
-        elif not supabase:
-            error = "Database connection unavailable."
-        else:
-            try:
-                update_data = {
-                    "name": name,
-                    "grade_section": grade_section,
-                    "email": email
-                }
-                
-                # Handle avatar upload to Supabase storage
-                avatar_file = request.files.get('avatar')
-                if avatar_file and avatar_file.filename:
-                    ext = os.path.splitext(avatar_file.filename)[1].lower()
-                    if ext in ['.jpg', '.jpeg', '.png', '.gif']:
-                        try:
-                            avatar_filename = f"{user_id}{ext}"
-                            file_bytes = avatar_file.read()
-                            
-                            # Try to remove old avatar first (ignore errors)
-                            try:
-                                storage_remove("avatars", avatar_filename)
-                            except:
-                                pass
-                            
-                            # Upload new avatar
-                            storage_upload("avatars", avatar_filename, file_bytes, avatar_file.content_type or "image/png")
-                            
-                            # Get public URL
-                            avatar_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{avatar_filename}"
-                            update_data["avatar_url"] = avatar_url
-                        except Exception as e:
-                            print("Error uploading avatar:", e)
-                            error = f"Error uploading photo: {str(e)}"
-                
-                supabase.table("profiles").update(update_data).eq("id", user_id).execute()
-                session['user']['email'] = email
-                success = "Profile updated successfully!"
-            except Exception as e:
-                error = f"Error updating profile: {str(e)}"
-    
-    # Load profile from database
+    # Load profile data from database
+    profile_data = None
     if supabase:
         try:
             res = supabase.table("profiles").select("*").eq("id", user_id).execute()
@@ -572,8 +658,223 @@ def profile():
                 profile_data = res.data[0]
         except Exception as e:
             print("DB profile load error:", e)
+
+    if not profile_data:
+        profile_data = {
+            "id": user_id,
+            "student_id": session['user']['student_id'],
+            "name": "",
+            "grade_section": "",
+            "email": session['user']['email'],
+            "role": session.get('role', 'student'),
+            "avatar_url": None
+        }
         
-    return render_template('profile.html', profile=profile_data, error=error, success=success)
+    old_email = profile_data['email']
+    is_email_verified = True
+    unconfirmed_email = None
+
+    # Check Supabase Auth user object for verified email status
+    if supabase_auth and session.get('access_token'):
+        try:
+            auth_res = supabase_auth.auth.get_user(session['access_token'])
+            if auth_res and auth_res.user:
+                auth_user = auth_res.user
+                
+                # Check for unconfirmed pending new email
+                unconfirmed_email = getattr(auth_user, 'new_email', None) or getattr(auth_user, 'unconfirmed_email', None)
+                
+                # Check if auth_user primary email is confirmed
+                email_confirmed = bool(getattr(auth_user, 'email_confirmed_at', None))
+                
+                # If Supabase Auth primary email is confirmed and differs from DB profile email:
+                if auth_user.email and auth_user.email != old_email and email_confirmed:
+                    # Verified! Update DB profile & session to new email
+                    supabase.table("profiles").update({"email": auth_user.email}).eq("id", user_id).execute()
+                    session['user']['email'] = auth_user.email
+                    profile_data['email'] = auth_user.email
+                    old_email = auth_user.email
+                    success = f"Email verified! Profile updated to {auth_user.email}."
+                elif not email_confirmed and not unconfirmed_email:
+                    is_email_verified = False
+        except Exception as e:
+            print("Error checking Supabase auth status:", e)
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        grade_section = request.form.get('grade_section', '').strip()
+        submitted_email = request.form.get('email', '').strip().lower()
+
+        if not name or not grade_section or not submitted_email:
+            error = "All fields are required."
+        elif not supabase:
+            error = "Database connection unavailable."
+        else:
+            try:
+                # Handle avatar upload
+                avatar_url = profile_data.get('avatar_url')
+                avatar_file = request.files.get('avatar')
+                if avatar_file and avatar_file.filename:
+                    ext = os.path.splitext(avatar_file.filename)[1].lower()
+                    if ext in ['.jpg', '.jpeg', '.png', '.gif']:
+                        try:
+                            avatar_filename = f"{user_id}{ext}"
+                            file_bytes = avatar_file.read()
+                            try:
+                                storage_remove("avatars", avatar_filename)
+                            except:
+                                pass
+                            storage_upload("avatars", avatar_filename, file_bytes, avatar_file.content_type or "image/png")
+                            avatar_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{avatar_filename}"
+                        except Exception as e:
+                            print("Error uploading avatar:", e)
+                            error = f"Error uploading photo: {str(e)}"
+
+                # Check if user is attempting to change their email address
+                if submitted_email != old_email:
+                    email_sent = False
+                    error_detail = None
+                    
+                    access_token = session.get('access_token')
+                    if access_token:
+                        # Direct HTTP call to Supabase auth/v1/user endpoint
+                        auth_url = f"{SUPABASE_URL}/auth/v1/user"
+                        headers = {
+                            "Authorization": f"Bearer {access_token}",
+                            "apikey": SUPABASE_KEY,
+                            "Content-Type": "application/json"
+                        }
+                        redirect_url = request.url_root.rstrip('/') + url_for('profile')
+                        payload = {
+                            "email": submitted_email,
+                            "email_redirect_to": redirect_url
+                        }
+                        try:
+                            resp = requests.put(auth_url, headers=headers, json=payload)
+                            if resp.status_code == 200:
+                                email_sent = True
+                            else:
+                                resp_data = resp.json() if resp.text else {}
+                                error_detail = resp_data.get('msg') or resp_data.get('message') or resp_data.get('error_description') or f"HTTP {resp.status_code}"
+                        except Exception as ex:
+                            error_detail = str(ex)
+                    else:
+                        error_detail = "User session expired. Please log in again."
+
+                    # Keep/revert profile email in database to the old email until verified!
+                    update_data = {
+                        "name": name,
+                        "grade_section": grade_section,
+                        "email": old_email,
+                        "avatar_url": avatar_url
+                    }
+                    supabase.table("profiles").update(update_data).eq("id", user_id).execute()
+                    profile_data.update(update_data)
+
+                    if email_sent:
+                        unconfirmed_email = submitted_email
+                        show_verification_modal = True
+                        success = f"Verification link sent to {submitted_email}! Please check your email to confirm."
+                    else:
+                        error = f"Failed to send email verification: {error_detail}"
+                else:
+                    # Update profile normally (email unchanged)
+                    update_data = {
+                        "name": name,
+                        "grade_section": grade_section,
+                        "email": old_email,
+                        "avatar_url": avatar_url
+                    }
+                    supabase.table("profiles").update(update_data).eq("id", user_id).execute()
+                    profile_data.update(update_data)
+                    if not error:
+                        success = "Profile updated successfully!"
+
+            except Exception as e:
+                error = f"Error updating profile: {str(e)}"
+
+    return render_template('profile.html', profile=profile_data, is_email_verified=is_email_verified, unconfirmed_email=unconfirmed_email, show_verification_modal=show_verification_modal, error=error, success=success)
+
+@app.route('/api/resend-verification', methods=['POST'])
+@login_required
+def resend_verification():
+    email = request.form.get('email', '').strip().lower()
+    access_token = session.get('access_token')
+    if not email:
+        return jsonify({"success": False, "error": "Email address is required."}), 400
+    if not access_token:
+        return jsonify({"success": False, "error": "Session expired. Please log in again."}), 401
+    
+    auth_url = f"{SUPABASE_URL}/auth/v1/user"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+    }
+    redirect_url = request.url_root.rstrip('/') + url_for('profile')
+    payload = {
+        "email": email,
+        "email_redirect_to": redirect_url
+    }
+    try:
+        resp = requests.put(auth_url, headers=headers, json=payload)
+        if resp.status_code == 200:
+            return jsonify({"success": True, "message": f"Verification email resent to {email}."})
+        else:
+            resp_data = resp.json() if resp.text else {}
+            err = resp_data.get('msg') or resp_data.get('message') or "Failed to resend verification email."
+            return jsonify({"success": False, "error": err}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/verify-email-code', methods=['POST'])
+@login_required
+def verify_email_code():
+    email = request.form.get('email', '').strip().lower()
+    token = request.form.get('token', '').strip()
+    access_token = session.get('access_token')
+    
+    if not email or not token:
+        return jsonify({"success": False, "error": "Email and 6-digit code are required."}), 400
+        
+    verify_url = f"{SUPABASE_URL}/auth/v1/verify"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+    }
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
+
+    types_to_try = ["email_change", "email", "signup"]
+    verified = False
+    error_msg = "Invalid or expired verification code."
+
+    for verify_type in types_to_try:
+        payload = {
+            "type": verify_type,
+            "email": email,
+            "token": token
+        }
+        try:
+            resp = requests.post(verify_url, headers=headers, json=payload)
+            if resp.status_code == 200:
+                verified = True
+                break
+            else:
+                resp_data = resp.json() if resp.text else {}
+                if resp_data.get('msg') or resp_data.get('message'):
+                    error_msg = resp_data.get('msg') or resp_data.get('message')
+        except Exception as e:
+            error_msg = str(e)
+
+    if verified:
+        user_id = session['user']['id']
+        # Update profile DB & session
+        supabase.table("profiles").update({"email": email}).eq("id", user_id).execute()
+        session['user']['email'] = email
+        return jsonify({"success": True, "message": f"Email successfully verified and updated to {email}!"})
+    else:
+        return jsonify({"success": False, "error": error_msg}), 400
 
 @app.route('/bookmarks')
 @login_required
@@ -784,21 +1085,27 @@ def stream_pdf(paper_id):
     
     try:
         res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
-        if res.data:
-            pdf_path = res.data[0]['pdf_path']
-            pdf_data = storage_download("research_papers", pdf_path)
-            return Response(
-                io.BytesIO(pdf_data),
-                mimetype="application/pdf",
-                headers={
-                    "Content-Disposition": "inline; filename=research.pdf",
-                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-                    "Pragma": "no-cache",
-                    "Expires": "0",
-                    "X-Content-Type-Options": "nosniff"
-                }
-            )
-        return jsonify({"error": "Paper not found."}), 404
+        if not res.data:
+            return jsonify({"error": "Paper not found."}), 404
+        
+        pdf_path = res.data[0]['pdf_path']
+        pdf_data = storage_download("research_papers", pdf_path)
+        etag = hashlib.md5(pdf_data).hexdigest()
+
+        # Check for conditional GET (If-None-Match)
+        if request.headers.get("If-None-Match") == etag:
+            return Response(status=304)
+
+        return Response(
+            pdf_data,
+            mimetype="application/pdf",
+            headers={
+                "Content-Disposition": "inline; filename=research.pdf",
+                "Cache-Control": "private, max-age=604800, immutable",
+                "ETag": etag,
+                "X-Content-Type-Options": "nosniff"
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
