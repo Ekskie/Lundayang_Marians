@@ -23,9 +23,9 @@
         {% endif %}
 
         <form action="{{ url_for('login') }}" method="POST">
-            <!-- Student ID Field -->
+            <!-- Student ID or Email Field -->
             <div class="form-group">
-                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID') }}"
+                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID or Email') }}"
                     required>
             </div>
 
@@ -42,8 +42,11 @@
             <button type="submit" class="btn-auth-submit">{{ t('Log In') }}</button>
         </form>
 
-        <!-- Registration & FAQ links -->
+        <!-- Registration & Forgot Password links -->
         <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.25rem;">
+            <div>
+                <a href="{{ url_for('forgot_password') }}">{{ t('Forgot Password?') }}</a>
+            </div>
             <div>
                 <a href="{{ url_for('signup') }}">{{ t('Create an Account') }}</a>
             </div>

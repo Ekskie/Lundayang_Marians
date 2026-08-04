@@ -1138,6 +1138,7 @@ footer {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 7;
+  line-clamp: 7;
   -webkit-box-orient: vertical;
 }
 
@@ -1159,6 +1160,7 @@ footer {
   text-transform: uppercase;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1198,6 +1200,7 @@ footer {
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

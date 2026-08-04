@@ -694,8 +694,7 @@
 
             try {
                 const pdfUrl = `/api/paper/${recId}/pdf`;
-                const loadingTask = pdfjsLib.getDocument(pdfUrl);
-                const pdfDoc = await loadingTask.promise;
+                const pdfDoc = window.getCachedPdfDocument ? await window.getCachedPdfDocument(pdfUrl) : await pdfjsLib.getDocument(pdfUrl).promise;
                 const page = await pdfDoc.getPage(1);
 
                 const viewport = page.getViewport({ scale: 0.3 });

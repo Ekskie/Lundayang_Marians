@@ -207,6 +207,157 @@
             min-width: unset;
         }
     }
+
+    /* Email Verification Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 32, 96, 0.45);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.25s ease;
+    }
+
+    .modal-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 3px solid #002060;
+        width: 90%;
+        max-width: 480px;
+        padding: 2.25rem 2rem 2rem 2rem;
+        box-shadow: 0 20px 50px rgba(0, 32, 96, 0.3);
+        text-align: center;
+        position: relative;
+        font-family: 'Poppins', sans-serif;
+        animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-close-btn {
+        position: absolute;
+        top: 12px;
+        right: 16px;
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #64748b;
+        cursor: pointer;
+        transition: color 0.2s;
+        line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+        color: #002060;
+    }
+
+    .modal-icon-circle {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background-color: #eff6ff;
+        border: 2px solid #bfdbfe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem auto;
+    }
+
+    .modal-title {
+        font-family: Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #002060;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-subtitle {
+        font-size: 0.92rem;
+        color: #475569;
+        margin-bottom: 1.25rem;
+        line-height: 1.5;
+    }
+
+    .modal-target-email-box {
+        background: #f8fafc;
+        border: 1.5px dashed #cbd5e1;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: center;
+    }
+
+    .btn-modal-primary {
+        background-color: #002060;
+        color: #ffffff;
+        border: 2px solid #002060;
+        border-radius: 8px;
+        padding: 0.65rem 1.25rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-modal-primary:hover {
+        background-color: #001540;
+        border-color: #001540;
+    }
+
+    .btn-modal-secondary {
+        background-color: #ffffff;
+        color: #002060;
+        border: 2px solid #002060;
+        border-radius: 8px;
+        padding: 0.65rem 1.25rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-modal-secondary:hover {
+        background-color: #f1f5f9;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes modalPop {
+        from { opacity: 0; transform: scale(0.9) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Button Loader Spinner */
+    .spin-loader {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 {% endblock %}
 
@@ -283,10 +434,40 @@
                     </div>
 
                     <!-- Field 3: Email -->
-                    <div class="profile-detail-box">
-                        <span class="profile-field-label">{{ t('Email') }}:&nbsp;</span>
-                        <span class="view-value">{{ profile.email }}</span>
-                        <input type="email" name="email" class="edit-input profile-detail-input" value="{{ profile.email }}" required style="display: none;">
+                    <div class="profile-detail-box" style="flex-direction: column; align-items: flex-start;">
+                        <div style="display: flex; align-items: center; width: 100%; flex-wrap: wrap; gap: 0.25rem;">
+                            <span class="profile-field-label">{{ t('Email') }}:&nbsp;</span>
+                            <span class="view-value">{{ profile.email }}</span>
+                            
+                            {% if unconfirmed_email %}
+                            <span style="font-size: 0.8rem; color: #d97706; background: #fef3c7; border: 1px solid #fcd34d; padding: 2px 8px; border-radius: 12px; font-family: sans-serif; display: inline-flex; align-items: center; gap: 4px; font-weight: normal;">
+                                <i data-lucide="clock" style="width: 13px; height: 13px;"></i> {{ t('Verification Pending') }}
+                            </span>
+                            <button type="button" onclick="openVerificationModal()" style="background: none; border: none; color: #002060; text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;">
+                                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i> {{ t('Verification Details') }}
+                            </button>
+                            {% elif is_email_verified %}
+                            <span style="font-size: 0.8rem; color: #15803d; background: #dcfce7; border: 1px solid #86efac; padding: 2px 8px; border-radius: 12px; font-family: sans-serif; display: inline-flex; align-items: center; gap: 4px; font-weight: normal;">
+                                <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> {{ t('Verified') }}
+                            </span>
+                            {% else %}
+                            <span style="font-size: 0.8rem; color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; padding: 2px 8px; border-radius: 12px; font-family: sans-serif; display: inline-flex; align-items: center; gap: 4px; font-weight: normal;">
+                                <i data-lucide="alert-triangle" style="width: 13px; height: 13px;"></i> {{ t('Unverified') }}
+                            </span>
+                            <button type="button" onclick="openVerificationModal()" style="background: none; border: none; color: #002060; text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;">
+                                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i> {{ t('Verification Details') }}
+                            </button>
+                            {% endif %}
+
+                            <input type="email" name="email" class="edit-input profile-detail-input" value="{{ profile.email }}" required style="display: none;">
+                        </div>
+
+                        {% if unconfirmed_email %}
+                        <div style="font-size: 0.85rem; color: #b45309; margin-top: 6px; font-family: sans-serif; font-weight: normal;">
+                            <i data-lucide="info" style="width: 14px; height: 14px; vertical-align: middle; display: inline-block;"></i>
+                            {{ t('Verification email sent to') }}: <strong>{{ unconfirmed_email }}</strong>. {{ t('Reverted to old email until verified.') }}
+                        </div>
+                        {% endif %}
                     </div>
 
                     <!-- Field 4: School ID (Read-only) -->
@@ -307,6 +488,60 @@
         </div>
     </form>
 
+</div>
+
+<!-- Email Verification Modal UI -->
+<div id="email-verification-modal" class="modal-overlay" style="display: none;" data-auto-open="{{ 'true' if show_verification_modal else 'false' }}">
+    <div class="modal-card">
+        <button type="button" class="modal-close-btn" onclick="closeVerificationModal()">&times;</button>
+        
+        <div class="modal-icon-circle">
+            <i data-lucide="mail-check" style="width: 42px; height: 42px; color: #002060;"></i>
+        </div>
+
+        <h2 class="modal-title">{{ t('Verify Your Email Address') }}</h2>
+        
+        <p class="modal-subtitle">
+            {{ t('Please check your inbox and click the link to confirm your email change.') }}
+        </p>
+
+        <div class="modal-target-email-box">
+            <span style="font-size: 0.85rem; color: #64748b; font-weight: 500;">{{ t('Verification email sent to') }}:</span>
+            <strong id="modal-target-email-text" style="color: #002060; font-size: 1.05rem; word-break: break-all;">{{ unconfirmed_email or profile.email }}</strong>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #475569; margin: 1rem 0 0.5rem 0;">
+            {{ t('Reverted to old email until verified.') }}
+        </p>
+
+        <!-- Dynamic Alert Box inside Modal -->
+        <div id="modal-alert-box" style="display: none; margin: 1rem 0; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; text-align: center;"></div>
+
+        <!-- Code Verification OTP Section -->
+        <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+            <label for="otp-token-input" style="font-size: 0.9rem; font-weight: 600; color: #1e293b; display: block; margin-bottom: 0.5rem;">
+                {{ t('Or enter 8-digit verification code:') }}
+            </label>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                <input type="text" id="otp-token-input" maxlength="8" placeholder="12345678" 
+                    style="letter-spacing: 0.3rem; text-align: center; font-size: 1.25rem; font-weight: bold; width: 190px; padding: 6px 12px; border: 2px solid #002060; border-radius: 8px; font-family: monospace;">
+                <button type="button" id="btn-submit-code" onclick="submitVerificationCode()" class="btn-modal-primary" style="padding: 8px 16px;">
+                    {{ t('Verify Code') }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Action Footer Buttons -->
+        <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <button type="button" class="btn-modal-primary" onclick="window.location.reload();" style="width: 100%;">
+                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> {{ t("I've Verified My Email") }}
+            </button>
+
+            <button type="button" id="btn-resend-modal-email" class="btn-modal-secondary" onclick="resendVerificationEmail()" style="width: 100%;">
+                <i data-lucide="send" style="width: 16px; height: 16px;"></i> {{ t('Resend Verification Email') }}
+            </button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -370,6 +605,167 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // Profile Edit Form submit loading indicator
+        const profileEditForm = document.getElementById("profile-edit-form");
+        if (profileEditForm) {
+            profileEditForm.addEventListener("submit", () => {
+                if (saveSubmitBtn) {
+                    saveSubmitBtn.disabled = true;
+                    saveSubmitBtn.style.opacity = "0.75";
+                    saveSubmitBtn.style.cursor = "wait";
+                    saveSubmitBtn.innerHTML = `<i data-lucide="loader-2" class="spin-loader" style="width: 18px; height: 18px; margin-right: 6px;"></i> ${'{{ t("Saving Changes...") }}'}`;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            });
+        }
+
+        window.openVerificationModal = function() {
+            const modal = document.getElementById("email-verification-modal");
+            if (modal) {
+                modal.style.display = "flex";
+                if (window.lucide) window.lucide.createIcons();
+            }
+        };
+
+        window.closeVerificationModal = function() {
+            const modal = document.getElementById("email-verification-modal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+        };
+
+        window.resendVerificationEmail = async function() {
+            const targetEmail = "{{ unconfirmed_email or profile.email }}";
+            const btn = document.getElementById("btn-resend-modal-email");
+            const alertBox = document.getElementById("modal-alert-box");
+            const originalHTML = btn ? btn.innerHTML : "";
+
+            try {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.75";
+                    btn.style.cursor = "wait";
+                    btn.innerHTML = `<i data-lucide="loader-2" class="spin-loader" style="width: 16px; height: 16px; margin-right: 6px;"></i> ${'{{ t("Sending Email...") }}'}`;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+
+                const formData = new FormData();
+                formData.append("email", targetEmail);
+
+                const response = await fetch("/api/resend-verification", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (alertBox) {
+                    alertBox.style.display = "block";
+                    if (result.success) {
+                        alertBox.style.background = "#dcfce7";
+                        alertBox.style.color = "#15803d";
+                        alertBox.style.border = "1px solid #86efac";
+                        alertBox.innerText = result.message;
+                    } else {
+                        alertBox.style.background = "#fee2e2";
+                        alertBox.style.color = "#b91c1c";
+                        alertBox.style.border = "1px solid #fca5a5";
+                        alertBox.innerText = result.error;
+                    }
+                }
+            } catch (err) {
+                console.error("Resend error:", err);
+            } finally {
+                if (btn) {
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                        btn.style.cursor = "pointer";
+                        btn.innerHTML = originalHTML;
+                        if (window.lucide) window.lucide.createIcons();
+                    }, 3000);
+                }
+            }
+        };
+
+        window.submitVerificationCode = async function() {
+            const targetEmail = "{{ unconfirmed_email or profile.email }}";
+            const codeInput = document.getElementById("otp-token-input");
+            const token = codeInput ? codeInput.value.trim() : "";
+            const alertBox = document.getElementById("modal-alert-box");
+            const btn = document.getElementById("btn-submit-code");
+            const originalHTML = btn ? btn.innerHTML : "";
+
+            if (!token || token.length < 4) {
+                if (alertBox) {
+                    alertBox.style.display = "block";
+                    alertBox.style.background = "#fee2e2";
+                    alertBox.style.color = "#b91c1c";
+                    alertBox.style.border = "1px solid #fca5a5";
+                    alertBox.innerText = "Please enter the verification code.";
+                }
+                return;
+            }
+
+            try {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.75";
+                    btn.style.cursor = "wait";
+                    btn.innerHTML = `<i data-lucide="loader-2" class="spin-loader" style="width: 16px; height: 16px; margin-right: 6px;"></i> ${'{{ t("Verifying...") }}'}`;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+
+                const formData = new FormData();
+                formData.append("email", targetEmail);
+                formData.append("token", token);
+
+                const response = await fetch("/api/verify-email-code", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (alertBox) {
+                    alertBox.style.display = "block";
+                    if (result.success) {
+                        alertBox.style.background = "#dcfce7";
+                        alertBox.style.color = "#15803d";
+                        alertBox.style.border = "1px solid #86efac";
+                        alertBox.innerText = result.message;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1200);
+                    } else {
+                        alertBox.style.background = "#fee2e2";
+                        alertBox.style.color = "#b91c1c";
+                        alertBox.style.border = "1px solid #fca5a5";
+                        alertBox.innerText = result.error;
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.style.opacity = "1";
+                            btn.style.cursor = "pointer";
+                            btn.innerHTML = originalHTML;
+                            if (window.lucide) window.lucide.createIcons();
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Verification error:", err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                    btn.innerHTML = originalHTML;
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
+        };
+
+        const verificationModal = document.getElementById("email-verification-modal");
+        if (verificationModal && verificationModal.dataset.autoOpen === "true") {
+            openVerificationModal();
+        }
     });
 </script>
 {% endblock %}

@@ -1,5 +1,37 @@
 // Secure Canvas-Based PDF Viewer using PDF.js
 
+// Helper function to fetch & cache PDF ArrayBuffers in browser CacheStorage
+window.getCachedPdfDocument = async function(pdfUrl) {
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) throw new Error("PDF.js library not loaded");
+
+    if (!('caches' in window)) {
+        return pdfjsLib.getDocument(pdfUrl).promise;
+    }
+
+    try {
+        const cache = await caches.open('lundayang-pdf-cache-v1');
+        const cachedResponse = await cache.match(pdfUrl);
+
+        if (cachedResponse) {
+            const arrayBuffer = await cachedResponse.arrayBuffer();
+            return pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        }
+
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch PDF document (${response.status})`);
+        }
+
+        await cache.put(pdfUrl, response.clone());
+        const arrayBuffer = await response.arrayBuffer();
+        return pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    } catch (err) {
+        console.warn("[PDF Cache] Web cache failed, falling back to direct URL fetch:", err);
+        return pdfjsLib.getDocument(pdfUrl).promise;
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("pdf-canvas");
     if (!canvas) return;
@@ -144,8 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
         fitWidthBtn.addEventListener("click", fitToWidth);
     }
 
-    // Load Document
-    pdfjsLib.getDocument(pdfUrl).promise.then((pdfDoc_) => {
+    // Load Document with Web CacheStorage
+    window.getCachedPdfDocument(pdfUrl).then((pdfDoc_) => {
         pdfDoc = pdfDoc_;
         document.getElementById('page-count').textContent = pdfDoc.numPages;
         
