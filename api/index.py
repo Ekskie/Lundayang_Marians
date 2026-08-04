@@ -9,8 +9,26 @@ import hashlib
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, 'templates'), static_folder=os.path.join(BASE_DIR, 'static'))
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "lundayang_marians_default_secret_key_12345")
+
+# WSGI Middleware to normalize PATH_INFO for Vercel serverless rewrites
+class VercelPathFixMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path_info = environ.get('PATH_INFO', '')
+        if path_info in ('/api/index', '/api/index.py', '/api'):
+            environ['PATH_INFO'] = '/'
+        elif path_info.startswith('/api/index/'):
+            environ['PATH_INFO'] = path_info[len('/api/index'):]
+        elif path_info.startswith('/api/index.py/'):
+            environ['PATH_INFO'] = path_info[len('/api/index.py'):]
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
