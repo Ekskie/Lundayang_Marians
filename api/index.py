@@ -53,9 +53,6 @@ if SUPABASE_URL and SUPABASE_KEY:
     except Exception as e:
         print("Error initializing Supabase auth client:", e)
 
-# In-memory PDF Cache: stores {paper_id: {"data": bytes, "etag": str}}
-PDF_CACHE = {}
-
 # Direct requests-based Supabase Storage helpers to avoid HTTPX SSL bugs on Windows
 def storage_upload(bucket, path, file_bytes, content_type):
     url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{path}"
@@ -1072,32 +1069,20 @@ def stream_pdf(paper_id):
         return jsonify({"error": "Database connection unavailable."}), 500
     
     try:
-        pdf_data = None
-        etag = None
-
-        if paper_id in PDF_CACHE:
-            cached = PDF_CACHE[paper_id]
-            pdf_data = cached["data"]
-            etag = cached["etag"]
-        else:
-            res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
-            if not res.data:
-                return jsonify({"error": "Paper not found."}), 404
-            
-            pdf_path = res.data[0]['pdf_path']
-            pdf_data = storage_download("research_papers", pdf_path)
-            etag = hashlib.md5(pdf_data).hexdigest()
-            PDF_CACHE[paper_id] = {
-                "data": pdf_data,
-                "etag": etag
-            }
+        res = supabase.table("research_papers").select("pdf_path").eq("id", paper_id).execute()
+        if not res.data:
+            return jsonify({"error": "Paper not found."}), 404
+        
+        pdf_path = res.data[0]['pdf_path']
+        pdf_data = storage_download("research_papers", pdf_path)
+        etag = hashlib.md5(pdf_data).hexdigest()
 
         # Check for conditional GET (If-None-Match)
         if request.headers.get("If-None-Match") == etag:
             return Response(status=304)
 
         return Response(
-            io.BytesIO(pdf_data),
+            pdf_data,
             mimetype="application/pdf",
             headers={
                 "Content-Disposition": "inline; filename=research.pdf",
@@ -1219,7 +1204,6 @@ def edit_paper(paper_id):
                     pdf_path = paper['pdf_path']
                     if pdf_file and pdf_file.filename:
                         storage_upload("research_papers", pdf_path, pdf_file.read(), "application/pdf")
-                        PDF_CACHE.pop(paper_id, None)
 
                     updated_values = {
                         "title": title,
