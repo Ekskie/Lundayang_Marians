@@ -50,16 +50,30 @@ document.addEventListener("DOMContentLoaded", () => {
         pageRendering = false,
         pageNumPending = null,
         scale = 1.3,
-        ctx = canvas.getContext('2d');
+        ctx = canvas.getContext('2d'),
+        textLayerRenderTask = null;
 
     // Render the specified page number
     function renderPage(num) {
         pageRendering = true;
         
+        if (textLayerRenderTask) {
+            try {
+                textLayerRenderTask.cancel();
+            } catch (e) {}
+            textLayerRenderTask = null;
+        }
+
         pdfDoc.getPage(num).then((page) => {
             const viewport = page.getViewport({ scale: scale });
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+
+            const pageContainer = document.getElementById('pdf-page-container');
+            if (pageContainer) {
+                pageContainer.style.width = `${viewport.width}px`;
+                pageContainer.style.height = `${viewport.height}px`;
+            }
 
             const renderContext = {
                 canvasContext: ctx,
@@ -69,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Wait for rendering to finish
             renderTask.promise.then(() => {
-                // Burn watermark directly into canvas pixels (anti-screenshot measure)
+                // Burn watermark directly into canvas pixels
                 burnWatermarkOnCanvas();
                 pageRendering = false;
                 if (pageNumPending !== null) {
@@ -77,6 +91,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     pageNumPending = null;
                 }
             });
+
+            // Render PDF.js Text Layer for text selection and copy/paste
+            const textLayerDiv = document.getElementById('pdf-text-layer');
+            if (textLayerDiv) {
+                textLayerDiv.innerHTML = '';
+                textLayerDiv.style.width = `${viewport.width}px`;
+                textLayerDiv.style.height = `${viewport.height}px`;
+                textLayerDiv.style.setProperty('--scale-factor', viewport.scale);
+
+                page.getTextContent().then((textContent) => {
+                    if (pdfjsLib.renderTextLayer) {
+                        try {
+                            textLayerRenderTask = pdfjsLib.renderTextLayer({
+                                textContentSource: textContent,
+                                textContent: textContent,
+                                container: textLayerDiv,
+                                viewport: viewport,
+                                textDivs: []
+                            });
+                        } catch (tlErr) {
+                            console.warn("renderTextLayer failed:", tlErr);
+                        }
+                    }
+                }).catch(err => {
+                    console.warn("Error retrieving text content:", err);
+                });
+            }
         }).catch(err => {
             console.error("Error rendering page:", err);
             pageRendering = false;
@@ -197,60 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     });
 
-    // --- SECURITY CONTROLS (Document & Shortcut Protection) ---
-
-    const detailPageContainer = document.querySelector(".detail-page-container");
-
-    // 1. Disable Right-click context menu inside PDF container and page
-    const pdfContainer = document.querySelector(".pdf-viewer-container");
-    if (pdfContainer) {
-        pdfContainer.addEventListener('contextmenu', e => e.preventDefault());
-    }
-    detailPageContainer?.addEventListener('contextmenu', e => e.preventDefault());
-
-    // 2. Disable Drag/Drop of contents
-    window.addEventListener('dragstart', e => e.preventDefault());
-
-    // 3. Prevent text selection
-    document.addEventListener('selectstart', (e) => {
-        if (detailPageContainer?.contains(e.target)) {
-            e.preventDefault();
-        }
-    });
-
-    // 4. Intercept Keyboard Shortcuts (Print, Save, Copy, DevTools)
-    window.addEventListener("keydown", (e) => {
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const metaKey = isMac ? e.metaKey : e.ctrlKey;
-
-        // PrintScreen / Snapshot key
-        if (e.key === "PrintScreen" || e.key === "Snapshot") {
-            e.preventDefault();
-            alert("⚠️ Screenshots and printing are disabled for this paper.");
-            return;
-        }
-
-        // Win + Shift + S or Cmd + Shift + 3/4/5
-        if (e.shiftKey && (e.metaKey || e.ctrlKey) && ['s', 'S', '3', '4', '5'].includes(e.key)) {
-            e.preventDefault();
-            alert("⚠️ Screenshots are disabled for this paper.");
-            return;
-        }
-
-        // Prevent Ctrl/Cmd + S (Save), P (Print), C (Copy), A (Select All)
-        if (metaKey && ['s','p','c','a','S','P','C','A'].includes(e.key)) {
-            e.preventDefault();
-            alert("⚠️ Saving, copying, and printing are disabled for this paper.");
-            return;
-        }
-
-        // Ctrl + Shift + I / J / C (DevTools), F12, Ctrl + U (View Source)
-        if ((metaKey && e.shiftKey && ['i', 'I', 'j', 'J', 'c', 'C'].includes(e.key)) ||
-            e.key === 'F12' || (metaKey && (e.key === 'u' || e.key === 'U'))) {
-            e.preventDefault();
-            return;
-        }
-    });
 
     // --- FULLSCREEN VIEW CONTROLS ---
     const fullscreenBtn = document.getElementById("pdf-fullscreen-btn");

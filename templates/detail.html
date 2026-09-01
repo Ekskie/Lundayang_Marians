@@ -5,6 +5,7 @@
 {% block extra_head %}
 <!-- PDF.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf_viewer.min.css">
 <style>
     /* Custom container for details page */
     .detail-page-container {
@@ -14,12 +15,6 @@
         width: 100%;
         min-height: 80vh;
         position: relative;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
     }
 
     /* Detail Header Layout */
@@ -220,6 +215,14 @@
         max-height: 520px;
         overflow: auto;
         z-index: 2;
+        text-align: center;
+    }
+
+    .pdf-page-container {
+        position: relative;
+        margin: 0 auto;
+        display: inline-block;
+        box-sizing: border-box;
     }
 
     #pdf-canvas {
@@ -227,6 +230,30 @@
         margin: 0 auto;
         border-radius: 4px;
         max-width: none;
+    }
+
+    .textLayer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        opacity: 0.25;
+        line-height: 1.0;
+        transform-origin: 0 0;
+    }
+
+    .textLayer > span, .textLayer :is(span, br) {
+        color: transparent;
+        position: absolute;
+        white-space: pre;
+        cursor: text;
+        transform-origin: 0% 0%;
+    }
+
+    .textLayer ::selection {
+        background: rgba(0, 32, 96, 0.35);
     }
 
     /* Fullscreen Mode Styling */
@@ -548,7 +575,10 @@
 
                 <!-- Canvas target viewport -->
                 <div class="pdf-canvas-wrapper">
-                    <canvas id="pdf-canvas" data-paper-id="{{ paper.id }}" style="display: none;"></canvas>
+                    <div id="pdf-page-container" class="pdf-page-container">
+                        <canvas id="pdf-canvas" data-paper-id="{{ paper.id }}" style="display: none;"></canvas>
+                        <div id="pdf-text-layer" class="textLayer"></div>
+                    </div>
                 </div>
             </div>
 
