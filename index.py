@@ -289,6 +289,11 @@ TRANSLATIONS = {
         "AWARDS": "MGA PARANGAL",
         "KEYWORDS": "MGA SUSING SALITA",
         "ABSTRACT": "BUOD (ABSTRACT)",
+        "See More": "Tingnan Pa",
+        "See Less": "Tingnan Nang Kaunti",
+        "HOW TO CITE (APA 7th)": "PAANO ISITE (APA 7th)",
+        "Copy APA": "Kopyahin ang APA",
+        "Copied!": "Kinopya!",
         "PDF COPY": "KOPYA NG PDF",
         "EDIT": "I-EDIT",
         "DELETE": "BURAHIN",
@@ -359,6 +364,80 @@ TRANSLATIONS = {
     }
 }
 
+# Helper to format author name into APA 7th edition (Surname, Initial(s))
+def format_apa_author(author_name):
+    if not author_name:
+        return ""
+    name = author_name.strip()
+    # Handle if name is already "Surname, Given..."
+    if ',' in name:
+        parts = name.split(',', 1)
+        surname = parts[0].strip()
+        given = parts[1].strip().split()
+        initials = []
+        for p in given:
+            clean = p.replace('.', '').strip()
+            if clean:
+                initials.append(f"{clean[0].upper()}.")
+        initials_str = " ".join(initials)
+        return f"{surname}, {initials_str}" if initials_str else surname
+
+    parts = name.split()
+    if len(parts) == 1:
+        return parts[0]
+    surname = parts[-1]
+    given_parts = parts[:-1]
+    initials = []
+    for p in given_parts:
+        clean = p.replace('.', '').strip()
+        if clean:
+            initials.append(f"{clean[0].upper()}.")
+    initials_str = " ".join(initials)
+    if initials_str:
+        return f"{surname}, {initials_str}"
+    return surname
+
+# Helper to generate APA 7th citation object (plain text & HTML)
+def generate_apa_citation(paper):
+    if not paper:
+        return {"plain": "", "html": ""}
+    
+    authors = paper.get('authors', [])
+    if isinstance(authors, str):
+        authors = [a.strip() for a in authors.split(',') if a.strip()]
+        
+    formatted_authors = [format_apa_author(a) for a in authors if a]
+    
+    if not formatted_authors:
+        authors_str = "Santa Maria (Laguna) Academy Inc."
+    elif len(formatted_authors) == 1:
+        authors_str = formatted_authors[0]
+    elif len(formatted_authors) == 2:
+        authors_str = f"{formatted_authors[0]}, & {formatted_authors[1]}"
+    elif len(formatted_authors) <= 20:
+        authors_str = ", ".join(formatted_authors[:-1]) + f", & {formatted_authors[-1]}"
+    else:
+        authors_str = ", ".join(formatted_authors[:19]) + f", ... {formatted_authors[-1]}"
+        
+    year = str(paper.get('academic_year', '')).strip()
+    year_str = f"({year})." if year else "(n.d.)."
+    
+    # Title in proper case
+    title = str(paper.get('title', '')).strip()
+    if title.isupper():
+        title = title.title()
+    if title and not title.endswith(('.', '?', '!')):
+        title += '.'
+        
+    paper_id = paper.get('id', '')
+    url = f"https://lundayang-marians.vercel.app/paper/{paper_id}" if paper_id else "https://lundayang-marians.vercel.app/"
+    source = "Lundayang Marians, Santa Maria (Laguna) Academy Inc."
+    
+    plain_citation = f"{authors_str} {year_str} {title} {source} {url}"
+    html_citation = f'{authors_str} {year_str} {title} <i>{source}</i> <a href="{url}" target="_blank" class="apa-link">{url}</a>'
+    
+    return {"plain": plain_citation, "html": html_citation}
+
 @app.context_processor
 def inject_translations():
     lang = session.get('lang', 'en')
@@ -366,7 +445,7 @@ def inject_translations():
         if lang == 'tl' and key in TRANSLATIONS.get('tl', {}):
             return TRANSLATIONS['tl'][key]
         return key
-    return dict(t=t)
+    return dict(t=t, generate_apa_citation=generate_apa_citation)
 
 @app.route('/set-language/<lang>')
 def set_language(lang):
@@ -906,10 +985,15 @@ def toggle_bookmark():
         check_res = supabase.table("bookmarks").select("id").eq("user_id", user_id).eq("paper_id", paper_id).execute()
         if check_res.data:
             supabase.table("bookmarks").delete().eq("user_id", user_id).eq("paper_id", paper_id).execute()
-            return jsonify({"success": True, "bookmarked": False})
+            bookmarked = False
         else:
             supabase.table("bookmarks").insert({"user_id": user_id, "paper_id": paper_id}).execute()
-            return jsonify({"success": True, "bookmarked": True})
+            bookmarked = True
+
+        count_res = supabase.table("bookmarks").select("id", count="exact").eq("paper_id", paper_id).execute()
+        bookmark_count = count_res.count if hasattr(count_res, 'count') and count_res.count is not None else len(count_res.data)
+        
+        return jsonify({"success": True, "bookmarked": bookmarked, "bookmark_count": bookmark_count})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -1011,6 +1095,7 @@ def strand(strand_name):
 def paper_detail(paper_id):
     paper = None
     is_bookmarked = False
+    bookmark_count = 0
     recommended_papers = []
     
     if supabase:
@@ -1022,6 +1107,9 @@ def paper_detail(paper_id):
             user_id = session['user']['id']
             bookmark_res = supabase.table("bookmarks").select("id").eq("user_id", user_id).eq("paper_id", paper_id).execute()
             is_bookmarked = len(bookmark_res.data) > 0
+            
+            count_res = supabase.table("bookmarks").select("id", count="exact").eq("paper_id", paper_id).execute()
+            bookmark_count = count_res.count if hasattr(count_res, 'count') and count_res.count is not None else len(count_res.data)
             
             # Recommendation Engine: fetch candidates excluding active paper
             if paper:
@@ -1075,7 +1163,8 @@ def paper_detail(paper_id):
     if not paper:
         return redirect(url_for('home'))
         
-    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked, recommended_papers=recommended_papers)
+    apa_citation = generate_apa_citation(paper)
+    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked, bookmark_count=bookmark_count, recommended_papers=recommended_papers, apa_citation=apa_citation)
 
 @app.route('/api/paper/<paper_id>/pdf')
 @login_required
@@ -1121,6 +1210,40 @@ def faq():
 
 # ----------------- ADMIN PORTAL -----------------
 
+@app.route('/api/storage/sign-upload', methods=['POST'])
+@admin_required
+def get_signed_upload_url():
+    if not supabase:
+        return jsonify({"success": False, "error": "Database connection unavailable."}), 500
+        
+    data = request.get_json(silent=True) or request.form
+    filename = data.get('filename', 'paper.pdf').strip()
+    strand = data.get('strand', 'GENERAL').strip()
+    academic_year = data.get('academic_year', '2025-2026').strip()
+    
+    # Sanitize filename
+    clean_filename = "".join(c for c in filename if c.isalnum() or c in "._- ")
+    if not clean_filename or not clean_filename.lower().endswith('.pdf'):
+        clean_filename = "document.pdf"
+        
+    import time
+    timestamp = int(time.time())
+    safe_filename = f"{strand}/{academic_year.replace('/', '_')}_{timestamp}_{clean_filename.replace(' ', '_')}"
+    
+    try:
+        res = supabase.storage.from_("research_papers").create_signed_upload_url(safe_filename)
+        signed_url = res.get('signedUrl') or res.get('signed_url')
+        if not signed_url:
+            return jsonify({"success": False, "error": "Could not generate signed upload URL."}), 500
+            
+        return jsonify({
+            "success": True,
+            "signed_url": signed_url,
+            "pdf_path": safe_filename
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route('/admin/upload', methods=['GET', 'POST'])
 @admin_required
 def admin_upload():
@@ -1143,19 +1266,23 @@ def admin_upload():
         keywords_raw = request.form.get('keywords', '').split(',')
         keywords = [k.strip() for k in keywords_raw if k.strip()]
         
+        pdf_path = request.form.get('pdf_path', '').strip()
         pdf_file = request.files.get('pdf_file')
         
-        if not title or not abstract or not strand or not academic_year or not research_type or not subject_area or not adviser or not authors or not pdf_file:
+        if not title or not abstract or not strand or not academic_year or not research_type or not subject_area or not adviser or not authors or (not pdf_path and not pdf_file):
             error = "All fields except Awards are required, including the PDF file."
-        elif not pdf_file.filename.endswith('.pdf'):
+        elif pdf_file and pdf_file.filename and not pdf_file.filename.lower().endswith('.pdf'):
             error = "File must be a PDF."
         elif not supabase:
             error = "Database connection unavailable."
         else:
             try:
-                safe_filename = f"{strand}/{academic_year.replace('/', '_')}_{pdf_file.filename.replace(' ', '_')}"
-                file_bytes = pdf_file.read()
-                storage_upload("research_papers", safe_filename, file_bytes, "application/pdf")
+                # If uploaded via fallback server upload
+                if not pdf_path and pdf_file:
+                    safe_filename = f"{strand}/{academic_year.replace('/', '_')}_{pdf_file.filename.replace(' ', '_')}"
+                    file_bytes = pdf_file.read()
+                    storage_upload("research_papers", safe_filename, file_bytes, "application/pdf")
+                    pdf_path = safe_filename
                 
                 supabase.table("research_papers").insert({
                     "title": title,
@@ -1168,7 +1295,7 @@ def admin_upload():
                     "adviser": adviser,
                     "awards": awards,
                     "keywords": keywords,
-                    "pdf_path": safe_filename,
+                    "pdf_path": pdf_path,
                     "created_by": session['user']['id']
                 }).execute()
                 success = "Research paper successfully uploaded and indexed!"
@@ -1208,6 +1335,7 @@ def edit_paper(paper_id):
             keywords_raw = request.form.get('keywords', '').split(',')
             keywords = [k.strip() for k in keywords_raw if k.strip()]
 
+            pdf_path_new = request.form.get('pdf_path', '').strip()
             pdf_file = request.files.get('pdf_file')
 
             if not title or not abstract or not strand or not academic_year or not research_type or not subject_area or not adviser or not authors:
@@ -1216,9 +1344,11 @@ def edit_paper(paper_id):
                 error = "File must be a PDF."
             else:
                 try:
-                    pdf_path = paper['pdf_path']
-                    if pdf_file and pdf_file.filename:
-                        storage_upload("research_papers", pdf_path, pdf_file.read(), "application/pdf")
+                    final_pdf_path = paper.get('pdf_path', '')
+                    if pdf_path_new and pdf_path_new != final_pdf_path:
+                        final_pdf_path = pdf_path_new
+                    elif pdf_file and pdf_file.filename:
+                        storage_upload("research_papers", final_pdf_path, pdf_file.read(), "application/pdf")
 
                     updated_values = {
                         "title": title,
@@ -1230,7 +1360,8 @@ def edit_paper(paper_id):
                         "authors": authors,
                         "adviser": adviser,
                         "awards": awards,
-                        "keywords": keywords
+                        "keywords": keywords,
+                        "pdf_path": final_pdf_path
                     }
 
                     supabase.table("research_papers").update(updated_values).eq("id", paper_id).execute()

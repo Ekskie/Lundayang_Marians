@@ -157,7 +157,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        height: 600px;
         min-height: 520px;
         padding: 0.5rem;
         box-sizing: border-box;
@@ -173,8 +174,8 @@
         font-family: 'Poppins', sans-serif;
         font-size: 0.65rem;
         font-weight: 800;
-        color: rgba(255, 255, 255, 0.6);
-        background-color: rgba(0, 32, 96, 0.85);
+        color: rgba(255, 255, 255, 0.7);
+        background-color: rgba(0, 32, 96, 0.88);
         padding: 4px 8px;
         border-radius: 4px;
         letter-spacing: 0.05em;
@@ -191,6 +192,7 @@
         color: white;
         padding: 2rem;
         text-align: center;
+        width: 100%;
     }
 
     .pdf-card-loader .spinner {
@@ -212,24 +214,90 @@
     .pdf-canvas-wrapper {
         position: relative;
         width: 100%;
-        max-height: 520px;
-        overflow: auto;
+        height: 100%;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: auto;
         z-index: 2;
-        text-align: center;
+        padding: 0.5rem 0.25rem;
+        box-sizing: border-box;
+        scroll-behavior: smooth;
+    }
+
+    /* Custom smooth scrollbar */
+    .pdf-canvas-wrapper::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .pdf-canvas-wrapper::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 4px;
+    }
+
+    .pdf-canvas-wrapper::-webkit-scrollbar-thumb {
+        background: #002060;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pdf-canvas-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #003399;
+    }
+
+    .pdf-pages-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+        min-height: 100%;
     }
 
     .pdf-page-container {
         position: relative;
         margin: 0 auto;
-        display: inline-block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         box-sizing: border-box;
+        background-color: #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        border-radius: 4px;
+        flex-shrink: 0;
     }
 
-    #pdf-canvas {
+    .pdf-page-canvas {
         display: block;
         margin: 0 auto;
         border-radius: 4px;
         max-width: none;
+    }
+
+    .pdf-page-skeleton {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8fafc;
+        color: #64748b;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        gap: 8px;
+        z-index: 1;
+        border-radius: 4px;
+    }
+
+    .pdf-page-skeleton .spinner {
+        width: 24px;
+        height: 24px;
+        border: 2.5px solid rgba(0, 32, 96, 0.15);
+        border-top-color: #002060;
+        border-radius: 50%;
+        animation: spin 1s infinite linear;
     }
 
     .textLayer {
@@ -366,15 +434,23 @@
         gap: 1.5rem;
     }
 
+    .bookmark-ribbon-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+    }
+
     .bookmark-ribbon-btn {
         background: none;
         border: none;
         padding: 0;
         cursor: pointer;
         outline: none;
-        color: #e2e8f0;
+        color: #cbd5e1;
         transition: color 0.2s, transform 0.2s;
-        width: 32px;
+        width: 30px;
         height: auto;
     }
 
@@ -390,6 +466,27 @@
         width: 100%;
         height: auto;
         display: block;
+    }
+
+    .bookmark-count-badge {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #002060;
+        background: #f1f5f9;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 9999px;
+        padding: 0.5px 7px;
+        min-width: 20px;
+        text-align: center;
+        line-height: 1.3;
+        transition: all 0.2s ease;
+    }
+
+    .bookmark-ribbon-btn.active + .bookmark-count-badge {
+        background: #002060;
+        color: #ffffff;
+        border-color: #002060;
     }
 
     .pdf-copy-btn {
@@ -424,6 +521,10 @@
         margin: 0;
     }
 
+    .detail-abstract-content-wrapper {
+        position: relative;
+    }
+
     .detail-abstract-text {
         font-family: 'Poppins', sans-serif;
         font-size: 0.85rem;
@@ -431,6 +532,124 @@
         color: #000000;
         text-align: justify;
         margin: 0;
+        transition: all 0.3s ease;
+    }
+
+    .detail-abstract-text.clamped {
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .abstract-toggle-btn {
+        background: none;
+        border: none;
+        padding: 0.2rem 0;
+        color: #002060;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        transition: color 0.2s, transform 0.15s;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        margin-top: 0.15rem;
+    }
+
+    .abstract-toggle-btn:hover {
+        color: #003399;
+    }
+
+    .abstract-toggle-btn i {
+        transition: transform 0.25s ease;
+    }
+
+    .abstract-toggle-btn.expanded i {
+        transform: rotate(180deg);
+    }
+
+    /* APA Citation Box */
+    .detail-apa-block {
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+    }
+
+    .detail-apa-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .copy-apa-btn {
+        background-color: #002060;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 0.32rem 0.75rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 0.75rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 32, 96, 0.15);
+    }
+
+    .copy-apa-btn:hover {
+        background-color: #003399;
+        transform: translateY(-1px);
+    }
+
+    .copy-apa-btn.copied {
+        background-color: #16a34a !important;
+        color: #ffffff !important;
+    }
+
+    .apa-citation-box {
+        margin: 0;
+    }
+
+    .apa-citation-text {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: #1e293b;
+        margin: 0;
+        text-align: justify;
+        word-break: break-word;
+    }
+
+    .apa-citation-text i, .apa-citation-text em {
+        font-style: italic;
+        font-weight: 600;
+        color: #002060;
+    }
+
+    .apa-link {
+        color: #002060;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        word-break: break-all;
+        font-weight: 600;
+        transition: color 0.15s ease;
+    }
+
+    .apa-link:hover {
+        color: #2563eb;
     }
 
     /* CSS Spinner Animation */
@@ -573,12 +792,9 @@
                     <p class="loader-text">Streaming secure document copy...</p>
                 </div>
 
-                <!-- Canvas target viewport -->
-                <div class="pdf-canvas-wrapper">
-                    <div id="pdf-page-container" class="pdf-page-container">
-                        <canvas id="pdf-canvas" data-paper-id="{{ paper.id }}" style="display: none;"></canvas>
-                        <div id="pdf-text-layer" class="textLayer"></div>
-                    </div>
+                <!-- Canvas target viewport with continuous multi-page scroll -->
+                <div class="pdf-canvas-wrapper" id="pdf-scroll-container">
+                    <div id="pdf-pages-container" class="pdf-pages-container" data-paper-id="{{ paper.id }}"></div>
                 </div>
             </div>
 
@@ -625,6 +841,9 @@
                             <path d="M4 2v26l8-5.5 8 5.5V2H4z" fill="currentColor" stroke="#002060" stroke-width="2" />
                         </svg>
                     </button>
+                    <span class="bookmark-count-badge" id="bookmark-count-display" title="{{ bookmark_count | default(0) }} users bookmarked this paper">
+                        {{ bookmark_count | default(0) }}
+                    </span>
                 </div>
 
                 {% if session.get('role') == 'admin' %}
@@ -645,10 +864,31 @@
                 {% endif %}
             </div>
 
-            <!-- Abstract Paragraph block -->
+            <!-- Abstract Paragraph block with See More toggle -->
             <div class="detail-abstract-block">
                 <h4 class="detail-abstract-header">{{ t('ABSTRACT') }}</h4>
-                <p class="detail-abstract-text">{{ paper.abstract }}</p>
+                <div class="detail-abstract-content-wrapper">
+                    <p class="detail-abstract-text clamped" id="detail-abstract-text">{{ paper.abstract }}</p>
+                </div>
+                <button id="abstract-toggle-btn" class="abstract-toggle-btn" type="button" style="display: none;">
+                    <span id="abstract-toggle-label">{{ t('See More') }}</span>
+                    <i data-lucide="chevron-down" id="abstract-toggle-icon" style="width: 15px; height: 15px; margin-left: 4px; vertical-align: middle;"></i>
+                </button>
+            </div>
+
+            <!-- APA 7th Edition Citation Block (Right Above AWARDS) -->
+            {% set citation_obj = apa_citation if (apa_citation is defined and apa_citation) else generate_apa_citation(paper) %}
+            <div class="detail-meta-block detail-apa-block">
+                <div class="detail-apa-header-row">
+                    <h4 class="detail-meta-label">{{ t('HOW TO CITE (APA 7th)') }}</h4>
+                    <button id="copy-apa-btn" class="copy-apa-btn" title="Copy APA Citation" type="button" data-citation="{{ citation_obj.plain }}">
+                        <i data-lucide="copy" id="copy-apa-icon" style="width: 13px; height: 13px;"></i>
+                        <span id="copy-apa-label">{{ t('Copy APA') }}</span>
+                    </button>
+                </div>
+                <div class="apa-citation-box">
+                    <p class="apa-citation-text" id="apa-citation-content">{{ citation_obj.html | safe }}</p>
+                </div>
             </div>
 
             {% if paper.awards %}
@@ -741,6 +981,7 @@
         });
 
         const bookmarkBtn = document.getElementById("detail-bookmark-btn");
+        const bookmarkCountEl = document.getElementById("bookmark-count-display");
         if (bookmarkBtn) {
             bookmarkBtn.addEventListener("click", async () => {
                 const paperId = bookmarkBtn.getAttribute("data-paper-id");
@@ -762,6 +1003,10 @@
                             bookmarkBtn.classList.add("active");
                         } else {
                             bookmarkBtn.classList.remove("active");
+                        }
+                        if (bookmarkCountEl && result.bookmark_count !== undefined) {
+                            bookmarkCountEl.textContent = result.bookmark_count;
+                            bookmarkCountEl.setAttribute("title", `${result.bookmark_count} users bookmarked this paper`);
                         }
                     } else {
                         alert("Error updating bookmark: " + result.error);
@@ -802,6 +1047,90 @@
                     } finally {
                         deleteBtn.disabled = false;
                     }
+                }
+            });
+        }
+
+        // Abstract expand/collapse toggle handler
+        const abstractEl = document.getElementById("detail-abstract-text");
+        const toggleBtn = document.getElementById("abstract-toggle-btn");
+        const toggleLabel = document.getElementById("abstract-toggle-label");
+
+        if (abstractEl && toggleBtn) {
+            const checkOverflow = () => {
+                if (abstractEl.scrollHeight > abstractEl.clientHeight + 4) {
+                    toggleBtn.style.display = "inline-flex";
+                    if (window.lucide) window.lucide.createIcons();
+                } else if (!toggleBtn.classList.contains("expanded")) {
+                    toggleBtn.style.display = "none";
+                }
+            };
+
+            // Run check on load and window resize
+            setTimeout(checkOverflow, 50);
+            window.addEventListener("resize", checkOverflow);
+
+            let isExpanded = false;
+            toggleBtn.addEventListener("click", () => {
+                isExpanded = !isExpanded;
+                if (isExpanded) {
+                    abstractEl.classList.remove("clamped");
+                    toggleBtn.classList.add("expanded");
+                    if (toggleLabel) toggleLabel.textContent = "{{ t('See Less') }}";
+                } else {
+                    abstractEl.classList.add("clamped");
+                    toggleBtn.classList.remove("expanded");
+                    if (toggleLabel) toggleLabel.textContent = "{{ t('See More') }}";
+                }
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+        }
+
+        // Copy APA Citation Handler
+        const copyApaBtn = document.getElementById("copy-apa-btn");
+        const copyApaLabel = document.getElementById("copy-apa-label");
+        const copyApaIcon = document.getElementById("copy-apa-icon");
+
+        if (copyApaBtn) {
+            copyApaBtn.addEventListener("click", async () => {
+                const citationText = copyApaBtn.getAttribute("data-citation") || document.getElementById("apa-citation-content")?.innerText || "";
+                if (!citationText) return;
+
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(citationText);
+                    } else {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = citationText;
+                        textArea.style.position = "fixed";
+                        textArea.style.left = "-999999px";
+                        textArea.style.top = "-999999px";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        document.execCommand('copy');
+                        textArea.remove();
+                    }
+
+                    copyApaBtn.classList.add("copied");
+                    if (copyApaLabel) copyApaLabel.textContent = "{{ t('Copied!') }}";
+                    if (copyApaIcon) {
+                        copyApaIcon.setAttribute("data-lucide", "check");
+                        if (window.lucide) window.lucide.createIcons();
+                    }
+
+                    setTimeout(() => {
+                        copyApaBtn.classList.remove("copied");
+                        if (copyApaLabel) copyApaLabel.textContent = "{{ t('Copy APA') }}";
+                        if (copyApaIcon) {
+                            copyApaIcon.setAttribute("data-lucide", "copy");
+                            if (window.lucide) window.lucide.createIcons();
+                        }
+                    }, 2000);
+                } catch (err) {
+                    console.error("Failed to copy citation:", err);
                 }
             });
         }

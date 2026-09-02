@@ -380,26 +380,19 @@
 
     .upload-progress-bar {
         width: 100%;
-        height: 8px;
+        height: 10px;
         background: #e2e8f0;
-        border-radius: 4px;
+        border-radius: 6px;
         overflow: hidden;
+        margin-top: 0.5rem;
     }
 
     .upload-progress-fill {
         height: 100%;
         width: 0%;
-        background: linear-gradient(90deg, #002060, #1b3d82);
-        border-radius: 4px;
-        animation: upload-progress 8s ease-in-out forwards;
-    }
-
-    @keyframes upload-progress {
-        0% { width: 0%; }
-        30% { width: 45%; }
-        60% { width: 70%; }
-        80% { width: 85%; }
-        100% { width: 95%; }
+        background: linear-gradient(90deg, #002060, #2563eb);
+        border-radius: 6px;
+        transition: width 0.2s ease-out;
     }
 </style>
 {% endblock %}
@@ -409,11 +402,12 @@
 <div class="upload-overlay" id="upload-overlay">
     <div class="upload-overlay-card">
         <div class="upload-spinner"></div>
-        <div class="upload-overlay-title">Uploading Research Paper</div>
-        <div class="upload-overlay-sub">Please wait while the PDF is being uploaded and indexed...</div>
+        <div class="upload-overlay-title" id="upload-overlay-title">Uploading Research Paper</div>
+        <div class="upload-overlay-sub" id="upload-overlay-sub">Preparing secure cloud upload...</div>
         <div class="upload-progress-bar">
-            <div class="upload-progress-fill"></div>
+            <div class="upload-progress-fill" id="upload-progress-fill" style="width: 0%;"></div>
         </div>
+        <div id="upload-progress-percent" style="font-size: 0.85rem; font-weight: 700; color: #002060; margin-top: 0.5rem;">0%</div>
     </div>
 </div>
 
@@ -446,6 +440,7 @@
         {% endif %}
 
         <form action="{% if paper is defined and paper %}{{ url_for('edit_paper', paper_id=paper.id) }}{% else %}{{ url_for('admin_upload') }}{% endif %}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" id="pdf_path_input" name="pdf_path" value="{% if paper is defined and paper %}{{ paper.get('pdf_path', '') }}{% endif %}">
             <div class="upload-form-grid">
 
                 <!-- Left Column: Title & Abstract -->
@@ -763,17 +758,104 @@
             dropZone.style.display = "none";
         }
 
-        // Show upload overlay on form submit
-        const uploadForm = document.querySelector("form[enctype='multipart/form-data']");
+        // Direct-to-Storage PDF Upload Handler (bypasses Vercel 4.5MB serverless payload limit)
+        const uploadForm = document.querySelector("form");
         const uploadOverlay = document.getElementById("upload-overlay");
+        const progressFill = document.getElementById("upload-progress-fill");
+        const progressPercent = document.getElementById("upload-progress-percent");
+        const overlaySub = document.getElementById("upload-overlay-sub");
+        const pdfPathInput = document.getElementById("pdf_path_input");
+
+        let isDirectSubmitting = false;
 
         if (uploadForm && uploadOverlay) {
-            uploadForm.addEventListener("submit", (e) => {
+            uploadForm.addEventListener("submit", async (e) => {
+                if (isDirectSubmitting) return;
+
                 // Ensure hidden values are synced
                 syncHiddenValue("research_type");
                 syncHiddenValue("subject_area");
 
-                if (fileInput.files.length > 0) {
+                const files = fileInput.files;
+                if (files && files.length > 0) {
+                    e.preventDefault();
+                    const file = files[0];
+
+                    uploadOverlay.classList.add("active");
+                    if (overlaySub) overlaySub.textContent = "Obtaining secure cloud upload authorization...";
+                    if (progressFill) progressFill.style.width = "5%";
+                    if (progressPercent) progressPercent.textContent = "5%";
+
+                    const strandEl = document.getElementById("strand");
+                    const strand = strandEl ? strandEl.value : "GENERAL";
+                    const yearEl = document.getElementById("academic_year");
+                    const academicYear = yearEl ? yearEl.value : "2025-2026";
+
+                    try {
+                        // 1. Request Signed Upload URL from serverless endpoint (lightweight JSON request)
+                        const signRes = await fetch("/api/storage/sign-upload", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                filename: file.name,
+                                strand: strand,
+                                academic_year: academicYear
+                            })
+                        });
+
+                        const signData = await signRes.json();
+                        if (!signData.success || !signData.signed_url) {
+                            throw new Error(signData.error || "Failed to generate upload authorization.");
+                        }
+
+                        if (overlaySub) overlaySub.textContent = `Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB) directly to cloud storage...`;
+
+                        // 2. Upload file directly to Supabase Storage via signed URL (bypasses Vercel 4.5MB limit)
+                        await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open("PUT", signData.signed_url, true);
+                            xhr.setRequestHeader("Content-Type", "application/pdf");
+
+                            xhr.upload.onprogress = (event) => {
+                                if (event.lengthComputable) {
+                                    const percent = Math.min(95, Math.round((event.loaded / event.total) * 90) + 5);
+                                    if (progressFill) progressFill.style.width = `${percent}%`;
+                                    if (progressPercent) progressPercent.textContent = `${percent}%`;
+                                }
+                            };
+
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    resolve();
+                                } else {
+                                    reject(new Error(`Storage service error HTTP ${xhr.status}: ${xhr.responseText}`));
+                                }
+                            };
+
+                            xhr.onerror = () => reject(new Error("Network connection error during direct PDF upload."));
+                            xhr.send(file);
+                        });
+
+                        if (progressFill) progressFill.style.width = "100%";
+                        if (progressPercent) progressPercent.textContent = "100%";
+                        if (overlaySub) overlaySub.textContent = "Saving research paper metadata...";
+
+                        // 3. Set the uploaded pdf_path and clear fileInput so Vercel receives only ~2KB form metadata
+                        if (pdfPathInput) {
+                            pdfPathInput.value = signData.pdf_path;
+                        }
+                        fileInput.value = "";
+
+                        isDirectSubmitting = true;
+                        uploadForm.submit();
+
+                    } catch (err) {
+                        console.error("Direct upload failed:", err);
+                        uploadOverlay.classList.remove("active");
+                        alert("Upload Error: " + err.message);
+                    }
+                } else {
+                    // No new PDF file, submit metadata normally
                     uploadOverlay.classList.add("active");
                 }
             });

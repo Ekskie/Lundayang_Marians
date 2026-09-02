@@ -1,4 +1,4 @@
-// Secure Canvas-Based PDF Viewer using PDF.js
+// Secure Multi-Page Canvas-Based Scrollable PDF Viewer using PDF.js
 
 // Helper function to fetch & cache PDF ArrayBuffers in browser CacheStorage
 window.getCachedPdfDocument = async function(pdfUrl) {
@@ -33,103 +33,32 @@ window.getCachedPdfDocument = async function(pdfUrl) {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    const canvas = document.getElementById("pdf-canvas");
-    if (!canvas) return;
+    const pagesContainer = document.getElementById("pdf-pages-container");
+    const canvasWrapper = document.querySelector(".pdf-canvas-wrapper");
+    if (!pagesContainer || !canvasWrapper) return;
 
-    const paperId = canvas.getAttribute("data-paper-id");
+    const paperId = pagesContainer.getAttribute("data-paper-id");
     if (!paperId) return;
 
     const pdfUrl = `/api/paper/${paperId}/pdf`;
     
     // PDFJS initialization
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (!pdfjsLib) return;
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-    let pdfDoc = null,
-        pageNum = 1,
-        pageRendering = false,
-        pageNumPending = null,
-        scale = 1.3,
-        ctx = canvas.getContext('2d'),
-        textLayerRenderTask = null;
-
-    // Render the specified page number
-    function renderPage(num) {
-        pageRendering = true;
-        
-        if (textLayerRenderTask) {
-            try {
-                textLayerRenderTask.cancel();
-            } catch (e) {}
-            textLayerRenderTask = null;
-        }
-
-        pdfDoc.getPage(num).then((page) => {
-            const viewport = page.getViewport({ scale: scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            const pageContainer = document.getElementById('pdf-page-container');
-            if (pageContainer) {
-                pageContainer.style.width = `${viewport.width}px`;
-                pageContainer.style.height = `${viewport.height}px`;
-            }
-
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: viewport
-            };
-            const renderTask = page.render(renderContext);
-
-            // Wait for rendering to finish
-            renderTask.promise.then(() => {
-                // Burn watermark directly into canvas pixels
-                burnWatermarkOnCanvas();
-                pageRendering = false;
-                if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
-                }
-            });
-
-            // Render PDF.js Text Layer for text selection and copy/paste
-            const textLayerDiv = document.getElementById('pdf-text-layer');
-            if (textLayerDiv) {
-                textLayerDiv.innerHTML = '';
-                textLayerDiv.style.width = `${viewport.width}px`;
-                textLayerDiv.style.height = `${viewport.height}px`;
-                textLayerDiv.style.setProperty('--scale-factor', viewport.scale);
-
-                page.getTextContent().then((textContent) => {
-                    if (pdfjsLib.renderTextLayer) {
-                        try {
-                            textLayerRenderTask = pdfjsLib.renderTextLayer({
-                                textContentSource: textContent,
-                                textContent: textContent,
-                                container: textLayerDiv,
-                                viewport: viewport,
-                                textDivs: []
-                            });
-                        } catch (tlErr) {
-                            console.warn("renderTextLayer failed:", tlErr);
-                        }
-                    }
-                }).catch(err => {
-                    console.warn("Error retrieving text content:", err);
-                });
-            }
-        }).catch(err => {
-            console.error("Error rendering page:", err);
-            pageRendering = false;
-        });
-
-        // Update page counters
-        document.getElementById('page-num').textContent = num;
-    }
+    let pdfDoc = null;
+    let totalPages = 0;
+    let currentPageNum = 1;
+    let scale = 1.0;
+    let basePageWidth = 600;
+    let basePageHeight = 800;
+    let pageStates = {}; // pageNum -> { rendered: bool, rendering: bool, renderTask: null, textLayerTask: null, renderedScale: 0 }
+    let intersectionObserver = null;
 
     // Burns a tiled diagonal watermark directly into the canvas pixels
-    // so ANY screenshot (including hardware Power+Volume) captures the watermark
-    function burnWatermarkOnCanvas() {
+    // so ANY screenshot captures the watermark
+    function burnWatermarkOnCanvas(canvas, ctx) {
         if (!canvas || !ctx) return;
         
         ctx.save();
@@ -157,59 +86,254 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.restore();
     }
 
-    // Queue page rendering
-    function queueRenderPage(num) {
-        if (pageRendering) {
-            pageNumPending = num;
-        } else {
-            renderPage(num);
+    // Render a single page into its container
+    async function renderPage(pageNum) {
+        const state = pageStates[pageNum];
+        if (!state || !pdfDoc) return;
+
+        // Already rendered at this scale
+        if (state.rendered && state.renderedScale === scale) return;
+
+        // If currently rendering at another scale, cancel prior tasks
+        if (state.rendering && state.renderTask) {
+            try {
+                state.renderTask.cancel();
+            } catch (e) {}
+        }
+        if (state.textLayerTask) {
+            try {
+                state.textLayerTask.cancel();
+            } catch (e) {}
+        }
+
+        state.rendering = true;
+
+        const pageContainer = document.getElementById(`page-container-${pageNum}`);
+        const canvas = document.getElementById(`pdf-canvas-${pageNum}`);
+        const textLayerDiv = document.getElementById(`pdf-text-layer-${pageNum}`);
+        const skeleton = document.getElementById(`pdf-skeleton-${pageNum}`);
+
+        if (!pageContainer || !canvas) {
+            state.rendering = false;
+            return;
+        }
+
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: scale });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            pageContainer.style.width = `${viewport.width}px`;
+            pageContainer.style.height = `${viewport.height}px`;
+
+            const ctx = canvas.getContext('2d');
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+
+            state.renderTask = page.render(renderContext);
+            await state.renderTask.promise;
+
+            // Burn watermark directly into canvas
+            burnWatermarkOnCanvas(canvas, ctx);
+
+            // Hide placeholder skeleton
+            if (skeleton) {
+                skeleton.style.display = 'none';
+            }
+
+            state.rendered = true;
+            state.rendering = false;
+            state.renderedScale = scale;
+            state.renderTask = null;
+
+            // Render PDF.js Text Layer for text selection and copy/paste
+            if (textLayerDiv) {
+                textLayerDiv.innerHTML = '';
+                textLayerDiv.style.width = `${viewport.width}px`;
+                textLayerDiv.style.height = `${viewport.height}px`;
+                textLayerDiv.style.setProperty('--scale-factor', viewport.scale);
+
+                try {
+                    const textContent = await page.getTextContent();
+                    if (pdfjsLib.renderTextLayer) {
+                        state.textLayerTask = pdfjsLib.renderTextLayer({
+                            textContentSource: textContent,
+                            textContent: textContent,
+                            container: textLayerDiv,
+                            viewport: viewport,
+                            textDivs: []
+                        });
+                    }
+                } catch (tlErr) {
+                    console.warn(`Text layer error on page ${pageNum}:`, tlErr);
+                }
+            }
+        } catch (err) {
+            if (err && err.name === 'RenderingCancelledException') {
+                return;
+            }
+            console.error(`Error rendering page ${pageNum}:`, err);
+            state.rendering = false;
         }
     }
 
-    // Previous Page handler
-    document.getElementById('prev-page').addEventListener('click', () => {
-        if (pageNum <= 1) {
-            return;
+    // Setup IntersectionObserver for lazy page rendering
+    function initObserver() {
+        if (intersectionObserver) {
+            intersectionObserver.disconnect();
         }
-        pageNum--;
-        queueRenderPage(pageNum);
-    });
 
-    // Next Page handler
-    document.getElementById('next-page').addEventListener('click', () => {
-        if (pageNum >= pdfDoc.numPages) {
-            return;
+        intersectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const pageNum = parseInt(entry.target.getAttribute('data-page-number'), 10);
+                if (entry.isIntersecting && pageNum) {
+                    renderPage(pageNum);
+                }
+            });
+        }, {
+            root: canvasWrapper,
+            rootMargin: '450px 0px' // Preload pages 450px before entering visible scroll area
+        });
+
+        // Observe all page container elements
+        for (let num = 1; num <= totalPages; num++) {
+            const pageContainer = document.getElementById(`page-container-${num}`);
+            if (pageContainer) {
+                intersectionObserver.observe(pageContainer);
+            }
         }
-        pageNum++;
-        queueRenderPage(pageNum);
-    });
+    }
 
-    // Zoom In handler
-    document.getElementById('zoom-in').addEventListener('click', () => {
-        if (scale >= 3.0) return;
-        scale += 0.2;
-        queueRenderPage(pageNum);
-    });
+    // Track active page based on scroll position inside canvasWrapper
+    let scrollTimeout = null;
+    function handleScroll() {
+        if (!totalPages) return;
 
-    // Zoom Out handler
-    document.getElementById('zoom-out').addEventListener('click', () => {
-        if (scale <= 0.6) return;
-        scale -= 0.2;
-        queueRenderPage(pageNum);
-    });
+        const wrapperRect = canvasWrapper.getBoundingClientRect();
+        const wrapperTargetY = wrapperRect.top + (wrapperRect.height * 0.35); // Focus threshold
+
+        let closestPage = currentPageNum;
+        let minDistance = Infinity;
+
+        for (let num = 1; num <= totalPages; num++) {
+            const container = document.getElementById(`page-container-${num}`);
+            if (!container) continue;
+
+            const rect = container.getBoundingClientRect();
+            const containerCenter = rect.top + (rect.height / 2);
+            const distance = Math.abs(containerCenter - wrapperTargetY);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPage = num;
+            }
+        }
+
+        if (closestPage !== currentPageNum) {
+            currentPageNum = closestPage;
+            const pageNumEl = document.getElementById('page-num');
+            if (pageNumEl) {
+                pageNumEl.textContent = currentPageNum;
+            }
+        }
+    }
+
+    canvasWrapper.addEventListener('scroll', () => {
+        if (scrollTimeout) return;
+        scrollTimeout = requestAnimationFrame(() => {
+            handleScroll();
+            scrollTimeout = null;
+        });
+    }, { passive: true });
+
+    // Build the skeleton page placeholders for all pages
+    function buildPagePlaceholders() {
+        pagesContainer.innerHTML = '';
+        pageStates = {};
+
+        const scaledWidth = Math.round(basePageWidth * scale);
+        const scaledHeight = Math.round(basePageHeight * scale);
+
+        for (let num = 1; num <= totalPages; num++) {
+            pageStates[num] = {
+                rendered: false,
+                rendering: false,
+                renderTask: null,
+                textLayerTask: null,
+                renderedScale: 0
+            };
+
+            const pageDiv = document.createElement('div');
+            pageDiv.id = `page-container-${num}`;
+            pageDiv.className = 'pdf-page-container';
+            pageDiv.setAttribute('data-page-number', num);
+            pageDiv.style.width = `${scaledWidth}px`;
+            pageDiv.style.height = `${scaledHeight}px`;
+
+            pageDiv.innerHTML = `
+                <canvas id="pdf-canvas-${num}" class="pdf-page-canvas"></canvas>
+                <div id="pdf-text-layer-${num}" class="textLayer"></div>
+                <div id="pdf-skeleton-${num}" class="pdf-page-skeleton">
+                    <div class="spinner"></div>
+                    <span>Page ${num}</span>
+                </div>
+            `;
+
+            pagesContainer.appendChild(pageDiv);
+        }
+
+        initObserver();
+    }
+
+    // Apply new scale / zoom level
+    function applyScale(newScale) {
+        scale = Math.min(Math.max(newScale, 0.4), 3.0);
+
+        const scaledWidth = Math.round(basePageWidth * scale);
+        const scaledHeight = Math.round(basePageHeight * scale);
+
+        for (let num = 1; num <= totalPages; num++) {
+            const pageContainer = document.getElementById(`page-container-${num}`);
+            const skeleton = document.getElementById(`pdf-skeleton-${num}`);
+            
+            if (pageContainer) {
+                pageContainer.style.width = `${scaledWidth}px`;
+                pageContainer.style.height = `${scaledHeight}px`;
+            }
+
+            const state = pageStates[num];
+            if (state) {
+                if (state.renderedScale !== scale) {
+                    state.rendered = false;
+                    if (skeleton) skeleton.style.display = 'flex';
+                }
+            }
+        }
+
+        // Immediately re-render visible pages at new scale
+        const wrapperRect = canvasWrapper.getBoundingClientRect();
+        for (let num = 1; num <= totalPages; num++) {
+            const container = document.getElementById(`page-container-${num}`);
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                if (rect.bottom >= wrapperRect.top - 450 && rect.top <= wrapperRect.bottom + 450) {
+                    renderPage(num);
+                }
+            }
+        }
+    }
 
     // Fit to Width layout handler
-    const canvasWrapper = document.querySelector(".pdf-canvas-wrapper");
     function fitToWidth() {
-        if (!pdfDoc || !canvasWrapper) return;
-        pdfDoc.getPage(pageNum).then((page) => {
-            const viewport1 = page.getViewport({ scale: 1.0 });
-            const wrapperWidth = canvasWrapper.clientWidth;
-            // Subtract offset padding/border for a safe fit
-            const targetWidth = wrapperWidth - 16;
-            scale = targetWidth / viewport1.width;
-            queueRenderPage(pageNum);
-        });
+        if (!pdfDoc || !canvasWrapper || !basePageWidth) return;
+        const availableWidth = canvasWrapper.clientWidth - 28; // Accounting for scrollbar & padding
+        if (availableWidth <= 0) return;
+        const targetScale = availableWidth / basePageWidth;
+        applyScale(targetScale);
     }
 
     const fitWidthBtn = document.getElementById("pdf-fit-width-btn");
@@ -217,27 +341,99 @@ document.addEventListener("DOMContentLoaded", () => {
         fitWidthBtn.addEventListener("click", fitToWidth);
     }
 
+    // Previous Page button - smoothly scrolls up to previous page
+    const prevPageBtn = document.getElementById('prev-page');
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPageNum > 1) {
+                const targetPage = currentPageNum - 1;
+                const targetEl = document.getElementById(`page-container-${targetPage}`);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+
+    // Next Page button - smoothly scrolls down to next page
+    const nextPageBtn = document.getElementById('next-page');
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', () => {
+            if (currentPageNum < totalPages) {
+                const targetPage = currentPageNum + 1;
+                const targetEl = document.getElementById(`page-container-${targetPage}`);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+
+    // Zoom In handler
+    const zoomInBtn = document.getElementById('zoom-in');
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            applyScale(scale + 0.15);
+        });
+    }
+
+    // Zoom Out handler
+    const zoomOutBtn = document.getElementById('zoom-out');
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+            applyScale(scale - 0.15);
+        });
+    }
+
     // Load Document with Web CacheStorage
-    window.getCachedPdfDocument(pdfUrl).then((pdfDoc_) => {
+    window.getCachedPdfDocument(pdfUrl).then(async (pdfDoc_) => {
         pdfDoc = pdfDoc_;
-        document.getElementById('page-count').textContent = pdfDoc.numPages;
+        totalPages = pdfDoc.numPages;
         
-        // Hide loader and show canvas
-        document.getElementById('pdf-loader').style.display = 'none';
-        canvas.style.display = 'block';
-        
-        // Automatically fit PDF to canvas wrapper width on load
-        fitToWidth();
+        const pageCountEl = document.getElementById('page-count');
+        if (pageCountEl) {
+            pageCountEl.textContent = totalPages;
+        }
+
+        // Read Page 1 dimensions to set base aspect ratio
+        try {
+            const firstPage = await pdfDoc.getPage(1);
+            const initialViewport = firstPage.getViewport({ scale: 1.0 });
+            basePageWidth = initialViewport.width;
+            basePageHeight = initialViewport.height;
+        } catch (e) {
+            console.warn("Could not read Page 1 viewport:", e);
+        }
+
+        // Calculate initial fit-to-width scale
+        const availableWidth = canvasWrapper.clientWidth - 28;
+        if (availableWidth > 0 && basePageWidth > 0) {
+            scale = availableWidth / basePageWidth;
+        } else {
+            scale = 1.0;
+        }
+
+        // Hide main card loader
+        const loaderEl = document.getElementById('pdf-loader');
+        if (loaderEl) {
+            loaderEl.style.display = 'none';
+        }
+
+        // Build all page placeholders and start rendering
+        buildPagePlaceholders();
+
     }).catch((err) => {
         console.error("Error loading PDF document:", err);
-        document.getElementById('pdf-loader').innerHTML = `
-            <div style="color: #ef4444; padding: 2rem; text-align: center;">
-                <p>⚠️ Error loading document. Please verify your authentication session or contact the school office.</p>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #94a3b8;">${err.message}</p>
-            </div>
-        `;
+        const loaderEl = document.getElementById('pdf-loader');
+        if (loaderEl) {
+            loaderEl.innerHTML = `
+                <div style="color: #ef4444; padding: 2rem; text-align: center;">
+                    <p>⚠️ Error loading document. Please verify your authentication session or contact the school office.</p>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #94a3b8;">${err.message}</p>
+                </div>
+            `;
+        }
     });
-
 
     // --- FULLSCREEN VIEW CONTROLS ---
     const fullscreenBtn = document.getElementById("pdf-fullscreen-btn");
@@ -266,6 +462,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (window.lucide) {
                 window.lucide.createIcons();
             }
+            // Give browser a frame to adjust fullscreen size then fitToWidth
+            setTimeout(fitToWidth, 100);
         });
     }
 
