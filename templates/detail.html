@@ -307,9 +307,12 @@
         right: 0;
         bottom: 0;
         overflow: hidden;
-        opacity: 0.25;
+        opacity: 1;
         line-height: 1.0;
         transform-origin: 0 0;
+        pointer-events: auto;
+        user-select: text;
+        -webkit-user-select: text;
     }
 
     .textLayer > span, .textLayer :is(span, br) {
@@ -318,10 +321,55 @@
         white-space: pre;
         cursor: text;
         transform-origin: 0% 0%;
+        user-select: text;
+        -webkit-user-select: text;
     }
 
     .textLayer ::selection {
-        background: rgba(0, 32, 96, 0.35);
+        background: rgba(0, 32, 96, 0.42) !important;
+        color: transparent !important;
+    }
+
+    /* Auto-OCR Status Pill */
+    .pdf-ocr-pill {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        color: #f8fafc;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        pointer-events: none;
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .pdf-ocr-pill.fade-out {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    .pdf-ocr-pill .ocr-spin {
+        width: 12px;
+        height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #38bdf8;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .pdf-ocr-pill.ready {
+        background: rgba(16, 185, 129, 0.9);
+        color: #ffffff;
     }
 
     /* Fullscreen Mode Styling */
@@ -925,12 +973,25 @@
             {% for rec in recommended_papers %}
             <a href="{{ url_for('paper_detail', paper_id=rec.id) }}" class="rec-paper-card">
                 <div class="rec-thumb-box">
-                    <canvas class="rec-thumb-canvas" data-paper-id="{{ rec.id }}" style="display: none;"></canvas>
-                    <div class="rec-thumb-fallback" id="rec-fallback-{{ rec.id }}">
-                        <strong
-                            style="font-size: 0.65rem; color: #002060; display: block; margin-bottom: 2px; text-transform: uppercase;">{{
-                            rec.strand }}</strong>
-                        <span style="font-weight: bold; font-size: 0.6rem;">{{ rec.title }}</span>
+                    <div class="rec-cover-header">
+                        <span class="rec-cover-strand-badge">{{ rec.strand }}</span>
+                        <i data-lucide="file-text" style="width: 12px; height: 12px; color: #002060;"></i>
+                    </div>
+                    <div class="rec-cover-crest">
+                        {% if rec.strand == 'HUMSS' %}
+                        <img src="{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}" alt="HUMSS" class="rec-cover-crest-img">
+                        {% elif rec.strand == 'ABM' %}
+                        <img src="{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}" alt="ABM" class="rec-cover-crest-img">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}" alt="STEM" class="rec-cover-crest-img">
+                        {% endif %}
+                    </div>
+                    <div class="rec-cover-title-preview">
+                        <span>{{ rec.title }}</span>
+                    </div>
+                    <div class="rec-cover-footer-lines">
+                        <div class="rec-line rec-line-1"></div>
+                        <div class="rec-line rec-line-2"></div>
                     </div>
                 </div>
                 <div class="rec-paper-info">
@@ -951,35 +1012,11 @@
 
 {% block extra_js %}
 <!-- Secure viewer engine script -->
-<script src="{{ url_for('static', filename='js/pdf_viewer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pdf_viewer.js') }}?v=2.0"></script>
 <script>
     // Custom dynamic async bookmark handler for the ribbon toggle 
     document.addEventListener("DOMContentLoaded", () => {
-        // Render PDF thumbnails for recommended paper cards
-        const recCanvases = document.querySelectorAll(".rec-thumb-canvas");
-        recCanvases.forEach(async (canvas) => {
-            const recId = canvas.getAttribute("data-paper-id");
-            const fallbackEl = document.getElementById(`rec-fallback-${recId}`);
-            if (!recId || typeof pdfjsLib === 'undefined') return;
-
-            try {
-                const pdfUrl = `/api/paper/${recId}/pdf`;
-                const pdfDoc = window.getCachedPdfDocument ? await window.getCachedPdfDocument(pdfUrl) : await pdfjsLib.getDocument(pdfUrl).promise;
-                const page = await pdfDoc.getPage(1);
-
-                const viewport = page.getViewport({ scale: 0.3 });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                canvas.style.display = "block";
-                if (fallbackEl) fallbackEl.style.display = "none";
-            } catch (e) {
-                console.log("Rec thumbnail render fallback for " + recId);
-            }
-        });
-
+        if (window.lucide) window.lucide.createIcons();
         const bookmarkBtn = document.getElementById("detail-bookmark-btn");
         const bookmarkCountEl = document.getElementById("bookmark-count-display");
         if (bookmarkBtn) {

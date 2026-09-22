@@ -1107,39 +1107,105 @@ footer {
 
 .rec-thumb-box {
   width: 120px;
-  height: 140px;
-  background-color: #ffffff;
-  border: 1.5px solid #333333;
-  border-radius: 4px;
+  height: 142px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
   flex-shrink: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 7px 7px 7px;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rec-paper-card:hover .rec-thumb-box {
+  border-color: #002060;
+  box-shadow: 0 4px 12px rgba(0, 32, 96, 0.15);
+  transform: translateY(-2px);
+}
+
+.rec-cover-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 3px;
+}
+
+.rec-cover-strand-badge {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #002060;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rec-cover-crest {
+  width: 40px;
+  height: 40px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  margin: 2px auto;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 3px;
   box-sizing: border-box;
 }
 
-.rec-thumb-canvas {
+.rec-cover-crest-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
-.rec-thumb-fallback {
+.rec-cover-title-preview {
+  width: 100%;
   text-align: center;
-  font-family: 'Times New Roman', serif;
+  font-family: 'Lora', Georgia, serif;
   font-size: 0.55rem;
-  line-height: 1.2;
-  color: #1e293b;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0f172a;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 7;
-  line-clamp: 7;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
+  margin: 1px 0;
+}
+
+.rec-cover-footer-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  padding-top: 3px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.rec-line {
+  height: 2px;
+  background-color: #cbd5e1;
+  border-radius: 2px;
+}
+
+.rec-line-1 {
+  width: 85%;
+  margin: 0 auto;
+}
+
+.rec-line-2 {
+  width: 55%;
+  margin: 0 auto;
 }
 
 .rec-paper-info {

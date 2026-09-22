@@ -1178,6 +1178,16 @@ def stream_pdf(paper_id):
             return jsonify({"error": "Paper not found."}), 404
         
         pdf_path = res.data[0]['pdf_path']
+
+        # Fast direct CDN streaming with byte-range support via signed URL
+        try:
+            signed_res = supabase.storage.from_("research_papers").create_signed_url(pdf_path, 3600)
+            signed_url = signed_res.get('signedURL') or signed_res.get('signedUrl')
+            if signed_url:
+                return redirect(signed_url, code=302)
+        except Exception as sign_err:
+            print("[Storage Stream] Signed URL generation failed, falling back to direct download:", sign_err)
+
         pdf_data = storage_download("research_papers", pdf_path)
         etag = hashlib.md5(pdf_data).hexdigest()
 
