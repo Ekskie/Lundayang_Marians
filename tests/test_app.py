@@ -1,3 +1,4 @@
+import io
 from types import SimpleNamespace
 import pytest
 import index as app_module
@@ -156,10 +157,32 @@ class FakeAuthNamespace:
         return None
 
 
+class FakeStorageBucket:
+    def __init__(self, bucket_name, files):
+        self.bucket_name = bucket_name
+        self.files = files
+
+    def upload(self, path, content, file_options=None):
+        self.files[f"{self.bucket_name}/{path}"] = content
+        return {"path": path}
+
+    def get_public_url(self, path):
+        return f"https://mock-storage.local/{self.bucket_name}/{path}"
+
+
+class FakeStorageNamespace:
+    def __init__(self):
+        self.files = {}
+
+    def from_(self, bucket_name):
+        return FakeStorageBucket(bucket_name, self.files)
+
+
 class FakeSupabase:
     def __init__(self, tables, auth_users):
         self.tables = tables
         self.auth = FakeAuthNamespace(auth_users)
+        self.storage = FakeStorageNamespace()
 
     def table(self, name):
         return FakeQuery(self.tables, name)
@@ -240,7 +263,7 @@ def client(monkeypatch):
     tables = {
         "profiles": [
             {"id": "admin-1", "student_id": "ADM-001", "name": "Admin User", "grade_section": "Faculty", "email": "admin@smla.edu.ph", "role": "admin", "status": "approved", "created_at": "2025-01-01"},
-            {"id": "student-1", "student_id": "2024-001", "name": "Approved Student", "grade_section": "12-STEM", "email": "approved@smla.edu.ph", "role": "student", "status": "approved", "created_at": "2025-01-02"},
+            {"id": "student-1", "student_id": "2024-001", "name": "Approved Student", "grade_section": "12-STEM", "email": "approved@smla.edu.ph", "role": "student", "status": "approved", "avatar_url": "/static/images/photo_of_developers/Xian_Yvan_V_Evangelio.png", "created_at": "2025-01-02"},
             {"id": "student-2", "student_id": "2024-002", "name": "Pending Student", "grade_section": "12-ABM", "email": "pending@smla.edu.ph", "role": "student", "status": "pending", "created_at": "2025-01-03"},
             {"id": "student-3", "student_id": "2024-003", "name": "Rejected Student", "grade_section": "12-HUMSS", "email": "rejected@smla.edu.ph", "role": "student", "status": "rejected", "created_at": "2025-01-04"},
         ],
@@ -249,11 +272,18 @@ def client(monkeypatch):
         "site_visits": [],
         "paper_views": [],
         "admin_audit_logs": [],
+        "site_settings": [],
     }
 
     fake_supa = FakeSupabase(tables, auth_users)
     monkeypatch.setattr(app_module, "supabase", fake_supa)
     monkeypatch.setattr(app_module, "supabase_auth", fake_supa)
+    monkeypatch.setattr(app_module, "SUPABASE_URL", "https://mock-supabase.local")
+    monkeypatch.setattr(
+        app_module,
+        "storage_upload",
+        lambda bucket, path, content, ct: fake_supa.storage.from_(bucket).upload(path, content, {"content-type": ct}),
+    )
     app_module.app.config["TESTING"] = True
 
     with app_module.app.test_client() as test_client:
@@ -267,6 +297,15 @@ def test_public_landing_and_info_pages(client):
     assert b"Our Vision" in res.data
     assert b"Our Mission" in res.data
     assert b"Log In" in res.data
+    # Upgraded landing editorial sections & sanitized featured studies (titles visible, abstracts/PDFs stay protected)
+    assert b"Instant Smart Search" in res.data
+    assert b"Featured &amp; Recognized Studies" in res.data
+    assert b"Civic Recognition" in res.data
+    assert b"Stage Fright to Stage Bright" in res.data
+    assert b"STEM Prototype Study 1" in res.data
+    assert b"Theater workshop impact study." not in res.data
+    assert b"HUMSS/stage.pdf" not in res.data
+    assert b"Arduino automation" not in res.data
     # Upgraded guest navbar pills & frosted language control
     assert b"nav-login-pill" in res.data
     assert b"nav-signup-pill" in res.data
@@ -442,34 +481,52 @@ def test_paper_view_tracking_and_admin_dashboard(client):
     assert client.get("/admin/dashboard").status_code == 302
     assert client.get("/admin/export/papers.csv").status_code == 302
     assert client.post("/admin/users/bulk-approve").status_code == 302
+    # Undecided consent: student paper read logs an anonymous view row without visitor_id or site_visits
     student_paper_pre = client.get("/paper/paper-stem-1")
     assert student_paper_pre.status_code == 200
     assert b"detail-bookmark-btn" in student_paper_pre.data
     assert b'id="cookie-banner"' in student_paper_pre.data
-    assert len(client.fake_supa.tables["paper_views"]) == 0
+    assert b'id="paper-views-pill"' in student_paper_pre.data
+    assert b'<span id="paper-views-display">1</span>' in student_paper_pre.data
+    assert len(client.fake_supa.tables["paper_views"]) == 1
+    assert client.fake_supa.tables["paper_views"][0]["user_id"] is None
+    assert client.fake_supa.tables["paper_views"][0]["viewer_token"] is None
+    assert len(client.fake_supa.tables["site_visits"]) == 0
+    with client.session_transaction() as sess:
+        assert "visitor_id" not in sess
+
+    # Essential Only keeps site_visits disabled while still incrementing anonymous paper view counter
+    client.post("/api/cookie-consent", json={"consent": "essential", "path": "/paper/paper-stem-1"})
+    ess_paper = client.get("/paper/paper-stem-1")
+    assert ess_paper.status_code == 200
+    assert b'<span id="paper-views-display">2</span>' in ess_paper.data
+    assert len(client.fake_supa.tables["paper_views"]) == 2
+    assert client.fake_supa.tables["paper_views"][1]["user_id"] is None
+    assert client.fake_supa.tables["paper_views"][1]["viewer_token"] is None
     assert len(client.fake_supa.tables["site_visits"]) == 0
 
-    # Essential Only keeps telemetry disabled
-    client.post("/api/cookie-consent", json={"consent": "essential", "path": "/paper/paper-stem-1"})
-    assert client.get("/paper/paper-stem-1").status_code == 200
-    assert len(client.fake_supa.tables["paper_views"]) == 0
-
-    # Accept All enables visit + paper_view analytics for students
+    # Accept All enables site_visits + attaches session attribution on new paper views
     client.post("/api/cookie-consent", json={"consent": "all", "path": "/paper/paper-stem-1"})
     student_paper = client.get("/paper/paper-stem-1")
     assert student_paper.status_code == 200
     assert b"detail-bookmark-btn" in student_paper.data
     assert b"nav-user-chip" in student_paper.data
     assert b"Approved Student" in student_paper.data
-    assert len(client.fake_supa.tables["paper_views"]) == 1
+    assert b"nav-avatar-img" in student_paper.data
+    assert b"Xian_Yvan_V_Evangelio.png" in student_paper.data
+    assert b'<span id="paper-views-display">3</span>' in student_paper.data
+    assert len(client.fake_supa.tables["paper_views"]) == 3
+    assert client.fake_supa.tables["paper_views"][2]["user_id"] == "student-1"
+    assert client.fake_supa.tables["paper_views"][2]["viewer_token"] is not None
     student_visit_count = len(client.fake_supa.tables["site_visits"])
 
-    # Switching back to Essential clears visitor_id and stops additional analytics inserts
+    # Switching back to Essential clears visitor_id, stops site_visits, and resumes anonymous paper counts on next read
     client.post("/api/cookie-consent", json={"consent": "essential", "path": "/paper/paper-stem-1"})
     with client.session_transaction() as sess:
         assert "visitor_id" not in sess
     assert client.get("/paper/paper-stem-1").status_code == 200
-    assert len(client.fake_supa.tables["paper_views"]) == 1
+    assert len(client.fake_supa.tables["paper_views"]) == 4
+    assert client.fake_supa.tables["paper_views"][3]["user_id"] is None
     assert len(client.fake_supa.tables["site_visits"]) == student_visit_count
 
     client.get("/logout")
@@ -536,7 +593,8 @@ def test_paper_view_tracking_and_admin_dashboard(client):
     assert b'id="cookie-banner"' not in admin_preview.data
     assert b'id="lm-prefs-modal"' not in admin_preview.data
     assert b'id="open-cookie-settings-btn"' not in admin_preview.data
-    assert len(client.fake_supa.tables["paper_views"]) == 1
+    assert b'<span id="paper-views-display">4</span>' in admin_preview.data
+    assert len(client.fake_supa.tables["paper_views"]) == 4
     assert len(client.fake_supa.tables["site_visits"]) == admin_pre_visits
     assert len(client.fake_supa.tables["site_visits"]) == student_visit_count
 
@@ -626,3 +684,199 @@ def test_paper_view_tracking_and_admin_dashboard(client):
     login_now = client.post("/login", data={"student_id": "2024-002", "password": "Password123"})
     assert login_now.status_code == 302
     assert "/admin/dashboard" not in login_now.headers["Location"]
+
+
+def test_admin_site_content_cms_updates_landing_and_home(client):
+    # Guests & approved students are blocked from Admin CMS routes
+    guest_cms = client.get("/admin/site-content")
+    assert guest_cms.status_code == 302
+    assert "/login" in guest_cms.headers["Location"]
+
+    client.post("/login", data={"student_id": "2024-001", "password": "Password123"})
+    student_cms = client.get("/admin/site-content")
+    assert student_cms.status_code in (302, 403)
+    student_save = client.post("/admin/site-content/save", json={"section": "mission_vision", "data": {}})
+    assert student_save.status_code in (302, 403)
+
+    # Admin accesses Landing & Home workspace
+    client.get("/logout")
+    client.post("/login", data={"student_id": "ADM-001", "password": "Password123"})
+    admin_dash = client.get("/admin/dashboard")
+    assert admin_dash.status_code == 200
+    assert b"/admin/site-content" in admin_dash.data
+
+    cms_page = client.get("/admin/site-content")
+    assert cms_page.status_code == 200
+    assert b"Landing &amp; Home Content Manager" in cms_page.data
+    assert b"Featured 3 Studies" in cms_page.data
+    assert b"paper-abm-tracer" in cms_page.data
+
+    # Admin image upload validates file types & stores safe asset URL
+    bad_upload = client.post(
+        "/admin/site-content/upload-image",
+        data={"slot": "landing_primary", "image": (io.BytesIO(b"not an image"), "malware.txt")},
+        content_type="multipart/form-data",
+    )
+    assert bad_upload.status_code == 400
+    assert bad_upload.get_json()["success"] is False
+
+    upload_res = client.post(
+        "/admin/site-content/upload-image",
+        data={"slot": "landing_primary", "image": (io.BytesIO(b"\x89PNG\r\n\x1a\nfakeimg"), "campus_new.png")},
+        content_type="multipart/form-data",
+    )
+    assert upload_res.status_code == 200
+    uploaded_url = upload_res.get_json()["url"]
+    assert uploaded_url.startswith("https://mock-supabase.local/storage/v1/object/public/avatars/site_cms/landing_primary_")
+
+    # Invalid image URL is rejected safely
+    bad_hero = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "landing_hero",
+            "data": {
+                "hero_title": "Test",
+                "hero_intro": "Test intro",
+                "primary_photo_url": "javascript:alert(1)",
+                "primary_caption": "Cap",
+                "heritage_photo_url": "",
+                "heritage_label": "Heritage",
+                "access_heading": "Access",
+                "access_body": "Body",
+            },
+        },
+    )
+    assert bad_hero.status_code == 400
+
+    # Save all 5 CMS sections cleanly
+    res_hero = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "landing_hero",
+            "data": {
+                "hero_title": "Marian Scholars Archive 2026",
+                "hero_intro": "Updated public hero showcase copy for Marian scholarship.",
+                "primary_photo_url": uploaded_url,
+                "primary_caption": "Updated SMLA Campus Grounds",
+                "heritage_photo_url": "",
+                "heritage_label": "Heritage 1958",
+                "access_heading": "Verified Institutional Portal",
+                "access_body": "Sign in with your verified Marian ID to open full PDFs.",
+            },
+        },
+    )
+    assert res_hero.status_code == 200
+
+    res_mv = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "mission_vision",
+            "data": {
+                "vision_title": "Updated Vision Title",
+                "vision_text": "Empowering ethical student innovation across Laguna.",
+                "mission_title": "Updated Mission Title",
+                "mission_text": "Archiving peer-mentored Marian research securely.",
+            },
+        },
+    )
+    assert res_mv.status_code == 200
+
+    res_rec = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "recognition",
+            "data": {
+                "image_url": uploaded_url,
+                "badge_label": "Provincial Citation",
+                "landing_headline": "Provincial Youth STEM Excellence Award",
+                "landing_summary": "Honored across Laguna for community flood-sensor innovation.",
+                "home_heading": "MUNICIPAL & PROVINCIAL HONOR",
+                "home_subtitle": "Officially cited by the Province of Laguna Youth Council",
+                "home_honoree": "Governor & Sangguniang Kabataan Council",
+                "home_body_intro": "commends the Grade 12 STEM researchers of Sta. Maria Academy for",
+                "home_study_quote": '"SMART BARANGAY DRAINAGE TELEMETRY PROTOTYPE"',
+                "home_adviser_note": "Advised by Engr. Ramon Santos.",
+                "home_impact_note": "Adopted for local disaster resilience planning.",
+            },
+        },
+    )
+    assert res_rec.status_code == 200
+
+    res_fp = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "featured_papers",
+            "data": {
+                "landing_heading": "Curated Spotlight Studies",
+                "landing_subtitle": "Handpicked 2026 academic highlights.",
+                "home_heading": "TOP CURATED RESEARCH",
+                "home_subtitle": "Faculty-selected standout theses",
+                "slot_ids": ["paper-abm-tracer", "paper-humss-1", "paper-stem-1"],
+            },
+        },
+    )
+    assert res_fp.status_code == 200
+
+    res_sh = client.post(
+        "/admin/site-content/save",
+        json={
+            "section": "student_home",
+            "data": {
+                "intro_paragraph_1": "Welcome back to the updated 2026 student archive.",
+                "intro_paragraph_2": "Explore curated citations and faculty-recognized manuscripts below.",
+                "slides": [
+                    {"url": uploaded_url, "static_path": "", "alt": "New 2026 Campus Wing"},
+                    {"url": "", "static_path": "images/Photos/Old_P.jpg", "alt": "Classic SMLA Wing"},
+                ],
+            },
+        },
+    )
+    assert res_sh.status_code == 200
+
+    # Audit logs recorded every CMS update
+    cms_audits = [
+        log for log in client.fake_supa.tables["admin_audit_logs"]
+        if log["action"] == "update_site_content"
+    ]
+    assert len(cms_audits) == 5
+
+    # Public landing (logged out + admin preview) reflects CMS updates while still hiding abstracts & PDFs
+    client.get("/logout")
+    pub = client.get("/")
+    assert pub.status_code == 200
+    assert b"Marian Scholars Archive 2026" in pub.data
+    assert uploaded_url.encode() in pub.data
+    assert b"Updated Vision Title" in pub.data
+    assert b"Updated Mission Title" in pub.data
+    assert b"Archiving peer-mentored Marian research securely." in pub.data
+    assert b"Provincial Youth STEM Excellence Award" in pub.data
+    assert b"Curated Spotlight Studies" in pub.data
+    assert b"Alumni Tracer Study" in pub.data
+    assert b"Graduate outcomes survey." not in pub.data
+    assert b"HUMSS/stage.pdf" not in pub.data
+
+    # Student Home reflects custom slideshow, intro copy, Mission & Vision, recognition citation, and Top 3 order
+    client.post("/login", data={"student_id": "2024-001", "password": "Password123"})
+    st_home = client.get("/")
+    assert st_home.status_code == 200
+    assert b"Welcome back to the updated 2026 student archive." in st_home.data
+    assert b"Updated Mission Title" in st_home.data
+    assert b"New 2026 Campus Wing" in st_home.data
+    assert b"SMART BARANGAY DRAINAGE TELEMETRY PROTOTYPE" in st_home.data
+    assert b"TOP CURATED RESEARCH" in st_home.data
+    assert b"Alumni Tracer Study" in st_home.data
+
+    # Admin resets landing_hero back to defaults cleanly
+    client.get("/logout")
+    client.post("/login", data={"student_id": "ADM-001", "password": "Password123"})
+    reset_res = client.post("/admin/site-content/reset", json={"section": "landing_hero"})
+    assert reset_res.status_code == 200
+    assert reset_res.get_json()["success"] is True
+
+    preview_after_reset = client.get("/landing?preview=1")
+    assert preview_after_reset.status_code == 200
+    assert b"The Cradle of Marian Scholarship" in preview_after_reset.data
+    assert b"Marian Scholars Archive 2026" not in preview_after_reset.data
+    home_preview = client.get("/home?preview=1")
+    assert home_preview.status_code == 200
+    assert b"Welcome back to the updated 2026 student archive." in home_preview.data

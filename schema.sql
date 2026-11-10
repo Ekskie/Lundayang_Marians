@@ -185,6 +185,32 @@ CREATE POLICY "Admins can insert audit logs" ON public.admin_audit_logs
     )
   );
 
+-- 12. Site Content & CMS Settings (Landing Page & Student Home)
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can read site settings" ON public.site_settings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Only admins can write site settings" ON public.site_settings
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles AS admin_prof
+      WHERE admin_prof.id = auth.uid() AND admin_prof.role = 'admin'
+    )
+  ) WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles AS admin_prof
+      WHERE admin_prof.id = auth.uid() AND admin_prof.role = 'admin'
+    )
+  );
+
 -- ============================================================
 -- MIGRATION: Run these statements if upgrading an existing database
 -- Existing users default to 'approved' so they are not locked out,

@@ -488,17 +488,14 @@
             <!-- Slideshow Carousel Wrapper -->
             <div class="carousel-wrapper">
                 <div class="carousel-container">
-                    <img class="carousel-img" src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
-                        alt="Sta. Maria Academy Facade">
+                    {% set first_slide = slides_urls[0] if slides_urls else {'src': url_for('static', filename='images/Photos/School_P.jpg'), 'alt': 'Sta. Maria Academy Facade'} %}
+                    <img class="carousel-img" src="{{ first_slide.src }}"
+                        alt="{{ first_slide.alt }}">
                 </div>
             </div>
 
-            <p class="repo-desc-text">
-                <strong><em>{{ t('Lundayang Marians') }}</em></strong> {{ t('is the web-based research repository of') }} <strong>{{ t('Santa Maria (Laguna) Academy Inc.') }}</strong>, {{ t('envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or focal point, with "Marians", the collective identity of the academy\'s students. This platform centralizes academic outputs, offering a simple interface and organized categories for easy access and exploration.') }}
-            </p>
-            <p class="repo-desc-text" style="margin-top: -1rem;">
-                {{ t('By preserving research in a digital archive,') }} <strong>{{ t('Lundayang Marians') }}</strong> {{ t('fosters collaboration, supports future studies, and strengthens the Marian community\'s commitment to academic excellence. It serves not only as a repository but also as a symbol of innovation and inclusivity, ensuring that the scholarly contributions of Marians remain accessible and impactful for years to come.') }}
-            </p>
+            <p class="repo-desc-text">{{ site_content.student_home.intro_paragraph_1 }}</p>
+            <p class="repo-desc-text" style="margin-top: -1rem;">{{ site_content.student_home.intro_paragraph_2 }}</p>
 
         </div>
 
@@ -535,23 +532,23 @@
         <div class="home-left-col">
 
             <div class="rec-box-container">
-                <h3 class="rec-title-header" style="font-style: italic;">{{ t('RESEARCH RECOGNITION') }}</h3>
-                <p class="rec-title-sub">{{ t('This Research has been officially Recognized by the Municipality of Santa Maria, Laguna') }}</p>
+                <h3 class="rec-title-header" style="font-style: italic;">{{ t(site_content.recognition.home_heading) }}</h3>
+                <p class="rec-title-sub">{{ t(site_content.recognition.home_subtitle) }}</p>
 
                 <div class="rec-content-split">
                     <div class="rec-content-text">
-                        <img src="{{ url_for('static', filename='images/municipality_recognises/KALAT_MO_SAGOT_KO_THE_ACCEPTABILITY_OF_THE_PROTOTYPE_WASTE_SEGREGATOR_MACHINE_IN_SANTA_MARIA_LAGUNA.jpg') }}"
-                            alt="Research Recognition Document" class="rec-doc-img">
+                        <img src="{{ recognition_photo_url }}"
+                            alt="{{ site_content.recognition.home_heading }}" class="rec-doc-img">
                         <p>
-                            <strong>{{ t('SK Chairman Angel Mangundayao of the Municipality of Santa Maria, Laguna') }}</strong>
-                            {{ t('proudly acknowledges the outstanding efforts of the student researchers of Santa Maria (Laguna) Academy, INC., Gabrielle A. Dimatatac, Bridgette S. Panaligan, Mark Andrew Y. Montales, Fiona Sheryn A. Hernandez, Kristel Anne Nicole L. Jaen, Godwel Ivan D. Razon, and Fatima Victoria I. Valentino, for their innovative study entitled') }}
-                            <strong>“KALAT MO, SAGOT KO: THE ACCEPTABILITY OF THE PROTOTYPE WASTE SEGREGATOR MACHINE IN SANTA MARIA, LAGUNA.”</strong>
+                            <strong>{{ t(site_content.recognition.home_honoree) }}</strong>
+                            {{ t(site_content.recognition.home_body_intro) }}
+                            <strong>{{ site_content.recognition.home_study_quote }}</strong>
                         </p>
                         <p style="margin-top: 0.5rem; font-style: italic;">
-                            {{ t('Special recognition is also extended to their Research Adviser, Ms. Maureen L. Cruz, whose guidance and expertise provided the necessary direction and support in the completion of this project.') }}
+                            {{ t(site_content.recognition.home_adviser_note) }}
                         </p>
                         <p style="margin-top: 0.5rem;">
-                            {{ t('This initiative reflects the commitment of the youth of Santa Maria Academy to environmental responsibility and sustainable development. It also demonstrates the vital role of student-led innovation in creating solutions that can be adopted by the barangay and the wider community for the benefit of the people of Santa Maria, Laguna.') }}
+                            {{ t(site_content.recognition.home_impact_note) }}
                         </p>
                     </div>
                 </div>
@@ -564,8 +561,8 @@
 
             <div>
                 <hr style="border-top: 2px solid var(--primary-color); margin-bottom: 1rem;" class="w-full">
-                <h3 class="best-header-title" style="font-style: italic;">{{ t('BEST IN RESEARCH') }}</h3>
-                <p class="best-header-sub">{{ t('Recognizing Outstanding Research Achievements in Recent Years') }}</p>
+                <h3 class="best-header-title" style="font-style: italic;">{{ t(site_content.featured_papers.home_heading) }}</h3>
+                <p class="best-header-sub">{{ t(site_content.featured_papers.home_subtitle) }}</p>
 
                 <div class="best-card-list">
                     {% for paper in best_in_research[:3] %}
@@ -604,28 +601,22 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const slides = [
-            "{{ url_for('static', filename='images/Photos/School_P.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/741481012_1033089102523494_5220187940140632359_n.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/742997668_1704114644246167_6551245720162600764_n.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/743796266_1527611965725908_6500501796955139832_n.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/746660483_1005253982424329_5662788526906682934_n.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/746715677_1716137346299532_5212130155329073556_n.jpg') }}",
-            "{{ url_for('static', filename='images/school_photos/b49d6ac161686b265bae60c376f9047c.jpeg') }}",
-            "{{ url_for('static', filename='images/school_photos/fa78647b324ea46e043f5ec0bde6837b.jpeg') }}",
-            "{{ url_for('static', filename='images/school_photos/1.jfif') }}",
-            "{{ url_for('static', filename='images/school_photos/2.jfif') }}"
-        ];
+        const slides = {{ slides_urls | tojson }};
+        if (!Array.isArray(slides) || slides.length <= 1) return;
 
         let currentIndex = 0;
         const imgEl = document.querySelector(".carousel-img");
 
         function updateSlide(index) {
-            if (!imgEl) return;
+            if (!imgEl || !slides.length) return;
             imgEl.style.opacity = "0";
             setTimeout(() => {
                 currentIndex = (index + slides.length) % slides.length;
-                imgEl.src = slides[currentIndex];
+                const item = slides[currentIndex];
+                if (item && item.src) {
+                    imgEl.src = item.src;
+                    imgEl.alt = item.alt || "Campus Gallery Photo";
+                }
                 imgEl.style.opacity = "1";
             }, 300);
         }

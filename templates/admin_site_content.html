@@ -1,0 +1,1625 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('Landing & Home') }} - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    .cms-page-container {
+        max-width: 1280px;
+        margin: 2rem auto 3.5rem auto;
+        padding: 0 1.75rem;
+        width: 100%;
+    }
+
+    /* Executive Workspace Header */
+    .cms-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1.5px solid #cbd5e1;
+    }
+
+    .cms-title {
+        font-family: 'Lora', serif;
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.35rem 0;
+        line-height: 1.18;
+    }
+
+    .cms-subtitle {
+        font-size: 0.9rem;
+        color: #475569;
+        margin: 0;
+        max-width: 68ch;
+        line-height: 1.5;
+    }
+
+    .cms-header-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+    }
+
+    .cms-preview-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1rem;
+        border-radius: 10px;
+        border: 1.5px solid #cbd5e1;
+        background-color: #ffffff;
+        color: var(--primary-color);
+        font-size: 0.84rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cms-preview-btn:hover {
+        background-color: #f1f5f9;
+        border-color: var(--primary-color);
+    }
+
+    /* Status Feedback Banner */
+    .cms-status-banner {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        border: 1.5px solid transparent;
+    }
+
+    .cms-status-banner.visible {
+        display: flex;
+    }
+
+    .cms-status-banner.success {
+        background-color: #ecfdf5;
+        border-color: #6ee7b7;
+        color: #065f46;
+    }
+
+    .cms-status-banner.error {
+        background-color: #fef2f2;
+        border-color: #fca5a5;
+        color: #991b1b;
+    }
+
+    .cms-status-close {
+        background: transparent;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        border-radius: 6px;
+    }
+
+    /* Segmented Tabs Bar */
+    .cms-tabs-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        padding: 0.45rem;
+        background-color: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .cms-tab-btn {
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        padding: 0.62rem 1rem;
+        color: #334155;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.16s ease, color 0.16s ease;
+    }
+
+    .cms-tab-btn:hover {
+        background-color: #f1f5f9;
+        color: var(--primary-color);
+    }
+
+    .cms-tab-btn.active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .cms-panel {
+        display: none;
+    }
+
+    .cms-panel.active {
+        display: block;
+    }
+
+    /* Single-Layer Content Card */
+    .cms-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 1.75rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .cms-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-bottom: 1.15rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+    }
+
+    .cms-card-title {
+        font-family: 'Lora', serif;
+        font-size: 1.32rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.28rem 0;
+    }
+
+    .cms-card-desc {
+        font-size: 0.86rem;
+        color: #475569;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .cms-scope-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.32rem 0.8rem;
+        border-radius: 999px;
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e3a8a;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .cms-divider-section {
+        margin-top: 1.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .cms-subhead {
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.3rem 0;
+    }
+
+    .cms-subdesc {
+        font-size: 0.84rem;
+        color: #475569;
+        margin: 0 0 1.1rem 0;
+    }
+
+    /* Form Controls */
+    .cms-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.25rem;
+    }
+
+    .cms-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.05rem;
+    }
+
+    .cms-label {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .cms-help {
+        font-size: 0.78rem;
+        color: #475569;
+        line-height: 1.45;
+    }
+
+    .cms-input,
+    .cms-textarea,
+    .cms-select {
+        width: 100%;
+        padding: 0.68rem 0.88rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        background-color: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .cms-input:focus,
+    .cms-textarea:focus,
+    .cms-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 32, 96, 0.12);
+    }
+
+    .cms-textarea {
+        resize: vertical;
+        min-height: 84px;
+    }
+
+    /* Flat Media Upload Block (No nested border-radius card shadow) */
+    .cms-media-row {
+        display: flex;
+        gap: 1.15rem;
+        align-items: flex-start;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cms-media-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .cms-media-preview {
+        width: 170px;
+        height: 112px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #cbd5e1;
+        background-color: #f1f5f9;
+        flex-shrink: 0;
+    }
+
+    .cms-media-controls {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .cms-upload-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0.45rem 0 0.7rem 0;
+    }
+
+    .cms-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        padding: 0.62rem 1.2rem;
+        border-radius: 10px;
+        font-size: 0.86rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        transition: all 0.16s ease;
+        text-decoration: none;
+    }
+
+    .cms-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    .cms-btn-sm {
+        padding: 0.42rem 0.85rem;
+        font-size: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .cms-btn-primary {
+        background-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .cms-btn-primary:hover:not(:disabled) {
+        background-color: #001542;
+    }
+
+    .cms-btn-secondary {
+        background-color: #ffffff;
+        color: var(--primary-color);
+        border-color: #cbd5e1;
+    }
+
+    .cms-btn-secondary:hover:not(:disabled) {
+        background-color: #f8fafc;
+        border-color: var(--primary-color);
+    }
+
+    .cms-btn-danger-outline {
+        background-color: #ffffff;
+        color: #b91c1c;
+        border-color: #fca5a5;
+    }
+
+    .cms-btn-danger-outline:hover:not(:disabled) {
+        background-color: #fef2f2;
+        border-color: #dc2626;
+    }
+
+    /* Slideshow List Rows */
+    .cms-slides-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .cms-slide-list {
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .cms-slide-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.95rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cms-slide-num {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        min-width: 28px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .cms-slide-thumb {
+        width: 124px;
+        height: 74px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid #cbd5e1;
+        background-color: #f1f5f9;
+        flex-shrink: 0;
+    }
+
+    .cms-slide-inputs {
+        flex: 1;
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+        gap: 0.75rem;
+    }
+
+    .cms-slide-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-shrink: 0;
+    }
+
+    /* Featured Slots Rows */
+    .cms-slot-row {
+        padding: 1.05rem 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cms-slot-row:last-child {
+        border-bottom: none;
+    }
+
+    .cms-slot-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .cms-slot-badge {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .cms-slot-resolved {
+        margin-top: 0.45rem;
+        font-size: 0.82rem;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .cms-slot-tag {
+        display: inline-block;
+        padding: 0.16rem 0.55rem;
+        border-radius: 6px;
+        background-color: #f1f5f9;
+        color: #002060;
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+
+    .cms-preview-strip {
+        margin-top: 1.25rem;
+        padding: 1rem 1.15rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+    }
+
+    .cms-preview-strip-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.55rem 0;
+    }
+
+    .cms-preview-list {
+        margin: 0;
+        padding-left: 1.25rem;
+        font-size: 0.84rem;
+        color: #334155;
+        display: grid;
+        gap: 0.3rem;
+    }
+
+    /* Footer Action Row */
+    .cms-footer-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        margin-top: 1.75rem;
+        padding-top: 1.25rem;
+        border-top: 1.5px solid #e2e8f0;
+    }
+
+    /* Reset Confirmation Modal */
+    .cms-modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(15, 23, 42, 0.56);
+        z-index: 2500;
+        align-items: center;
+        justify-content: center;
+        padding: 1.25rem;
+    }
+
+    .cms-modal-backdrop.open {
+        display: flex;
+    }
+
+    .cms-modal-box {
+        background-color: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 1.65rem;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22);
+    }
+
+    .cms-modal-title {
+        font-family: 'Lora', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.5rem 0;
+    }
+
+    .cms-modal-text {
+        font-size: 0.88rem;
+        color: #334155;
+        margin: 0 0 1.35rem 0;
+        line-height: 1.55;
+    }
+
+    .cms-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.65rem;
+    }
+
+    .sr-only-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+
+    @media (max-width: 900px) {
+        .cms-grid-2,
+        .cms-slide-inputs {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .cms-page-container {
+            padding: 0 1rem;
+            margin-top: 1.25rem;
+        }
+
+        .cms-card {
+            padding: 1.2rem;
+        }
+
+        .cms-media-row,
+        .cms-slide-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .cms-media-preview,
+        .cms-slide-thumb {
+            width: 100%;
+            height: 160px;
+        }
+
+        .cms-slide-num {
+            text-align: left;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cms-page-container">
+    <div class="cms-header">
+        <div>
+            <h1 class="cms-title">Landing &amp; Home Content Manager</h1>
+            <p class="cms-subtitle">
+                Update the Public Landing showcase, Student Home slideshow, Mission &amp; Vision, Municipality Recognition spotlight, and Featured 3 research studies directly from Admin.
+            </p>
+        </div>
+        <div class="cms-header-actions">
+            <a href="{{ url_for('landing', preview=1) }}" target="_blank" rel="noopener noreferrer" class="cms-preview-btn">
+                <i data-lucide="external-link" style="width: 15px; height: 15px;"></i>
+                <span>Preview Public Landing</span>
+            </a>
+            <a href="{{ url_for('repository_home', preview=1) }}" target="_blank" rel="noopener noreferrer" class="cms-preview-btn">
+                <i data-lucide="layout-template" style="width: 15px; height: 15px;"></i>
+                <span>Preview Student Home</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="cms-status-banner" class="cms-status-banner" role="status" aria-live="polite">
+        <span id="cms-status-message"></span>
+        <button type="button" class="cms-status-close" id="cms-status-close-btn" aria-label="Dismiss notification">
+            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+        </button>
+    </div>
+
+    <div class="cms-tabs-bar" role="tablist" aria-label="Site content sections">
+        <button type="button" class="cms-tab-btn active" data-tab="landing_hero" role="tab" aria-selected="true">
+            <i data-lucide="globe" style="width: 16px; height: 16px;"></i>
+            <span>Public Landing</span>
+        </button>
+        <button type="button" class="cms-tab-btn" data-tab="student_home" role="tab" aria-selected="false">
+            <i data-lucide="images" style="width: 16px; height: 16px;"></i>
+            <span>Student Home &amp; Slideshow</span>
+        </button>
+        <button type="button" class="cms-tab-btn" data-tab="mission_vision" role="tab" aria-selected="false">
+            <i data-lucide="compass" style="width: 16px; height: 16px;"></i>
+            <span>Mission &amp; Vision</span>
+        </button>
+        <button type="button" class="cms-tab-btn" data-tab="recognition" role="tab" aria-selected="false">
+            <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+            <span>Recognition Spotlight</span>
+        </button>
+        <button type="button" class="cms-tab-btn" data-tab="featured_papers" role="tab" aria-selected="false">
+            <i data-lucide="star" style="width: 16px; height: 16px;"></i>
+            <span>Featured 3 Studies</span>
+        </button>
+    </div>
+
+    <!-- TAB 1: PUBLIC LANDING HERO & PHOTOS -->
+    <section id="panel-landing_hero" class="cms-panel active" role="tabpanel">
+        <div class="cms-card">
+            <div class="cms-card-head">
+                <div>
+                    <h2 class="cms-card-title">Public Landing Hero &amp; Campus Photos</h2>
+                    <p class="cms-card-desc">Controls the opening headline, introduction, campus showcase images, and bottom verification banner seen by logged-out visitors.</p>
+                </div>
+                <span class="cms-scope-pill">
+                    <i data-lucide="globe" style="width: 14px; height: 14px;"></i>
+                    <span>Applies to Public Landing</span>
+                </span>
+            </div>
+
+            <div class="cms-field">
+                <label class="cms-label" for="lh-hero-title">Hero Headline</label>
+                <input type="text" id="lh-hero-title" class="cms-input" maxlength="240"
+                    value="{{ site_content.landing_hero.hero_title }}">
+            </div>
+
+            <div class="cms-field">
+                <label class="cms-label" for="lh-hero-intro">Hero Introduction Paragraph</label>
+                <textarea id="lh-hero-intro" class="cms-textarea" rows="4" maxlength="2000">{{ site_content.landing_hero.hero_intro }}</textarea>
+            </div>
+
+            <div class="cms-divider-section">
+                <h3 class="cms-subhead">Campus Showcase Photos</h3>
+                <p class="cms-subdesc">Upload new campus images or paste a direct image URL. Leaving the URL empty uses the built-in campus photo.</p>
+
+                <div class="cms-media-row">
+                    <img id="lh-primary-preview" class="cms-media-preview" src="{{ resolved_media.primary_photo }}" alt="Primary campus preview">
+                    <div class="cms-media-controls">
+                        <div class="cms-label">Primary Campus Photo</div>
+                        <div class="cms-upload-actions">
+                            <input type="file" id="lh-primary-file" class="sr-only-input" accept=".jpg,.jpeg,.png,.webp,.gif">
+                            <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="document.getElementById('lh-primary-file').click()">
+                                <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                                <span>Upload Photo</span>
+                            </button>
+                            <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="clearMediaSlot('lh-primary-photo-url', 'lh-primary-preview', DEFAULT_MEDIA.primary_photo)">
+                                Use Built-in Default
+                            </button>
+                        </div>
+                        <input type="text" id="lh-primary-photo-url" class="cms-input" placeholder="Leave empty for built-in campus photo or paste https:// URL"
+                            value="{{ site_content.landing_hero.primary_photo_url }}">
+                        <div class="cms-field" style="margin-top: 0.75rem; margin-bottom: 0;">
+                            <label class="cms-label" for="lh-primary-caption">Location Caption Below Campus Photo</label>
+                            <input type="text" id="lh-primary-caption" class="cms-input" maxlength="240"
+                                value="{{ site_content.landing_hero.primary_caption }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cms-media-row">
+                    <img id="lh-heritage-preview" class="cms-media-preview" src="{{ resolved_media.heritage_photo }}" alt="Heritage inset preview">
+                    <div class="cms-media-controls">
+                        <div class="cms-label">Heritage Inset Photo</div>
+                        <div class="cms-upload-actions">
+                            <input type="file" id="lh-heritage-file" class="sr-only-input" accept=".jpg,.jpeg,.png,.webp,.gif">
+                            <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="document.getElementById('lh-heritage-file').click()">
+                                <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                                <span>Upload Photo</span>
+                            </button>
+                            <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="clearMediaSlot('lh-heritage-photo-url', 'lh-heritage-preview', DEFAULT_MEDIA.heritage_photo)">
+                                Use Built-in Default
+                            </button>
+                        </div>
+                        <input type="text" id="lh-heritage-photo-url" class="cms-input" placeholder="Leave empty for built-in heritage photo or paste https:// URL"
+                            value="{{ site_content.landing_hero.heritage_photo_url }}">
+                        <div class="cms-field" style="margin-top: 0.75rem; margin-bottom: 0;">
+                            <label class="cms-label" for="lh-heritage-label">Heritage Badge Label</label>
+                            <input type="text" id="lh-heritage-label" class="cms-input" maxlength="80"
+                                value="{{ site_content.landing_hero.heritage_label }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cms-divider-section">
+                <h3 class="cms-subhead">Verified Access Banner Copy</h3>
+                <p class="cms-subdesc">Text shown inside the parchment preservation card near the bottom of the Public Landing page.</p>
+                <div class="cms-field">
+                    <label class="cms-label" for="lh-access-heading">Access Section Heading</label>
+                    <input type="text" id="lh-access-heading" class="cms-input" maxlength="200"
+                        value="{{ site_content.landing_hero.access_heading }}">
+                </div>
+                <div class="cms-field" style="margin-bottom: 0;">
+                    <label class="cms-label" for="lh-access-body">Access Section Description</label>
+                    <textarea id="lh-access-body" class="cms-textarea" rows="3" maxlength="1000">{{ site_content.landing_hero.access_body }}</textarea>
+                </div>
+            </div>
+
+            <div class="cms-footer-bar">
+                <button type="button" class="cms-btn cms-btn-danger-outline" onclick="openResetModal('landing_hero', 'Public Landing')">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Reset to Defaults</span>
+                </button>
+                <button type="button" class="cms-btn cms-btn-primary" id="save-btn-landing_hero" onclick="saveSection('landing_hero')">
+                    <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                    <span>Save Public Landing</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 2: STUDENT HOME & SLIDESHOW -->
+    <section id="panel-student_home" class="cms-panel" role="tabpanel">
+        <div class="cms-card">
+            <div class="cms-card-head">
+                <div>
+                    <h2 class="cms-card-title">Student Home Slideshow &amp; Intro Copy</h2>
+                    <p class="cms-card-desc">Manage the campus photo carousel and welcome description paragraphs shown to signed-in Marian students.</p>
+                </div>
+                <span class="cms-scope-pill">
+                    <i data-lucide="layout-template" style="width: 14px; height: 14px;"></i>
+                    <span>Applies to Student Home</span>
+                </span>
+            </div>
+
+            <div class="cms-grid-2">
+                <div class="cms-field">
+                    <label class="cms-label" for="sh-intro-1">Description Paragraph 1</label>
+                    <textarea id="sh-intro-1" class="cms-textarea" rows="4" maxlength="2000">{{ site_content.student_home.intro_paragraph_1 }}</textarea>
+                </div>
+                <div class="cms-field">
+                    <label class="cms-label" for="sh-intro-2">Description Paragraph 2</label>
+                    <textarea id="sh-intro-2" class="cms-textarea" rows="4" maxlength="2000">{{ site_content.student_home.intro_paragraph_2 }}</textarea>
+                </div>
+            </div>
+
+            <div class="cms-divider-section">
+                <div class="cms-slides-toolbar">
+                    <div>
+                        <h3 class="cms-subhead">Campus Gallery Slideshow (<span id="sh-slide-count">{{ resolved_slides|length }}</span> / 20)</h3>
+                        <p class="cms-subdesc" style="margin-bottom: 0;">Reorder photos, replace images, edit alt captions, or upload new slides directly.</p>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.55rem;">
+                        <input type="file" id="sh-upload-new-slide-file" class="sr-only-input" accept=".jpg,.jpeg,.png,.webp,.gif">
+                        <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" id="sh-upload-new-slide-btn" onclick="document.getElementById('sh-upload-new-slide-file').click()">
+                            <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                            <span>Upload &amp; Add Slide</span>
+                        </button>
+                        <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" id="sh-add-url-slide-btn" onclick="addEmptyUrlSlide()">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                            <span>Add Slide by URL</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="sh-slides-list" class="cms-slide-list"></div>
+            </div>
+
+            <div class="cms-footer-bar">
+                <button type="button" class="cms-btn cms-btn-danger-outline" onclick="openResetModal('student_home', 'Student Home & Slideshow')">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Reset to Defaults</span>
+                </button>
+                <button type="button" class="cms-btn cms-btn-primary" id="save-btn-student_home" onclick="saveSection('student_home')">
+                    <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                    <span>Save Student Home &amp; Slideshow</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 3: MISSION & VISION (UNIFIED) -->
+    <section id="panel-mission_vision" class="cms-panel" role="tabpanel">
+        <div class="cms-card">
+            <div class="cms-card-head">
+                <div>
+                    <h2 class="cms-card-title">Institutional Mission &amp; Vision</h2>
+                    <p class="cms-card-desc">A single update keeps Mission &amp; Vision synchronized across the Public Landing page, Student Home, and dedicated Mission &amp; Vision page.</p>
+                </div>
+                <span class="cms-scope-pill">
+                    <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+                    <span>Shared: Public Landing + Student Home</span>
+                </span>
+            </div>
+
+            <div class="cms-grid-2">
+                <div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="mv-vision-title">Vision Heading</label>
+                        <input type="text" id="mv-vision-title" class="cms-input" maxlength="120"
+                            value="{{ site_content.mission_vision.vision_title }}">
+                    </div>
+                    <div class="cms-field" style="margin-bottom: 0;">
+                        <label class="cms-label" for="mv-vision-text">Vision Statement</label>
+                        <textarea id="mv-vision-text" class="cms-textarea" rows="5" maxlength="2000">{{ site_content.mission_vision.vision_text }}</textarea>
+                    </div>
+                </div>
+                <div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="mv-mission-title">Mission Heading</label>
+                        <input type="text" id="mv-mission-title" class="cms-input" maxlength="120"
+                            value="{{ site_content.mission_vision.mission_title }}">
+                    </div>
+                    <div class="cms-field" style="margin-bottom: 0;">
+                        <label class="cms-label" for="mv-mission-text">Mission Statement</label>
+                        <textarea id="mv-mission-text" class="cms-textarea" rows="5" maxlength="2000">{{ site_content.mission_vision.mission_text }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cms-footer-bar">
+                <button type="button" class="cms-btn cms-btn-danger-outline" onclick="openResetModal('mission_vision', 'Mission & Vision')">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Reset to Defaults</span>
+                </button>
+                <button type="button" class="cms-btn cms-btn-primary" id="save-btn-mission_vision" onclick="saveSection('mission_vision')">
+                    <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                    <span>Save Mission &amp; Vision</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 4: RECOGNITION SPOTLIGHT (UNIFIED) -->
+    <section id="panel-recognition" class="cms-panel" role="tabpanel">
+        <div class="cms-card">
+            <div class="cms-card-head">
+                <div>
+                    <h2 class="cms-card-title">Civic &amp; Research Recognition Spotlight</h2>
+                    <p class="cms-card-desc">Update the currently recognized study photo, Municipality teaser card on Public Landing, and full citation on Student Home together.</p>
+                </div>
+                <span class="cms-scope-pill">
+                    <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+                    <span>Shared: Public Landing + Student Home</span>
+                </span>
+            </div>
+
+            <div class="cms-media-row" style="padding-top: 0;">
+                <img id="rec-photo-preview" class="cms-media-preview" src="{{ resolved_media.recognition_photo }}" alt="Recognition spotlight preview">
+                <div class="cms-media-controls">
+                    <div class="cms-label">Recognition Certificate / Photo (Used on Both Pages)</div>
+                    <div class="cms-upload-actions">
+                        <input type="file" id="rec-photo-file" class="sr-only-input" accept=".jpg,.jpeg,.png,.webp,.gif">
+                        <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="document.getElementById('rec-photo-file').click()">
+                            <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                            <span>Upload Recognition Image</span>
+                        </button>
+                        <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="clearMediaSlot('rec-image-url', 'rec-photo-preview', DEFAULT_MEDIA.recognition_photo)">
+                            Use Built-in Default
+                        </button>
+                    </div>
+                    <input type="text" id="rec-image-url" class="cms-input" placeholder="Leave empty for built-in certificate image or paste https:// URL"
+                        value="{{ site_content.recognition.image_url }}">
+                </div>
+            </div>
+
+            <div class="cms-divider-section">
+                <h3 class="cms-subhead">Public Landing Card Copy</h3>
+                <p class="cms-subdesc">Compact recognition teaser shown beside Featured Studies on the public homepage.</p>
+                <div class="cms-grid-2">
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-badge-label">Badge Label</label>
+                        <input type="text" id="rec-badge-label" class="cms-input" maxlength="80"
+                            value="{{ site_content.recognition.badge_label }}">
+                    </div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-landing-headline">Landing Headline</label>
+                        <input type="text" id="rec-landing-headline" class="cms-input" maxlength="200"
+                            value="{{ site_content.recognition.landing_headline }}">
+                    </div>
+                </div>
+                <div class="cms-field" style="margin-bottom: 0;">
+                    <label class="cms-label" for="rec-landing-summary">Landing Card Summary</label>
+                    <textarea id="rec-landing-summary" class="cms-textarea" rows="3" maxlength="1200">{{ site_content.recognition.landing_summary }}</textarea>
+                </div>
+            </div>
+
+            <div class="cms-divider-section">
+                <h3 class="cms-subhead">Student Home Detailed Citation</h3>
+                <p class="cms-subdesc">Full citation block displayed inside the Research Recognition showcase for logged-in students.</p>
+                <div class="cms-grid-2">
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-home-heading">Home Recognition Heading</label>
+                        <input type="text" id="rec-home-heading" class="cms-input" maxlength="120"
+                            value="{{ site_content.recognition.home_heading }}">
+                    </div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-home-subtitle">Home Recognition Subtitle</label>
+                        <input type="text" id="rec-home-subtitle" class="cms-input" maxlength="220"
+                            value="{{ site_content.recognition.home_subtitle }}">
+                    </div>
+                </div>
+                <div class="cms-grid-2">
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-home-honoree">Presenting Official / Body (Bold Lead)</label>
+                        <input type="text" id="rec-home-honoree" class="cms-input" maxlength="240"
+                            value="{{ site_content.recognition.home_honoree }}">
+                    </div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="rec-home-study-quote">Recognized Study Title Quote (Bold Highlight)</label>
+                        <input type="text" id="rec-home-study-quote" class="cms-input" maxlength="400"
+                            value="{{ site_content.recognition.home_study_quote }}">
+                    </div>
+                </div>
+                <div class="cms-field">
+                    <label class="cms-label" for="rec-home-body-intro">Student Researchers Acknowledgement Text</label>
+                    <textarea id="rec-home-body-intro" class="cms-textarea" rows="3" maxlength="2000">{{ site_content.recognition.home_body_intro }}</textarea>
+                </div>
+                <div class="cms-grid-2">
+                    <div class="cms-field" style="margin-bottom: 0;">
+                        <label class="cms-label" for="rec-home-adviser-note">Research Adviser Note (Italic)</label>
+                        <textarea id="rec-home-adviser-note" class="cms-textarea" rows="3" maxlength="1200">{{ site_content.recognition.home_adviser_note }}</textarea>
+                    </div>
+                    <div class="cms-field" style="margin-bottom: 0;">
+                        <label class="cms-label" for="rec-home-impact-note">Community Impact Closing Paragraph</label>
+                        <textarea id="rec-home-impact-note" class="cms-textarea" rows="3" maxlength="1500">{{ site_content.recognition.home_impact_note }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cms-footer-bar">
+                <button type="button" class="cms-btn cms-btn-danger-outline" onclick="openResetModal('recognition', 'Recognition Spotlight')">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Reset to Defaults</span>
+                </button>
+                <button type="button" class="cms-btn cms-btn-primary" id="save-btn-recognition" onclick="saveSection('recognition')">
+                    <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                    <span>Save Recognition Spotlight</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB 5: FEATURED 3 STUDIES (UNIFIED) -->
+    <section id="panel-featured_papers" class="cms-panel" role="tabpanel">
+        <div class="cms-card">
+            <div class="cms-card-head">
+                <div>
+                    <h2 class="cms-card-title">Featured 3 Studies &amp; Best in Research</h2>
+                    <p class="cms-card-desc">Curate the exact 3 research studies showcased on Public Landing and Student Home Best in Research. Blank slots auto-fill with the latest awarded papers without duplicates.</p>
+                </div>
+                <span class="cms-scope-pill">
+                    <i data-lucide="star" style="width: 14px; height: 14px;"></i>
+                    <span>Shared: Public Landing + Student Home</span>
+                </span>
+            </div>
+
+            <div class="cms-grid-2">
+                <div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="fp-landing-heading">Public Landing Section Heading</label>
+                        <input type="text" id="fp-landing-heading" class="cms-input" maxlength="200"
+                            value="{{ site_content.featured_papers.landing_heading }}">
+                    </div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="fp-landing-subtitle">Public Landing Subtitle</label>
+                        <input type="text" id="fp-landing-subtitle" class="cms-input" maxlength="250"
+                            value="{{ site_content.featured_papers.landing_subtitle }}">
+                    </div>
+                </div>
+                <div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="fp-home-heading">Student Home Section Heading</label>
+                        <input type="text" id="fp-home-heading" class="cms-input" maxlength="200"
+                            value="{{ site_content.featured_papers.home_heading }}">
+                    </div>
+                    <div class="cms-field">
+                        <label class="cms-label" for="fp-home-subtitle">Student Home Subtitle</label>
+                        <input type="text" id="fp-home-subtitle" class="cms-input" maxlength="250"
+                            value="{{ site_content.featured_papers.home_subtitle }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="cms-divider-section">
+                <h3 class="cms-subhead">Select 3 Featured Research Slots</h3>
+                <p class="cms-subdesc">Choose specific manuscripts or leave any slot on "Auto" to automatically highlight recent awarded research.</p>
+
+                {% set current_slots = site_content.featured_papers.slot_ids or ['', '', ''] %}
+                {% for idx in [0, 1, 2] %}
+                <div class="cms-slot-row">
+                    <div class="cms-slot-header">
+                        <label class="cms-slot-badge" for="fp-slot-{{ idx }}">Featured Slot #{{ idx + 1 }}</label>
+                    </div>
+                    <select id="fp-slot-{{ idx }}" class="cms-select fp-slot-select" data-slot="{{ idx }}">
+                        <option value="">Auto — Latest Awarded / Most Recent Study</option>
+                        {% for p in all_papers %}
+                        <option value="{{ p.id }}" {% if current_slots|length > idx and current_slots[idx] == p.id %}selected{% endif %}>
+                            [{{ (p.strand or 'GEN')|upper }} · {{ p.academic_year or 'N/A' }}] {{ p.title }}{% if p.awards %} — {{ p.awards }}{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div id="fp-slot-info-{{ idx }}" class="cms-slot-resolved"></div>
+                </div>
+                {% endfor %}
+
+                <div class="cms-preview-strip">
+                    <p class="cms-preview-strip-title">Resolved Top 3 Order Shown on Both Pages</p>
+                    <ol id="fp-resolved-order" class="cms-preview-list"></ol>
+                </div>
+            </div>
+
+            <div class="cms-footer-bar">
+                <button type="button" class="cms-btn cms-btn-danger-outline" onclick="openResetModal('featured_papers', 'Featured 3 Studies')">
+                    <i data-lucide="rotate-ccw" style="width: 15px; height: 15px;"></i>
+                    <span>Reset to Defaults</span>
+                </button>
+                <button type="button" class="cms-btn cms-btn-primary" id="save-btn-featured_papers" onclick="saveSection('featured_papers')">
+                    <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                    <span>Save Featured 3 Studies</span>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Reset Confirmation Modal -->
+<div id="cms-reset-modal" class="cms-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cms-reset-modal-title">
+    <div class="cms-modal-box">
+        <h3 id="cms-reset-modal-title" class="cms-modal-title">Reset Section to Defaults?</h3>
+        <p id="cms-reset-modal-text" class="cms-modal-text">
+            This will restore default text and built-in media for this section immediately.
+        </p>
+        <div class="cms-modal-actions">
+            <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" id="cms-reset-cancel-btn">Cancel</button>
+            <button type="button" class="cms-btn cms-btn-primary cms-btn-sm" id="cms-reset-confirm-btn">Reset Section</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const DEFAULT_MEDIA = {{ default_paths | tojson }};
+    const ALL_PAPERS = {{ all_papers | tojson }};
+    let currentSlides = {{ resolved_slides | tojson }};
+    let pendingResetSection = "";
+
+    function showCmsStatus(message, isError = false) {
+        const banner = document.getElementById("cms-status-banner");
+        const msgEl = document.getElementById("cms-status-message");
+        if (!banner || !msgEl) return;
+        banner.className = "cms-status-banner visible " + (isError ? "error" : "success");
+        msgEl.textContent = message;
+        if (window.lucide) lucide.createIcons();
+        banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function hideCmsStatus() {
+        const banner = document.getElementById("cms-status-banner");
+        if (banner) banner.classList.remove("visible");
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll(".cms-tab-btn").forEach((btn) => {
+            const active = btn.dataset.tab === tabName;
+            btn.classList.toggle("active", active);
+            btn.setAttribute("aria-selected", active ? "true" : "false");
+        });
+        document.querySelectorAll(".cms-panel").forEach((panel) => {
+            panel.classList.toggle("active", panel.id === "panel-" + tabName);
+        });
+        hideCmsStatus();
+    }
+
+    function clearMediaSlot(urlInputId, previewImgId, fallbackSrc) {
+        const inputEl = document.getElementById(urlInputId);
+        const imgEl = document.getElementById(previewImgId);
+        if (inputEl) inputEl.value = "";
+        if (imgEl && fallbackSrc) imgEl.src = fallbackSrc;
+    }
+
+    async function uploadCmsImage(file, slot) {
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("slot", slot);
+        const res = await fetch("{{ url_for('admin_upload_site_image') }}", {
+            method: "POST",
+            body: formData,
+        });
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+            throw new Error(result.error || "Failed to upload image.");
+        }
+        return result.url;
+    }
+
+    function bindDirectPhotoUpload(fileInputId, urlInputId, previewImgId, slotName) {
+        const fileEl = document.getElementById(fileInputId);
+        const urlEl = document.getElementById(urlInputId);
+        const imgEl = document.getElementById(previewImgId);
+
+        if (urlEl && imgEl) {
+            urlEl.addEventListener("input", () => {
+                const v = urlEl.value.trim();
+                const fallbackKey = slotName === "landing_primary"
+                    ? "primary_photo"
+                    : slotName === "landing_heritage"
+                        ? "heritage_photo"
+                        : "recognition_photo";
+                imgEl.src = v || DEFAULT_MEDIA[fallbackKey];
+            });
+        }
+
+        if (!fileEl) return;
+        fileEl.addEventListener("change", async () => {
+            const file = fileEl.files && fileEl.files[0];
+            if (!file) return;
+            try {
+                showCmsStatus("Uploading image to library...");
+                const uploadedUrl = await uploadCmsImage(file, slotName);
+                if (urlEl) urlEl.value = uploadedUrl;
+                if (imgEl) imgEl.src = uploadedUrl;
+                showCmsStatus("Photo uploaded! Remember to click Save to publish changes.");
+            } catch (err) {
+                showCmsStatus(err.message || "Image upload failed.", true);
+            } finally {
+                fileEl.value = "";
+            }
+        });
+    }
+
+    /* ---------------- SLIDESHOW MANAGEMENT ---------------- */
+    function renderSlidesList() {
+        const listEl = document.getElementById("sh-slides-list");
+        const countEl = document.getElementById("sh-slide-count");
+        if (!listEl) return;
+
+        if (countEl) countEl.textContent = String(currentSlides.length);
+        listEl.innerHTML = "";
+
+        currentSlides.forEach((slide, idx) => {
+            const row = document.createElement("div");
+            row.className = "cms-slide-row";
+
+            const num = document.createElement("div");
+            num.className = "cms-slide-num";
+            num.textContent = "#" + (idx + 1);
+
+            const thumb = document.createElement("img");
+            thumb.className = "cms-slide-thumb";
+            thumb.src = slide.url || slide.preview_src || DEFAULT_MEDIA.primary_photo;
+            thumb.alt = slide.alt || ("Slide " + (idx + 1));
+
+            const inputsWrap = document.createElement("div");
+            inputsWrap.className = "cms-slide-inputs";
+
+            const altWrap = document.createElement("div");
+            const altLabel = document.createElement("label");
+            altLabel.className = "cms-help";
+            altLabel.textContent = "Alt Caption";
+            const altInput = document.createElement("input");
+            altInput.type = "text";
+            altInput.className = "cms-input";
+            altInput.maxLength = 140;
+            altInput.value = slide.alt || "";
+            altInput.placeholder = "Describe this campus photo";
+            altInput.addEventListener("input", () => {
+                currentSlides[idx].alt = altInput.value;
+            });
+            altWrap.append(altLabel, altInput);
+
+            const srcWrap = document.createElement("div");
+            const srcLabel = document.createElement("label");
+            srcLabel.className = "cms-help";
+            srcLabel.textContent = slide.url ? "Custom Image URL" : (slide.static_path ? "Built-in Photo Path (or paste URL)" : "Image URL");
+            const srcInput = document.createElement("input");
+            srcInput.type = "text";
+            srcInput.className = "cms-input";
+            srcInput.value = slide.url || "";
+            srcInput.placeholder = slide.static_path ? ("Built-in: " + slide.static_path) : "https://... or /static/...";
+            srcInput.addEventListener("input", () => {
+                const v = srcInput.value.trim();
+                currentSlides[idx].url = v;
+                thumb.src = v || slide.preview_src || DEFAULT_MEDIA.primary_photo;
+            });
+            srcWrap.append(srcLabel, srcInput);
+
+            inputsWrap.append(altWrap, srcWrap);
+
+            const actions = document.createElement("div");
+            actions.className = "cms-slide-actions";
+
+            const replaceInput = document.createElement("input");
+            replaceInput.type = "file";
+            replaceInput.accept = ".jpg,.jpeg,.png,.webp,.gif";
+            replaceInput.className = "sr-only-input";
+            replaceInput.addEventListener("change", async () => {
+                const file = replaceInput.files && replaceInput.files[0];
+                if (!file) return;
+                try {
+                    showCmsStatus("Uploading replacement photo for slide #" + (idx + 1) + "...");
+                    const newUrl = await uploadCmsImage(file, "slide_" + (idx + 1));
+                    currentSlides[idx].url = newUrl;
+                    currentSlides[idx].preview_src = newUrl;
+                    renderSlidesList();
+                    showCmsStatus("Slide #" + (idx + 1) + " photo updated! Click Save Student Home & Slideshow to publish.");
+                } catch (err) {
+                    showCmsStatus(err.message || "Slide photo upload failed.", true);
+                } finally {
+                    replaceInput.value = "";
+                }
+            });
+
+            const replaceBtn = document.createElement("button");
+            replaceBtn.type = "button";
+            replaceBtn.className = "cms-btn cms-btn-secondary cms-btn-sm";
+            replaceBtn.title = "Upload replacement image";
+            replaceBtn.textContent = "Replace";
+            replaceBtn.addEventListener("click", () => replaceInput.click());
+
+            const upBtn = document.createElement("button");
+            upBtn.type = "button";
+            upBtn.className = "cms-btn cms-btn-secondary cms-btn-sm";
+            upBtn.textContent = "↑";
+            upBtn.disabled = idx === 0;
+            upBtn.setAttribute("aria-label", "Move slide up");
+            upBtn.addEventListener("click", () => moveSlide(idx, -1));
+
+            const downBtn = document.createElement("button");
+            downBtn.type = "button";
+            downBtn.className = "cms-btn cms-btn-secondary cms-btn-sm";
+            downBtn.textContent = "↓";
+            downBtn.disabled = idx === currentSlides.length - 1;
+            downBtn.setAttribute("aria-label", "Move slide down");
+            downBtn.addEventListener("click", () => moveSlide(idx, 1));
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "cms-btn cms-btn-danger-outline cms-btn-sm";
+            removeBtn.textContent = "Remove";
+            removeBtn.disabled = currentSlides.length <= 1;
+            removeBtn.addEventListener("click", () => removeSlide(idx));
+
+            actions.append(replaceInput, replaceBtn, upBtn, downBtn, removeBtn);
+            row.append(num, thumb, inputsWrap, actions);
+            listEl.appendChild(row);
+        });
+    }
+
+    function moveSlide(idx, delta) {
+        const target = idx + delta;
+        if (target < 0 || target >= currentSlides.length) return;
+        const item = currentSlides.splice(idx, 1)[0];
+        currentSlides.splice(target, 0, item);
+        renderSlidesList();
+    }
+
+    function removeSlide(idx) {
+        if (currentSlides.length <= 1) {
+            showCmsStatus("At least one slideshow photo is required.", true);
+            return;
+        }
+        currentSlides.splice(idx, 1);
+        renderSlidesList();
+    }
+
+    function addEmptyUrlSlide() {
+        if (currentSlides.length >= 20) {
+            showCmsStatus("Maximum of 20 slideshow photos reached.", true);
+            return;
+        }
+        currentSlides.push({
+            url: "",
+            static_path: "",
+            preview_src: DEFAULT_MEDIA.primary_photo,
+            alt: "Campus Highlight " + (currentSlides.length + 1),
+        });
+        renderSlidesList();
+    }
+
+    /* ---------------- FEATURED 3 LIVE PREVIEW ---------------- */
+    function computeResolvedFeaturedPreview() {
+        const selected = [0, 1, 2].map((idx) => {
+            const el = document.getElementById("fp-slot-" + idx);
+            return el ? el.value.trim() : "";
+        });
+        const byId = new Map(ALL_PAPERS.map((p) => [String(p.id), p]));
+        const awarded = ALL_PAPERS
+            .filter((p) => (p.awards || "").trim())
+            .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+        const recent = [...ALL_PAPERS].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+        const pool = [...awarded, ...recent];
+
+        const chosen = [];
+        const used = new Set();
+
+        for (let idx = 0; idx < 3; idx++) {
+            const pid = selected[idx];
+            const infoEl = document.getElementById("fp-slot-info-" + idx);
+            let matched = pid && byId.has(pid) && !used.has(pid) ? byId.get(pid) : null;
+            let isManual = Boolean(matched);
+
+            if (!matched) {
+                matched = pool.find((p) => !used.has(String(p.id))) || null;
+            }
+            if (matched) {
+                used.add(String(matched.id));
+                chosen.push({ paper: matched, isManual });
+                if (infoEl) {
+                    infoEl.innerHTML = "";
+                    const tag = document.createElement("span");
+                    tag.className = "cms-slot-tag";
+                    tag.textContent = isManual ? "Manual Pick" : (pid && used.has(pid) ? "Duplicate Skipped -> Auto" : "Auto Pick");
+                    const text = document.createElement("span");
+                    text.textContent = matched.title + (matched.awards ? " (" + matched.awards + ")" : "");
+                    infoEl.append(tag, text);
+                }
+            } else if (infoEl) {
+                infoEl.textContent = "No published papers available yet.";
+            }
+        }
+
+        const listEl = document.getElementById("fp-resolved-order");
+        if (listEl) {
+            listEl.innerHTML = "";
+            if (!chosen.length) {
+                const li = document.createElement("li");
+                li.textContent = "No published studies found in the repository yet.";
+                listEl.appendChild(li);
+            } else {
+                chosen.forEach((entry) => {
+                    const li = document.createElement("li");
+                    const strand = (entry.paper.strand || "GEN").toUpperCase();
+                    li.textContent = `[${strand}] ${entry.paper.title}` + (entry.paper.awards ? ` — ${entry.paper.awards}` : "");
+                    listEl.appendChild(li);
+                });
+            }
+        }
+    }
+
+    /* ---------------- SAVE & RESET PAYLOADS ---------------- */
+    function collectSectionData(section) {
+        if (section === "landing_hero") {
+            return {
+                hero_title: document.getElementById("lh-hero-title").value,
+                hero_intro: document.getElementById("lh-hero-intro").value,
+                primary_photo_url: document.getElementById("lh-primary-photo-url").value,
+                primary_caption: document.getElementById("lh-primary-caption").value,
+                heritage_photo_url: document.getElementById("lh-heritage-photo-url").value,
+                heritage_label: document.getElementById("lh-heritage-label").value,
+                access_heading: document.getElementById("lh-access-heading").value,
+                access_body: document.getElementById("lh-access-body").value,
+            };
+        }
+        if (section === "student_home") {
+            return {
+                intro_paragraph_1: document.getElementById("sh-intro-1").value,
+                intro_paragraph_2: document.getElementById("sh-intro-2").value,
+                slides: currentSlides.map((s) => ({
+                    url: s.url || "",
+                    static_path: s.static_path || "",
+                    alt: s.alt || "",
+                })),
+            };
+        }
+        if (section === "mission_vision") {
+            return {
+                vision_title: document.getElementById("mv-vision-title").value,
+                vision_text: document.getElementById("mv-vision-text").value,
+                mission_title: document.getElementById("mv-mission-title").value,
+                mission_text: document.getElementById("mv-mission-text").value,
+            };
+        }
+        if (section === "recognition") {
+            return {
+                image_url: document.getElementById("rec-image-url").value,
+                badge_label: document.getElementById("rec-badge-label").value,
+                landing_headline: document.getElementById("rec-landing-headline").value,
+                landing_summary: document.getElementById("rec-landing-summary").value,
+                home_heading: document.getElementById("rec-home-heading").value,
+                home_subtitle: document.getElementById("rec-home-subtitle").value,
+                home_honoree: document.getElementById("rec-home-honoree").value,
+                home_body_intro: document.getElementById("rec-home-body-intro").value,
+                home_study_quote: document.getElementById("rec-home-study-quote").value,
+                home_adviser_note: document.getElementById("rec-home-adviser-note").value,
+                home_impact_note: document.getElementById("rec-home-impact-note").value,
+            };
+        }
+        if (section === "featured_papers") {
+            return {
+                landing_heading: document.getElementById("fp-landing-heading").value,
+                landing_subtitle: document.getElementById("fp-landing-subtitle").value,
+                home_heading: document.getElementById("fp-home-heading").value,
+                home_subtitle: document.getElementById("fp-home-subtitle").value,
+                slot_ids: [0, 1, 2].map((idx) => document.getElementById("fp-slot-" + idx).value),
+            };
+        }
+        return {};
+    }
+
+    function applySectionDataToForm(section, data) {
+        if (!data) return;
+        if (section === "landing_hero") {
+            document.getElementById("lh-hero-title").value = data.hero_title || "";
+            document.getElementById("lh-hero-intro").value = data.hero_intro || "";
+            document.getElementById("lh-primary-photo-url").value = data.primary_photo_url || "";
+            document.getElementById("lh-primary-preview").src = data.primary_photo_url || DEFAULT_MEDIA.primary_photo;
+            document.getElementById("lh-primary-caption").value = data.primary_caption || "";
+            document.getElementById("lh-heritage-photo-url").value = data.heritage_photo_url || "";
+            document.getElementById("lh-heritage-preview").src = data.heritage_photo_url || DEFAULT_MEDIA.heritage_photo;
+            document.getElementById("lh-heritage-label").value = data.heritage_label || "";
+            document.getElementById("lh-access-heading").value = data.access_heading || "";
+            document.getElementById("lh-access-body").value = data.access_body || "";
+        } else if (section === "student_home") {
+            document.getElementById("sh-intro-1").value = data.intro_paragraph_1 || "";
+            document.getElementById("sh-intro-2").value = data.intro_paragraph_2 || "";
+            currentSlides = (data.slides || []).map((s) => ({
+                url: s.url || "",
+                static_path: s.static_path || "",
+                preview_src: s.url || (s.static_path ? ("/static/" + s.static_path) : DEFAULT_MEDIA.primary_photo),
+                alt: s.alt || "",
+            }));
+            renderSlidesList();
+        } else if (section === "mission_vision") {
+            document.getElementById("mv-vision-title").value = data.vision_title || "";
+            document.getElementById("mv-vision-text").value = data.vision_text || "";
+            document.getElementById("mv-mission-title").value = data.mission_title || "";
+            document.getElementById("mv-mission-text").value = data.mission_text || "";
+        } else if (section === "recognition") {
+            document.getElementById("rec-image-url").value = data.image_url || "";
+            document.getElementById("rec-photo-preview").src = data.image_url || DEFAULT_MEDIA.recognition_photo;
+            document.getElementById("rec-badge-label").value = data.badge_label || "";
+            document.getElementById("rec-landing-headline").value = data.landing_headline || "";
+            document.getElementById("rec-landing-summary").value = data.landing_summary || "";
+            document.getElementById("rec-home-heading").value = data.home_heading || "";
+            document.getElementById("rec-home-subtitle").value = data.home_subtitle || "";
+            document.getElementById("rec-home-honoree").value = data.home_honoree || "";
+            document.getElementById("rec-home-body-intro").value = data.home_body_intro || "";
+            document.getElementById("rec-home-study-quote").value = data.home_study_quote || "";
+            document.getElementById("rec-home-adviser-note").value = data.home_adviser_note || "";
+            document.getElementById("rec-home-impact-note").value = data.home_impact_note || "";
+        } else if (section === "featured_papers") {
+            document.getElementById("fp-landing-heading").value = data.landing_heading || "";
+            document.getElementById("fp-landing-subtitle").value = data.landing_subtitle || "";
+            document.getElementById("fp-home-heading").value = data.home_heading || "";
+            document.getElementById("fp-home-subtitle").value = data.home_subtitle || "";
+            const slots = data.slot_ids || ["", "", ""];
+            [0, 1, 2].forEach((idx) => {
+                const el = document.getElementById("fp-slot-" + idx);
+                if (el) el.value = slots[idx] || "";
+            });
+            computeResolvedFeaturedPreview();
+        }
+    }
+
+    async function saveSection(section) {
+        const btn = document.getElementById("save-btn-" + section);
+        const origHtml = btn ? btn.innerHTML : "";
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+        }
+
+        try {
+            const payload = collectSectionData(section);
+            const res = await fetch("{{ url_for('admin_save_site_content') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ section, data: payload }),
+            });
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || "Could not save section changes.");
+            }
+            applySectionDataToForm(section, result.data);
+            showCmsStatus("Changes saved and published successfully!");
+        } catch (err) {
+            showCmsStatus(err.message || "Failed to save changes.", true);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+    }
+
+    function openResetModal(section, label) {
+        pendingResetSection = section;
+        const titleEl = document.getElementById("cms-reset-modal-title");
+        const textEl = document.getElementById("cms-reset-modal-text");
+        if (titleEl) titleEl.textContent = `Reset ${label} to Defaults?`;
+        if (textEl) textEl.textContent = `This will restore the built-in default copy and photos for ${label}. Any custom edits in this section will be cleared.`;
+        document.getElementById("cms-reset-modal").classList.add("open");
+    }
+
+    function closeResetModal() {
+        pendingResetSection = "";
+        document.getElementById("cms-reset-modal").classList.remove("open");
+    }
+
+    async function confirmResetSection() {
+        const section = pendingResetSection;
+        if (!section) return;
+        const confirmBtn = document.getElementById("cms-reset-confirm-btn");
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Resetting...";
+
+        try {
+            const res = await fetch("{{ url_for('admin_reset_site_content') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ section }),
+            });
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || "Reset failed.");
+            }
+            applySectionDataToForm(section, result.data);
+            closeResetModal();
+            showCmsStatus("Section restored to built-in defaults.");
+        } catch (err) {
+            closeResetModal();
+            showCmsStatus(err.message || "Failed to reset section.", true);
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Reset Section";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".cms-tab-btn").forEach((btn) => {
+            btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+        });
+
+        document.getElementById("cms-status-close-btn")?.addEventListener("click", hideCmsStatus);
+        document.getElementById("cms-reset-cancel-btn")?.addEventListener("click", closeResetModal);
+        document.getElementById("cms-reset-confirm-btn")?.addEventListener("click", confirmResetSection);
+        document.getElementById("cms-reset-modal")?.addEventListener("click", (e) => {
+            if (e.target.id === "cms-reset-modal") closeResetModal();
+        });
+
+        bindDirectPhotoUpload("lh-primary-file", "lh-primary-photo-url", "lh-primary-preview", "landing_primary");
+        bindDirectPhotoUpload("lh-heritage-file", "lh-heritage-photo-url", "lh-heritage-preview", "landing_heritage");
+        bindDirectPhotoUpload("rec-photo-file", "rec-image-url", "rec-photo-preview", "recognition_photo");
+
+        const uploadNewSlideEl = document.getElementById("sh-upload-new-slide-file");
+        if (uploadNewSlideEl) {
+            uploadNewSlideEl.addEventListener("change", async () => {
+                const file = uploadNewSlideEl.files && uploadNewSlideEl.files[0];
+                if (!file) return;
+                if (currentSlides.length >= 20) {
+                    showCmsStatus("Maximum of 20 slideshow photos reached.", true);
+                    uploadNewSlideEl.value = "";
+                    return;
+                }
+                try {
+                    showCmsStatus("Uploading new slideshow photo...");
+                    const newUrl = await uploadCmsImage(file, "slide_new");
+                    currentSlides.push({
+                        url: newUrl,
+                        static_path: "",
+                        preview_src: newUrl,
+                        alt: "Campus Highlight " + (currentSlides.length + 1),
+                    });
+                    renderSlidesList();
+                    showCmsStatus("New slide added! Click Save Student Home & Slideshow to publish.");
+                } catch (err) {
+                    showCmsStatus(err.message || "Slide upload failed.", true);
+                } finally {
+                    uploadNewSlideEl.value = "";
+                }
+            });
+        }
+
+        document.querySelectorAll(".fp-slot-select").forEach((sel) => {
+            sel.addEventListener("change", computeResolvedFeaturedPreview);
+        });
+
+        renderSlidesList();
+        computeResolvedFeaturedPreview();
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
+{% endblock %}

@@ -66,6 +66,11 @@
                     <span class="nav-badge" title="{{ pending_approvals_count }} {{ t('Pending Approvals') }}">{{ pending_approvals_count }}</span>
                     {% endif %}
                 </a>
+                <a href="{{ url_for('admin_site_content') }}"
+                    class="nav-item {% if current_endpoint == 'admin_site_content' %}active{% endif %}">
+                    <i data-lucide="layout-template" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Landing & Home') }}</span>
+                </a>
                 {% endif %}
 
                 <span class="nav-divider" aria-hidden="true"></span>
@@ -97,8 +102,14 @@
                 {% if session.get('user') %}
                 <div class="dropdown-container">
                     <button type="button" class="btn-profile-dropdown nav-user-chip" title="Account Settings" aria-label="Account Settings" aria-expanded="false">
-                        <span class="nav-avatar-badge {% if is_admin %}is-admin{% endif %}" aria-hidden="true">
-                            {{ nav_user.initials if nav_user else 'LM' }}
+                        <span class="nav-avatar-badge {% if is_admin %}is-admin{% endif %}{% if nav_user and nav_user.avatar_url %} has-photo{% endif %}" aria-hidden="true">
+                            {% if nav_user and nav_user.avatar_url %}
+                            <img src="{{ nav_user.avatar_url }}" alt="" class="nav-avatar-img"
+                                 onerror="this.style.display='none'; this.parentElement.classList.remove('has-photo'); this.nextElementSibling.style.display='inline';">
+                            <span class="nav-avatar-initials" style="display: none;">{{ nav_user.initials }}</span>
+                            {% else %}
+                            <span class="nav-avatar-initials">{{ nav_user.initials if nav_user else 'LM' }}</span>
+                            {% endif %}
                         </span>
                         <span class="nav-user-name">{{ nav_user.display if nav_user else 'Account' }}</span>
                         <i data-lucide="chevron-down" class="nav-chevron" style="width: 14px; height: 14px;"></i>
@@ -106,6 +117,15 @@
                     <div class="dropdown-menu">
                         {% if nav_user %}
                         <div class="dropdown-user-header">
+                            <span class="dropdown-user-avatar {% if is_admin %}is-admin{% endif %}{% if nav_user.avatar_url %} has-photo{% endif %}" aria-hidden="true">
+                                {% if nav_user.avatar_url %}
+                                <img src="{{ nav_user.avatar_url }}" alt="" class="nav-avatar-img"
+                                     onerror="this.style.display='none'; this.parentElement.classList.remove('has-photo'); this.nextElementSibling.style.display='inline';">
+                                <span class="nav-avatar-initials" style="display: none;">{{ nav_user.initials }}</span>
+                                {% else %}
+                                <span class="nav-avatar-initials">{{ nav_user.initials }}</span>
+                                {% endif %}
+                            </span>
                             <div class="dropdown-user-meta">
                                 <strong class="dropdown-user-title">{{ nav_user.full_name }}</strong>
                                 {% if nav_user.student_id %}
@@ -207,6 +227,12 @@
                             <a href="{{ url_for('admin_dashboard') }}">
                                 <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
                                 <span>{{ t('Admin Dashboard') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('admin_site_content') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Landing & Home') }}</span>
                             </a>
                         </li>
                         <li>

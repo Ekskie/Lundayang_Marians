@@ -24,7 +24,7 @@
         </div>
 
         <p class="cookie-banner-copy">
-            {{ t('Essential cookies keep login sessions and language preferences active. Optional analytics help librarians track campus visits and research views—no third-party ad trackers.') }}
+            {{ t('Essential cookies keep login sessions and language preferences active. Optional analytics help librarians track session-based campus visits and study attribution—no third-party ad trackers.') }}
         </p>
 
         <div id="cookie-current-status" class="cookie-status-pill" {% if not cookie_consent %}hidden{% endif %}>
@@ -102,7 +102,7 @@
                     <span class="lm-prefs-chip lm-prefs-chip-opt">{{ t('Optional') }}</span>
                 </div>
                 <p class="lm-prefs-item-desc">
-                    {{ t('Records anonymized campus visits and research view counts for the Admin Dashboard—no third-party ad trackers.') }}
+                    {{ t('Records session-scoped campus visits and reader attribution alongside basic paper counts—no third-party ad trackers.') }}
                 </p>
             </div>
         </div>

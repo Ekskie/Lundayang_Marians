@@ -6,92 +6,102 @@
 <style>
     .landing-container {
         max-width: 1240px;
-        margin: 2.25rem auto 3.5rem auto;
+        margin: 2.25rem auto 4rem auto;
         padding: 0 1.75rem;
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 3rem;
+        gap: 3.25rem;
     }
 
-    /* Hero Split Section */
+    /* Editorial Open Hero */
     .landing-hero {
         display: grid;
-        grid-template-columns: 1.12fr 0.88fr;
-        gap: 2.75rem;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 3rem;
         align-items: center;
-        background: #ffffff;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 22px;
-        padding: 2.5rem 2.75rem;
-        box-shadow: var(--shadow-md);
+        padding: 0.75rem 0 0.25rem;
     }
 
     .landing-hero-title {
         font-family: 'Lora', serif;
-        font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+        font-size: clamp(2.1rem, 3.6vw, 3.05rem);
         font-weight: 700;
         color: var(--primary-color);
-        line-height: 1.2;
-        margin-bottom: 1rem;
+        line-height: 1.16;
+        letter-spacing: -0.02em;
+        margin: 0 0 1.1rem;
     }
 
     .landing-hero-desc {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.96rem;
-        color: #334155;
+        font-size: 0.98rem;
+        color: #1e293b;
         line-height: 1.72;
-        margin-bottom: 1.5rem;
-        max-width: 62ch;
+        margin: 0 0 1.65rem;
+        max-width: 60ch;
     }
 
     .landing-hero-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 0.85rem;
-        margin-bottom: 1.75rem;
+        margin-bottom: 2rem;
     }
 
-    .landing-stats-strip {
+    .landing-metrics-rail {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1.25rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid #cbd5e1;
+        border-bottom: 1px solid #cbd5e1;
+        padding: 1.05rem 0;
+        gap: 1rem;
     }
 
-    .landing-stat-item {
+    .landing-metric-cell {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.2rem;
+        padding-right: 0.75rem;
     }
 
-    .landing-stat-value {
+    .landing-metric-cell + .landing-metric-cell {
+        border-left: 1px solid #e2e8f0;
+        padding-left: 1rem;
+    }
+
+    .landing-metric-value {
         font-family: 'Lora', serif;
-        font-size: 1.5rem;
+        font-size: 1.65rem;
         font-weight: 700;
         color: var(--primary-color);
         font-variant-numeric: tabular-nums;
         line-height: 1.1;
     }
 
-    .landing-stat-label {
-        font-size: 0.78rem;
+    .landing-metric-label {
+        font-size: 0.8rem;
         font-weight: 600;
-        color: var(--text-light);
+        color: #334155;
     }
 
+    /* Layered Campus Visual Showcase */
     .landing-hero-media {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.9rem;
+    }
+
+    .landing-media-stage {
+        position: relative;
+        padding-bottom: 1.85rem;
     }
 
     .landing-photo-frame {
-        border-radius: 16px;
+        border-radius: 20px;
         overflow: hidden;
-        border: 2px solid var(--primary-color);
-        box-shadow: var(--shadow-float);
+        border: 1.5px solid #cbd5e1;
+        box-shadow: 0 22px 46px -14px rgba(0, 32, 96, 0.22);
         aspect-ratio: 4 / 3;
         background-color: #e2e8f0;
     }
@@ -103,37 +113,137 @@
         display: block;
     }
 
+    .landing-heritage-inset {
+        position: absolute;
+        left: 1rem;
+        bottom: 0;
+        width: 162px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 13px;
+        padding: 0.35rem;
+        box-shadow: 0 14px 30px -8px rgba(15, 23, 42, 0.24);
+    }
+
+    .landing-heritage-inset img {
+        width: 100%;
+        height: 86px;
+        object-fit: cover;
+        border-radius: 9px;
+        display: block;
+    }
+
+    .landing-heritage-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding: 0.28rem 0.25rem 0.08rem;
+        text-align: center;
+    }
+
+    .landing-trust-pill {
+        position: absolute;
+        right: 0.85rem;
+        bottom: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: #002060;
+        color: #ffffff;
+        border: 1px solid rgba(250, 204, 21, 0.45);
+        border-radius: 999px;
+        padding: 0.44rem 0.88rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 10px 24px -6px rgba(0, 32, 96, 0.38);
+    }
+
     .landing-photo-caption {
-        font-size: 0.8rem;
-        color: var(--text-light);
+        font-size: 0.8125rem;
+        color: #334155;
         font-weight: 500;
         display: flex;
         align-items: center;
         gap: 0.45rem;
     }
 
-    /* Floating Strands Preview */
+    /* 3-Pillar Feature Rail (Architectural Hairline Strip) */
+    .landing-pillars-rail {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        background: #ffffff;
+        border: 1px solid #dbe4f0;
+        border-radius: 18px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .landing-pillar-item {
+        padding: 1.35rem 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .landing-pillar-item + .landing-pillar-item {
+        border-left: 1px solid #e2e8f0;
+    }
+
+    .landing-pillar-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        background: #eef2ff;
+        color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .landing-pillar-title {
+        font-family: 'Lora', serif;
+        font-size: 1.02rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.25rem;
+    }
+
+    .landing-pillar-desc {
+        font-size: 0.82rem;
+        color: #334155;
+        line-height: 1.52;
+        margin: 0;
+    }
+
+    /* Section Headings */
     .landing-section-head {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
         flex-wrap: wrap;
         gap: 1rem;
-        margin-bottom: 1.35rem;
+        margin-bottom: 1.45rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(0, 32, 96, 0.12);
     }
 
     .landing-section-title {
         font-family: 'Lora', serif;
-        font-size: 1.55rem;
+        font-size: 1.65rem;
         font-weight: 700;
         color: var(--primary-color);
+        margin: 0;
     }
 
     .landing-section-sub {
         font-size: 0.88rem;
-        color: var(--text-light);
+        color: #334155;
+        margin: 0.2rem 0 0;
     }
 
+    /* Floating Strands Preview */
     .landing-strands-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -142,16 +252,17 @@
 
     .floating-strand-card {
         background: #ffffff;
-        border: 1.5px solid rgba(0, 32, 96, 0.22);
-        border-radius: 18px;
-        padding: 1.65rem 1.35rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 1.75rem 1.45rem;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 0.9rem;
-        box-shadow: var(--shadow-float);
-        transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo), border-color 0.25s;
+        gap: 0.85rem;
+        box-shadow: 0 14px 32px -12px rgba(0, 32, 96, 0.14);
+        text-decoration: none;
+        transition: transform 0.28s var(--ease-out-expo), box-shadow 0.28s var(--ease-out-expo), border-color 0.22s;
         animation: strandFloat 5.5s ease-in-out infinite;
     }
 
@@ -164,139 +275,387 @@
     }
 
     .floating-strand-card:hover {
-        transform: translateY(-10px) scale(1.02);
+        transform: translateY(-8px);
         border-color: var(--primary-color);
-        box-shadow: 0 24px 44px -10px rgba(0, 32, 96, 0.3);
+        box-shadow: 0 24px 44px -12px rgba(0, 32, 96, 0.24);
         animation-play-state: paused;
     }
 
     @keyframes strandFloat {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
+        50% { transform: translateY(-5px); }
     }
 
-    .floating-strand-crest {
-        width: 112px;
-        height: 112px;
-        object-fit: contain;
+    .strand-crest-halo {
+        width: 126px;
+        height: 126px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.6rem;
         transition: transform 0.25s ease;
     }
 
-    .floating-strand-card:hover .floating-strand-crest {
+    .strand-halo-humss { background: #eef2ff; }
+    .strand-halo-abm { background: #fef9ec; }
+    .strand-halo-stem { background: #ecfeff; }
+
+    .floating-strand-card:hover .strand-crest-halo {
         transform: scale(1.06);
+    }
+
+    .floating-strand-crest {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
     }
 
     .floating-strand-name {
         font-family: 'Lora', serif;
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: var(--primary-color);
+        margin: 0;
     }
 
     .floating-strand-desc {
         font-size: 0.84rem;
         color: #334155;
-        line-height: 1.55;
+        line-height: 1.56;
+        margin: 0;
+    }
+
+    .floating-strand-footer {
+        margin-top: auto;
+        width: 100%;
+        padding-top: 0.85rem;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
     .floating-strand-count {
-        margin-top: auto;
         font-size: 0.78rem;
         font-weight: 700;
         color: var(--primary-color);
-        background-color: var(--surface-tint);
-        padding: 0.32rem 0.85rem;
+        background-color: #eef2ff;
+        padding: 0.28rem 0.78rem;
         border-radius: 999px;
         font-variant-numeric: tabular-nums;
     }
 
-    /* Access & Recognition Callout */
-    .landing-access-panel {
-        background-color: var(--primary-color);
-        color: #ffffff;
-        border-radius: 20px;
-        padding: 2.25rem 2.5rem;
-        display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
-        gap: 2rem;
-        align-items: center;
-        box-shadow: var(--shadow-float);
-    }
-
-    .landing-access-panel h2 {
-        font-family: 'Lora', serif;
-        font-size: 1.6rem;
-        color: #ffffff;
-        margin-bottom: 0.65rem;
-    }
-
-    .landing-access-panel p {
-        font-size: 0.9rem;
-        color: #dbeafe;
-        line-height: 1.65;
-        margin-bottom: 1.1rem;
-    }
-
-    .access-steps-inline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem 1.75rem;
-        font-size: 0.84rem;
-        color: #f8fafc;
-        font-weight: 600;
-    }
-
-    .access-step-chip {
+    .floating-strand-cta {
         display: inline-flex;
         align-items: center;
+        gap: 0.3rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    /* Civic Recognition & Featured Student Studies */
+    .landing-recognition-grid {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        gap: 1.75rem;
+        align-items: stretch;
+    }
+
+    .landing-civic-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 1.35rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .landing-civic-photo-wrap {
+        position: relative;
+        border-radius: 14px;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        background: #e2e8f0;
+    }
+
+    .landing-civic-photo-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .landing-civic-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        align-self: flex-start;
+        background: #fef3c7;
+        color: #713f12;
+        border: 1px solid #f59e0b;
+        border-radius: 999px;
+        padding: 0.26rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .landing-civic-title {
+        font-family: 'Lora', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1.35;
+    }
+
+    .landing-civic-copy {
+        font-size: 0.84rem;
+        color: #334155;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .landing-featured-panel {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .landing-featured-heading {
+        font-family: 'Lora', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.3rem;
+    }
+
+    .landing-featured-sub {
+        font-size: 0.82rem;
+        color: #334155;
+        margin: 0 0 1rem;
+    }
+
+    .landing-featured-list {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        justify-content: space-between;
+    }
+
+    .landing-featured-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        padding: 0.95rem 0.75rem;
+        border-top: 1px solid #e2e8f0;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: background-color 0.16s ease;
+    }
+
+    .landing-featured-row:hover {
+        background-color: #f8fafc;
+    }
+
+    .landing-featured-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 0.45rem;
     }
 
-    .landing-access-actions {
+    .featured-strand-chip {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        background: #eef2ff;
+        padding: 0.16rem 0.6rem;
+        border-radius: 999px;
+    }
+
+    .featured-year-chip {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #334155;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .featured-award-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #713f12;
+        background: #fef3c7;
+        padding: 0.16rem 0.6rem;
+        border-radius: 999px;
+    }
+
+    .featured-paper-title {
+        font-family: 'Lora', serif;
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.38;
+        margin: 0;
+    }
+
+    .featured-paper-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    /* Warm Parchment & Gold 3-Step Access Card */
+    .landing-parchment-panel {
+        background: linear-gradient(135deg, #fffdf6 0%, #fef6e4 100%);
+        border: 1.5px solid #e5c97b;
+        border-radius: 22px;
+        padding: 2.25rem 2.5rem;
+        display: grid;
+        grid-template-columns: 1.35fr 0.65fr;
+        gap: 2.25rem;
+        align-items: center;
+        box-shadow: 0 18px 40px -14px rgba(120, 82, 16, 0.16);
+    }
+
+    .landing-parchment-panel h2 {
+        font-family: 'Lora', serif;
+        font-size: 1.65rem;
+        color: var(--primary-color);
+        margin: 0 0 0.6rem;
+    }
+
+    .landing-parchment-copy {
+        font-size: 0.92rem;
+        color: #3f2f13;
+        line-height: 1.65;
+        margin: 0 0 1.4rem;
+        max-width: 62ch;
+    }
+
+    .parchment-steps-track {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        padding-top: 1.1rem;
+        border-top: 1px solid #e7d39c;
+    }
+
+    .parchment-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .parchment-step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: #ffffff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .parchment-step-title {
+        display: block;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.3;
+    }
+
+    .parchment-step-sub {
+        display: block;
+        font-size: 0.76rem;
+        color: #5b4620;
+        line-height: 1.4;
+        margin-top: 0.12rem;
+    }
+
+    .landing-parchment-actions {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
         align-items: stretch;
     }
 
-    .btn-on-navy-primary {
-        background-color: #ffffff;
+    .landing-parchment-outline {
+        background: #ffffff;
         color: var(--primary-color);
-        border: 1.5px solid #ffffff;
+        border: 1.5px solid var(--primary-color);
     }
 
-    .btn-on-navy-primary:hover {
-        background-color: #e0f2fe;
-        transform: translateY(-2px);
-    }
-
-    .btn-on-navy-secondary {
-        background-color: transparent;
-        color: #ffffff;
-        border: 1.5px solid rgba(255, 255, 255, 0.55);
-    }
-
-    .btn-on-navy-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.14);
-        border-color: #ffffff;
+    .landing-parchment-outline:hover {
+        background: #eef2ff;
     }
 
     @media (max-width: 960px) {
         .landing-hero,
+        .landing-pillars-rail,
         .landing-strands-grid,
-        .landing-access-panel {
+        .landing-recognition-grid,
+        .landing-parchment-panel,
+        .parchment-steps-track {
             grid-template-columns: 1fr;
         }
 
-        .landing-hero {
+        .landing-pillar-item + .landing-pillar-item {
+            border-left: none;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .landing-parchment-panel {
             padding: 1.75rem 1.5rem;
         }
     }
 
     @media (max-width: 540px) {
-        .landing-stats-strip {
+        .landing-metrics-rail {
             grid-template-columns: 1fr;
-            gap: 0.9rem;
+            gap: 0.85rem;
+        }
+
+        .landing-metric-cell + .landing-metric-cell {
+            border-left: none;
+            border-top: 1px solid #e2e8f0;
+            padding-left: 0;
+            padding-top: 0.75rem;
+        }
+
+        .landing-heritage-inset {
+            width: 132px;
+            left: 0.65rem;
+        }
+
+        .landing-heritage-inset img {
+            height: 70px;
+        }
+
+        .landing-trust-pill {
+            right: 0.65rem;
+            bottom: 0.65rem;
+            padding: 0.36rem 0.7rem;
         }
     }
 </style>
@@ -305,14 +664,15 @@
 {% block content %}
 <div class="landing-container">
 
-    <!-- Hero Section -->
+    <!-- 1. Editorial Hero & Layered Campus Showcase -->
     <section class="landing-hero">
         <div>
+            {% if site_content.landing_hero.hero_title == 'Lundayang Marians: The Cradle of Marian Scholarship' %}
             <h1 class="landing-hero-title">Lundayang Marians: {{ t('The Cradle of Marian Scholarship') }}</h1>
-            <p class="landing-hero-desc">
-                <strong>{{ t('Lundayang Marians') }}</strong> {{ t('is the web-based research repository of') }}
-                <strong>{{ t('Santa Maria (Laguna) Academy Inc.') }}</strong>, {{ t('envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or focal point, with "Marians", the collective identity of the academy\'s students. This platform centralizes academic outputs, offering a simple interface and organized categories for easy access and exploration.') }}
-            </p>
+            {% else %}
+            <h1 class="landing-hero-title">{{ site_content.landing_hero.hero_title }}</h1>
+            {% endif %}
+            <p class="landing-hero-desc">{{ site_content.landing_hero.hero_intro }}</p>
 
             <div class="landing-hero-actions">
                 {% if session.get('user') %}
@@ -336,35 +696,83 @@
                 </a>
             </div>
 
-            <div class="landing-stats-strip">
-                <div class="landing-stat-item">
-                    <span class="landing-stat-value">{{ stats.total_papers }}</span>
-                    <span class="landing-stat-label">{{ t('Research Papers') }}</span>
+            <div class="landing-metrics-rail">
+                <div class="landing-metric-cell">
+                    <span class="landing-metric-value">{{ stats.total_papers }}</span>
+                    <span class="landing-metric-label">{{ t('Research Papers') }}</span>
                 </div>
-                <div class="landing-stat-item">
-                    <span class="landing-stat-value">3 Strands</span>
-                    <span class="landing-stat-label">HUMSS, ABM &amp; STEM</span>
+                <div class="landing-metric-cell">
+                    <span class="landing-metric-value">3 Strands</span>
+                    <span class="landing-metric-label">HUMSS, ABM &amp; STEM</span>
                 </div>
-                <div class="landing-stat-item">
-                    <span class="landing-stat-value">APA 7th</span>
-                    <span class="landing-stat-label">View-Only Archive</span>
+                <div class="landing-metric-cell">
+                    <span class="landing-metric-value">APA 7th</span>
+                    <span class="landing-metric-label">View-Only Archive</span>
                 </div>
             </div>
         </div>
 
         <div class="landing-hero-media">
-            <div class="landing-photo-frame">
-                <img src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
-                    alt="Sta. Maria (Laguna) Academy Inc. Campus">
+            <div class="landing-media-stage">
+                <div class="landing-photo-frame">
+                    <img src="{{ landing_media.primary_photo }}"
+                        alt="{{ site_content.landing_hero.primary_caption }}">
+                </div>
+                <div class="landing-heritage-inset">
+                    <img src="{{ landing_media.heritage_photo }}"
+                        alt="{{ site_content.landing_hero.heritage_label }}">
+                    <span class="landing-heritage-label">{{ site_content.landing_hero.heritage_label }}</span>
+                </div>
+                <div class="landing-trust-pill">
+                    <i data-lucide="shield-check" style="width: 15px; height: 15px; color: #facc15;"></i>
+                    <span>{{ t('View-Only & RA 10173 Protected') }}</span>
+                </div>
             </div>
             <div class="landing-photo-caption">
-                <i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--primary-color);"></i>
-                <span>Sta. Maria (Laguna) Academy Inc. — Brgy. Poblacion II, Santa Maria, Laguna</span>
+                <i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--primary-color); flex-shrink: 0;"></i>
+                <span>{{ site_content.landing_hero.primary_caption }}</span>
             </div>
         </div>
     </section>
 
-    <!-- Mission & Vision Section -->
+    <!-- 2. 3-Pillar Platform Highlights Bar -->
+    <section class="landing-pillars-rail" aria-label="Repository Capabilities">
+        <div class="landing-pillar-item">
+            <span class="landing-pillar-icon" aria-hidden="true">
+                <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+            </span>
+            <div>
+                <h2 class="landing-pillar-title">{{ t('Instant Smart Search') }}</h2>
+                <p class="landing-pillar-desc">
+                    Filter archived manuscripts in real time by title, strand, adviser, year, method, or keyword.
+                </p>
+            </div>
+        </div>
+        <div class="landing-pillar-item">
+            <span class="landing-pillar-icon" aria-hidden="true">
+                <i data-lucide="quote" style="width: 20px; height: 20px;"></i>
+            </span>
+            <div>
+                <h2 class="landing-pillar-title">{{ t('1-Click APA 7th Citations') }}</h2>
+                <p class="landing-pillar-desc">
+                    Copy pre-formatted APA 7th Edition references accurately for your literature reviews.
+                </p>
+            </div>
+        </div>
+        <div class="landing-pillar-item">
+            <span class="landing-pillar-icon" aria-hidden="true">
+                <i data-lucide="lock" style="width: 20px; height: 20px;"></i>
+            </span>
+            <div>
+                <h2 class="landing-pillar-title">{{ t('View-Only IP Protection') }}</h2>
+                <p class="landing-pillar-desc">
+                    Full PDFs stream securely to verified Marian accounts inside a view-only reader.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Mission & Vision Section -->
     <section id="mission-vision" class="mission-vision-section" style="margin: 0;">
         <div class="mission-vision-header">
             <h2 class="mission-vision-heading">{{ t('MISSION & VISION') }}</h2>
@@ -388,7 +796,7 @@
         </div>
     </section>
 
-    <!-- Floating Strand Showcase -->
+    <!-- 4. Floating Strand Track Showcase -->
     <section>
         <div class="landing-section-head">
             <div>
@@ -399,64 +807,152 @@
 
         <div class="landing-strands-grid">
             <a href="{{ url_for('strand', strand_name='HUMSS') if session.get('user') else url_for('login') }}" class="floating-strand-card">
-                <img src="{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}" alt="HUMSS Crest" class="floating-strand-crest">
+                <div class="strand-crest-halo strand-halo-humss">
+                    <img src="{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}" alt="HUMSS Crest" class="floating-strand-crest">
+                </div>
                 <h3 class="floating-strand-name">HUMSS</h3>
                 <p class="floating-strand-desc">Humanities &amp; Social Sciences — exploring culture, psychology, communication, and community studies.</p>
-                <span class="floating-strand-count">{{ stats.HUMSS }} {{ t('research papers') if stats.HUMSS != 1 else t('research paper') }}</span>
+                <div class="floating-strand-footer">
+                    <span class="floating-strand-count">{{ stats.HUMSS }} {{ t('research papers') if stats.HUMSS != 1 else t('research paper') }}</span>
+                    <span class="floating-strand-cta">
+                        <i data-lucide="{{ 'arrow-right' if session.get('user') else 'lock' }}" style="width: 13px; height: 13px;"></i>
+                        <span>{{ t('Browse strand') if session.get('user') else t('Sign in to explore') }}</span>
+                    </span>
+                </div>
             </a>
 
             <a href="{{ url_for('strand', strand_name='ABM') if session.get('user') else url_for('login') }}" class="floating-strand-card">
-                <img src="{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}" alt="ABM Crest" class="floating-strand-crest">
+                <div class="strand-crest-halo strand-halo-abm">
+                    <img src="{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}" alt="ABM Crest" class="floating-strand-crest">
+                </div>
                 <h3 class="floating-strand-name">ABM</h3>
                 <p class="floating-strand-desc">Accountancy, Business &amp; Management — studying financial literacy, entrepreneurship, and local enterprise.</p>
-                <span class="floating-strand-count">{{ stats.ABM }} {{ t('research papers') if stats.ABM != 1 else t('research paper') }}</span>
+                <div class="floating-strand-footer">
+                    <span class="floating-strand-count">{{ stats.ABM }} {{ t('research papers') if stats.ABM != 1 else t('research paper') }}</span>
+                    <span class="floating-strand-cta">
+                        <i data-lucide="{{ 'arrow-right' if session.get('user') else 'lock' }}" style="width: 13px; height: 13px;"></i>
+                        <span>{{ t('Browse strand') if session.get('user') else t('Sign in to explore') }}</span>
+                    </span>
+                </div>
             </a>
 
             <a href="{{ url_for('strand', strand_name='STEM') if session.get('user') else url_for('login') }}" class="floating-strand-card">
-                <img src="{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}" alt="STEM Crest" class="floating-strand-crest">
+                <div class="strand-crest-halo strand-halo-stem">
+                    <img src="{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}" alt="STEM Crest" class="floating-strand-crest">
+                </div>
                 <h3 class="floating-strand-name">STEM</h3>
                 <p class="floating-strand-desc">Science, Technology, Engineering &amp; Mathematics — pioneering prototypes, applied science, and sustainable solutions.</p>
-                <span class="floating-strand-count">{{ stats.STEM }} {{ t('research papers') if stats.STEM != 1 else t('research paper') }}</span>
+                <div class="floating-strand-footer">
+                    <span class="floating-strand-count">{{ stats.STEM }} {{ t('research papers') if stats.STEM != 1 else t('research paper') }}</span>
+                    <span class="floating-strand-cta">
+                        <i data-lucide="{{ 'arrow-right' if session.get('user') else 'lock' }}" style="width: 13px; height: 13px;"></i>
+                        <span>{{ t('Browse strand') if session.get('user') else t('Sign in to explore') }}</span>
+                    </span>
+                </div>
             </a>
         </div>
     </section>
 
-    <!-- Verified Student Access Panel -->
-    <section class="landing-access-panel">
-        <div>
-            <h2>Verified Marian Access &amp; Academic Preservation</h2>
-            <p>
-                To safeguard student intellectual property and ensure responsible academic use, full research manuscripts
-                are accessible to approved members of the Sta. Maria (Laguna) Academy Inc. community.
+    <!-- 5. Municipal Recognition & Sanitized Featured Studies -->
+    <section class="landing-recognition-grid">
+        <article class="landing-civic-card">
+            <div class="landing-civic-photo-wrap">
+                <img src="{{ landing_media.recognition_photo }}"
+                    alt="{{ site_content.recognition.landing_headline }}">
+            </div>
+            <span class="landing-civic-badge">
+                <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+                <span>{{ t(site_content.recognition.badge_label) }}</span>
+            </span>
+            <h2 class="landing-civic-title">
+                {{ site_content.recognition.landing_headline }}
+            </h2>
+            <p class="landing-civic-copy">
+                {{ site_content.recognition.landing_summary }}
             </p>
-            <div class="access-steps-inline">
-                <span class="access-step-chip">
-                    <i data-lucide="user-plus" style="width: 16px; height: 16px; color: #facc15;"></i>
-                    <span>Register with Student ID</span>
-                </span>
-                <span class="access-step-chip">
-                    <i data-lucide="shield-check" style="width: 16px; height: 16px; color: #facc15;"></i>
-                    <span>Admin Verification &amp; Approval</span>
-                </span>
-                <span class="access-step-chip">
-                    <i data-lucide="book-open-check" style="width: 16px; height: 16px; color: #facc15;"></i>
-                    <span>Search, Read &amp; Cite Papers</span>
-                </span>
+        </article>
+
+        <div class="landing-featured-panel">
+            <h2 class="landing-featured-heading">{{ t(site_content.featured_papers.landing_heading) }}</h2>
+            <p class="landing-featured-sub">
+                {{ site_content.featured_papers.landing_subtitle }}
+            </p>
+            <div class="landing-featured-list">
+                {% if stats.featured %}
+                    {% for paper in stats.featured %}
+                    <a href="{{ url_for('paper_detail', paper_id=paper.id) if session.get('user') else url_for('login') }}" class="landing-featured-row">
+                        <div class="landing-featured-meta">
+                            <span class="featured-strand-chip">{{ paper.strand }}</span>
+                            {% if paper.academic_year %}
+                            <span class="featured-year-chip">{{ paper.academic_year }}</span>
+                            {% endif %}
+                            {% if paper.awards %}
+                            <span class="featured-award-chip">
+                                <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                                <span>{{ paper.awards }}</span>
+                            </span>
+                            {% endif %}
+                        </div>
+                        <h3 class="featured-paper-title">{{ paper.title }}</h3>
+                        <span class="featured-paper-hint">
+                            <i data-lucide="{{ 'book-open' if session.get('user') else 'lock' }}" style="width: 13px; height: 13px;"></i>
+                            <span>{{ t('Read study') if session.get('user') else t('Sign in to read study') }}</span>
+                        </span>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="landing-featured-sub" style="margin-top: 1rem;">
+                        Approved Marian studies appear here once published by school administrators.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Warm Parchment & Gold 3-Step Access Card -->
+    <section class="landing-parchment-panel">
+        <div>
+            <h2>{{ site_content.landing_hero.access_heading }}</h2>
+            <p class="landing-parchment-copy">
+                {{ site_content.landing_hero.access_body }}
+            </p>
+            <div class="parchment-steps-track">
+                <div class="parchment-step">
+                    <span class="parchment-step-num" aria-hidden="true">1</span>
+                    <div>
+                        <strong class="parchment-step-title">Register with Student ID</strong>
+                        <span class="parchment-step-sub">Submit school ID, section &amp; academy email.</span>
+                    </div>
+                </div>
+                <div class="parchment-step">
+                    <span class="parchment-step-num" aria-hidden="true">2</span>
+                    <div>
+                        <strong class="parchment-step-title">Admin Verification</strong>
+                        <span class="parchment-step-sub">Confirmed by library or research staff.</span>
+                    </div>
+                </div>
+                <div class="parchment-step">
+                    <span class="parchment-step-num" aria-hidden="true">3</span>
+                    <div>
+                        <strong class="parchment-step-title">Search, Read &amp; Cite</strong>
+                        <span class="parchment-step-sub">Stream manuscripts with APA 7th references.</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="landing-access-actions">
+        <div class="landing-parchment-actions">
             {% if session.get('user') %}
-            <a href="{{ url_for('repository_home') }}" class="btn btn-on-navy-primary">
+            <a href="{{ url_for('repository_home') }}" class="btn btn-primary">
                 <i data-lucide="arrow-right" style="width: 17px; height: 17px;"></i>
                 <span>Open Repository Home</span>
             </a>
             {% else %}
-            <a href="{{ url_for('signup') }}" class="btn btn-on-navy-primary">
+            <a href="{{ url_for('signup') }}" class="btn btn-primary">
                 <i data-lucide="user-plus" style="width: 17px; height: 17px;"></i>
                 <span>{{ t('Create an Account') }}</span>
             </a>
-            <a href="{{ url_for('login') }}" class="btn btn-on-navy-secondary">
+            <a href="{{ url_for('login') }}" class="btn landing-parchment-outline">
                 <i data-lucide="log-in" style="width: 17px; height: 17px;"></i>
                 <span>{{ t('Log In') }}</span>
             </a>

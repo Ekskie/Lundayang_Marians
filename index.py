@@ -1,11 +1,12 @@
 import os
+import copy
 import csv
 import math
 import re
 import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response, g
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import io
@@ -123,6 +124,290 @@ MISSION_VISION = {
         "fostering ethical scholarship, and cultivating critical inquiry."
     ),
 }
+
+DEFAULT_LANDING_PRIMARY_PHOTO = "images/Photos/School_P.jpg"
+DEFAULT_LANDING_HERITAGE_PHOTO = "images/Photos/Old_P.jpg"
+DEFAULT_RECOGNITION_PHOTO = "images/municipality_recognises/KALAT_MO_SAGOT_KO_THE_ACCEPTABILITY_OF_THE_PROTOTYPE_WASTE_SEGREGATOR_MACHINE_IN_SANTA_MARIA_LAGUNA.jpg"
+
+DEFAULT_SLIDES = [
+    {"url": "", "static_path": "images/Photos/School_P.jpg", "alt": "Sta. Maria Academy Facade"},
+    {"url": "", "static_path": "images/school_photos/741481012_1033089102523494_5220187940140632359_n.jpg", "alt": "Campus Highlight 1"},
+    {"url": "", "static_path": "images/school_photos/742997668_1704114644246167_6551245720162600764_n.jpg", "alt": "Campus Highlight 2"},
+    {"url": "", "static_path": "images/school_photos/743796266_1527611965725908_6500501796955139832_n.jpg", "alt": "Campus Highlight 3"},
+    {"url": "", "static_path": "images/school_photos/746660483_1005253982424329_5662788526906682934_n.jpg", "alt": "Campus Highlight 4"},
+    {"url": "", "static_path": "images/school_photos/746715677_1716137346299532_5212130155329073556_n.jpg", "alt": "Campus Highlight 5"},
+    {"url": "", "static_path": "images/school_photos/b49d6ac161686b265bae60c376f9047c.jpeg", "alt": "Campus Highlight 6"},
+    {"url": "", "static_path": "images/school_photos/fa78647b324ea46e043f5ec0bde6837b.jpeg", "alt": "Campus Highlight 7"},
+    {"url": "", "static_path": "images/school_photos/1.jfif", "alt": "Campus Highlight 8"},
+    {"url": "", "static_path": "images/school_photos/2.jfif", "alt": "Campus Highlight 9"},
+]
+
+DEFAULT_SITE_CONTENT = {
+    "landing_hero": {
+        "hero_title": "Lundayang Marians: The Cradle of Marian Scholarship",
+        "hero_intro": (
+            'Lundayang Marians is the web-based research repository of Santa Maria (Laguna) Academy Inc., '
+            'envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or '
+            'focal point, with "Marians", the collective identity of the academy\'s students. This platform '
+            'centralizes academic outputs, offering a simple interface and organized categories for easy access '
+            'and exploration.'
+        ),
+        "primary_photo_url": "",
+        "primary_caption": "Sta. Maria (Laguna) Academy Inc. — Brgy. Poblacion II, Santa Maria, Laguna",
+        "heritage_photo_url": "",
+        "heritage_label": "SMLA Heritage",
+        "access_heading": "Verified Marian Access & Academic Preservation",
+        "access_body": (
+            "To safeguard student intellectual property and ensure responsible academic use, full research "
+            "manuscripts are accessible to verified members of the Sta. Maria (Laguna) Academy Inc. community."
+        ),
+    },
+    "student_home": {
+        "slides": copy.deepcopy(DEFAULT_SLIDES),
+        "intro_paragraph_1": (
+            'Lundayang Marians is the web-based research repository of Santa Maria (Laguna) Academy Inc., '
+            'envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or '
+            'focal point, with "Marians", the collective identity of the academy\'s students. This platform '
+            'centralizes academic outputs, offering a simple interface and organized categories for easy access '
+            'and exploration.'
+        ),
+        "intro_paragraph_2": (
+            "By preserving research in a digital archive, Lundayang Marians fosters collaboration, supports future "
+            "studies, and strengthens the Marian community's commitment to academic excellence. It serves not only "
+            "as a repository but also as a symbol of innovation and inclusivity, ensuring that the scholarly "
+            "contributions of Marians remain accessible and impactful for years to come."
+        ),
+    },
+    "mission_vision": copy.deepcopy(MISSION_VISION),
+    "recognition": {
+        "image_url": "",
+        "badge_label": "Civic Recognition",
+        "landing_headline": "Recognized by the Municipality of Santa Maria, Laguna",
+        "landing_summary": (
+            "Marian student researchers earn community recognition for practical, community-centered prototypes—"
+            "including the SK-commended automated waste segregator study advised by Ms. Maureen L. Cruz."
+        ),
+        "home_heading": "RESEARCH RECOGNITION",
+        "home_subtitle": "This Research has been officially Recognized by the Municipality of Santa Maria, Laguna",
+        "home_honoree": "SK Chairman Angel Mangundayao of the Municipality of Santa Maria, Laguna",
+        "home_body_intro": (
+            "proudly acknowledges the outstanding efforts of the student researchers of Santa Maria (Laguna) "
+            "Academy, INC., Gabrielle A. Dimatatac, Bridgette S. Panaligan, Mark Andrew Y. Montales, Fiona "
+            "Sheryn A. Hernandez, Kristel Anne Nicole L. Jaen, Godwel Ivan D. Razon, and Fatima Victoria I. "
+            "Valentino, for their innovative study entitled"
+        ),
+        "home_study_quote": '"KALAT MO, SAGOT KO: THE ACCEPTABILITY OF THE PROTOTYPE WASTE SEGREGATOR MACHINE IN SANTA MARIA, LAGUNA."',
+        "home_adviser_note": (
+            "Special recognition is also extended to their Research Adviser, Ms. Maureen L. Cruz, whose guidance "
+            "and expertise provided the necessary direction and support in the completion of this project."
+        ),
+        "home_impact_note": (
+            "This initiative reflects the commitment of the youth of Santa Maria Academy to environmental "
+            "responsibility and sustainable development. It also demonstrates the vital role of student-led "
+            "innovation in creating solutions that can be adopted by the barangay and the wider community for "
+            "the benefit of the people of Santa Maria, Laguna."
+        ),
+    },
+    "featured_papers": {
+        "landing_heading": "Featured & Recognized Studies",
+        "landing_subtitle": "Preview published research titles across strands; full manuscripts and PDFs open after verification.",
+        "home_heading": "BEST IN RESEARCH",
+        "home_subtitle": "Recognizing Outstanding Research Achievements in Recent Years",
+        "slot_ids": ["", "", ""],
+    },
+}
+
+
+def _is_safe_media_url(url):
+    """Allow empty string (use default) or http(s) / static asset paths only."""
+    val = (url or "").strip()
+    if not val:
+        return True
+    return val.startswith(("https://", "http://", "/static/"))
+
+
+def resolve_media_url(custom_url, default_static_path):
+    """Resolve an uploaded/custom image URL or fall back to bundled static asset."""
+    val = (custom_url or "").strip()
+    if val and _is_safe_media_url(val):
+        return val
+    return url_for('static', filename=default_static_path) if default_static_path else ""
+
+
+def _normalize_slides(raw_slides):
+    """Validate and normalize slideshow items, keeping URLs safe."""
+    if not isinstance(raw_slides, list):
+        return copy.deepcopy(DEFAULT_SLIDES)
+    cleaned = []
+    for idx, item in enumerate(raw_slides[:20]):
+        if not isinstance(item, dict):
+            continue
+        url_val = (item.get("url") or "").strip()
+        static_val = (item.get("static_path") or "").strip()
+        if url_val and not _is_safe_media_url(url_val):
+            continue
+        if not url_val and not static_val:
+            continue
+        cleaned.append({
+            "url": url_val,
+            "static_path": static_val,
+            "alt": ((item.get("alt") or "").strip() or f"Campus Showcase {idx + 1}")[:140],
+        })
+    return cleaned or copy.deepcopy(DEFAULT_SLIDES)
+
+
+def get_site_content():
+    """Load editable Landing & Student Home content merged safely over defaults."""
+    cached = getattr(g, "_site_content", None)
+    if cached is not None:
+        return cached
+
+    content = copy.deepcopy(DEFAULT_SITE_CONTENT)
+    if supabase:
+        try:
+            res = supabase.table("site_settings").select("key, value").execute()
+            for row in (res.data or []):
+                k = row.get("key")
+                val = row.get("value")
+                if k in content and isinstance(val, dict):
+                    for field, default_val in content[k].items():
+                        if field not in val:
+                            continue
+                        raw_field = val[field]
+                        if k == "student_home" and field == "slides":
+                            content[k][field] = _normalize_slides(raw_field)
+                        elif k == "featured_papers" and field == "slot_ids" and isinstance(raw_field, list):
+                            slots = [str(x).strip() if x else "" for x in raw_field[:3]]
+                            while len(slots) < 3:
+                                slots.append("")
+                            content[k][field] = slots
+                        elif isinstance(default_val, str) and isinstance(raw_field, str):
+                            if "photo_url" in field or field == "image_url":
+                                content[k][field] = raw_field.strip() if _is_safe_media_url(raw_field) else ""
+                            else:
+                                content[k][field] = raw_field
+        except Exception as e:
+            print("Site settings read error (using defaults):", e)
+
+    g._site_content = content
+    return content
+
+
+def _resolve_featured_papers(all_papers, slot_ids, sanitize=False):
+    """Resolve up to 3 featured papers respecting admin-pinned slots with auto-awarded fallback."""
+    papers = list(all_papers or [])
+    by_id = {str(p.get("id")): p for p in papers if p.get("id")}
+    auto_awarded = sorted(
+        [p for p in papers if (p.get("awards") or "").strip()],
+        key=lambda p: (p.get("academic_year") or "", p.get("created_at") or ""),
+        reverse=True,
+    )
+    auto_rest = sorted(
+        [p for p in papers if not (p.get("awards") or "").strip()],
+        key=lambda p: (p.get("academic_year") or "", p.get("created_at") or ""),
+        reverse=True,
+    )
+    fallback_pool = auto_awarded + auto_rest
+
+    chosen = []
+    used_ids = set()
+    normalized_slots = [str(s).strip() if s else "" for s in (slot_ids or [])[:3]]
+    while len(normalized_slots) < 3:
+        normalized_slots.append("")
+
+    for sid in normalized_slots:
+        if sid and sid in by_id and sid not in used_ids:
+            chosen.append(by_id[sid])
+            used_ids.add(sid)
+        else:
+            chosen.append(None)
+
+    pool_iter = (p for p in fallback_pool if str(p.get("id")) not in used_ids)
+    for idx in range(3):
+        if chosen[idx] is None:
+            nxt = next(pool_iter, None)
+            if nxt:
+                chosen[idx] = nxt
+                used_ids.add(str(nxt.get("id")))
+
+    result = [p for p in chosen if p is not None]
+    if not sanitize:
+        return result
+    return [
+        {
+            "id": p.get("id"),
+            "title": p.get("title") or "",
+            "strand": (p.get("strand") or "").upper(),
+            "academic_year": p.get("academic_year") or "",
+            "awards": (p.get("awards") or "").strip(),
+        }
+        for p in result
+        if p.get("id") and p.get("title")
+    ]
+
+
+def _sanitize_section_payload(section, data):
+    """Validate and normalize a CMS section update from Admin."""
+    if section not in DEFAULT_SITE_CONTENT or not isinstance(data, dict):
+        return None, "Invalid section payload."
+
+    defaults = DEFAULT_SITE_CONTENT[section]
+    clean = {}
+    url_fields = {"primary_photo_url", "heritage_photo_url", "image_url"}
+
+    if section == "student_home":
+        raw_slides = data.get("slides")
+        if not isinstance(raw_slides, list) or len(raw_slides) == 0:
+            return None, "Please keep at least one slideshow photo."
+        cleaned_slides = []
+        for idx, item in enumerate(raw_slides[:20]):
+            if not isinstance(item, dict):
+                continue
+            url_val = (item.get("url") or "").strip()
+            static_val = (item.get("static_path") or "").strip()
+            if url_val and not _is_safe_media_url(url_val):
+                return None, "Slideshow image URLs must use https://, http://, or /static/ paths."
+            if not url_val and not static_val:
+                continue
+            cleaned_slides.append({
+                "url": url_val,
+                "static_path": static_val,
+                "alt": ((item.get("alt") or "").strip() or f"Campus Showcase {idx + 1}")[:140],
+            })
+        if not cleaned_slides:
+            return None, "Please include at least one valid slideshow image."
+        clean["slides"] = cleaned_slides
+        for text_key in ("intro_paragraph_1", "intro_paragraph_2"):
+            val = (data.get(text_key) or "").strip()
+            if not val:
+                return None, "Student Home description paragraphs cannot be empty."
+            clean[text_key] = val[:2000]
+        return clean, None
+
+    if section == "featured_papers":
+        for text_key in ("landing_heading", "landing_subtitle", "home_heading", "home_subtitle"):
+            val = (data.get(text_key) or "").strip()
+            if not val:
+                return None, "Featured section headings and subtitles are required."
+            clean[text_key] = val[:250]
+        raw_slots = data.get("slot_ids") if isinstance(data.get("slot_ids"), list) else []
+        slots = [str(s).strip() if s else "" for s in raw_slots[:3]]
+        while len(slots) < 3:
+            slots.append("")
+        clean["slot_ids"] = slots
+        return clean, None
+
+    for key, default_val in defaults.items():
+        val = (data.get(key) or "").strip() if isinstance(data.get(key), str) else ""
+        if key in url_fields:
+            if not _is_safe_media_url(val):
+                return None, "Image URLs must use https://, http://, or /static/ paths."
+            clean[key] = val
+        else:
+            if not val:
+                return None, f"Field '{key.replace('_', ' ')}' cannot be empty."
+            clean[key] = val[:2500]
+    return clean, None
 
 CORE_RESEARCH_TYPES = [
     "Quantitative",
@@ -271,6 +556,21 @@ TRANSLATIONS = {
         "SMLA Archive": "Arkibo ng SMLA",
         "Student": "Mag-aaral",
         "Admin": "Admin",
+        "Instant Smart Search": "Mabilisang Matalinong Paghahanap",
+        "1-Click APA 7th Citations": "Isang-Click na Sitasyong APA 7th",
+        "View-Only IP Protection": "Proteksyong View-Only para sa IP",
+        "Featured & Recognized Studies": "Mga Tampok at Kinilalang Pag-aaral",
+        "Civic Recognition": "Pagkilalang Sibiko",
+        "Sign in to explore": "Mag-log in upang tuklasin",
+        "Browse strand": "Buksan ang strand",
+        "Sign in to read study": "Mag-log in upang basahin",
+        "Read study": "Basahin ang pag-aaral",
+        "View-Only & RA 10173 Protected": "Protektadong View-Only at RA 10173",
+        "Landing & Home": "Panimula at Tahanan",
+        "view": "pagtingin",
+        "views": "mga pagtingin",
+        "Optional analytics help librarians track session-based campus visits and study attribution—no third-party ad trackers.": "Ang opsyonal na analytics ay tumutulong sa mga librarian na subaybayan ang pagbisita at sesyon ng pagtingin—walang third-party ad tracker.",
+        "Records session-scoped campus visits and reader attribution alongside basic paper counts—no third-party ad trackers.": "Itinatala ang pagbisita sa kampus at ugnayan sa sesyon kasama ng pangunahing bilang ng pagtingin—walang third-party ad tracker.",
         "Essential Session Data": "Mahalagang Data ng Sesyon",
         "Keeps login authentication, account role, selected language, and your saved preference active.": "Pinapanatiling aktibo ang pag-log in, gampanin ng account, piniling wika, at ang iyong nai-save na kagustuhan.",
         "Campus Readership Telemetry": "Telemetriya ng Pagbabasa sa Kampus",
@@ -600,14 +900,15 @@ def get_pending_approvals_count():
 
 
 def record_paper_view(paper_id):
-    """Record a research paper detail view in Supabase analytics."""
-    if not supabase or not paper_id or not has_analytics_consent():
+    """Record a research paper view in Supabase (anonymously unless full analytics consented)."""
+    if not supabase or not paper_id or is_admin_session():
         return
+    include_session_meta = has_analytics_consent()
     try:
         supabase.table("paper_views").insert({
             "paper_id": paper_id,
-            "user_id": (session.get('user') or {}).get('id'),
-            "viewer_token": get_or_create_visitor_token(),
+            "user_id": (session.get('user') or {}).get('id') if include_session_meta else None,
+            "viewer_token": get_or_create_visitor_token() if include_session_meta else None,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
     except Exception as e:
@@ -644,6 +945,17 @@ def _build_nav_user():
     user = session.get('user')
     if not user:
         return None
+    if 'avatar_url' not in user and supabase and user.get('id'):
+        try:
+            p_res = supabase.table("profiles").select("name, avatar_url").eq("id", user['id']).execute()
+            row = p_res.data[0] if p_res.data else {}
+            user['avatar_url'] = (row.get('avatar_url') or '').strip()
+            if row.get('name') and not user.get('name'):
+                user['name'] = row.get('name')
+        except Exception:
+            user['avatar_url'] = ''
+        session.modified = True
+
     full_name = (user.get('name') or '').strip()
     student_id = (user.get('student_id') or '').strip()
     email = (user.get('email') or '').strip()
@@ -658,11 +970,21 @@ def _build_nav_user():
         short_display = display_source
     if len(short_display) > 18:
         short_display = f"{short_display[:17]}…"
+
+    raw_avatar = (user.get('avatar_url') or '').strip()
+    avatar_ver = user.get('avatar_ver')
+    if raw_avatar and avatar_ver:
+        sep = '&' if '?' in raw_avatar else '?'
+        avatar_url = f"{raw_avatar}{sep}v={avatar_ver}"
+    else:
+        avatar_url = raw_avatar
+
     return {
         "full_name": full_name or display_source,
         "display": short_display,
         "initials": initials,
         "student_id": student_id,
+        "avatar_url": avatar_url,
         "role_label": "Admin" if role_key == 'admin' else "Student",
         "is_admin": role_key == 'admin',
     }
@@ -676,10 +998,11 @@ def inject_translations():
             return TRANSLATIONS['tl'][key]
         return key
     admin_active = is_admin_session()
+    content = get_site_content()
     return dict(
         t=t,
         generate_apa_citation=generate_apa_citation,
-        mission_vision=MISSION_VISION,
+        mission_vision=content["mission_vision"],
         standard_research_types=STANDARD_RESEARCH_TYPES,
         pending_approvals_count=get_pending_approvals_count(),
         current_endpoint=request.endpoint or '',
@@ -854,12 +1177,13 @@ def login():
         else:
             profile_status = None
             try:
-                profile_res = supabase.table("profiles").select("id, email, role, student_id, status, name").or_(f"student_id.eq.{login_input},email.eq.{login_input.lower()}").execute()
+                profile_res = supabase.table("profiles").select("id, email, role, student_id, status, name, avatar_url").or_(f"student_id.eq.{login_input},email.eq.{login_input.lower()}").execute()
                 
                 email_to_use = None
                 student_id_to_use = login_input
                 role = "student"
                 profile_name = ""
+                profile_avatar_url = ""
 
                 if profile_res.data:
                     profile = profile_res.data[0]
@@ -868,6 +1192,7 @@ def login():
                     role = profile['role']
                     profile_status = profile.get('status') or 'approved'
                     profile_name = profile.get('name') or ''
+                    profile_avatar_url = (profile.get('avatar_url') or '').strip()
                 elif "@" in login_input:
                     email_to_use = login_input.lower()
                 else:
@@ -882,12 +1207,13 @@ def login():
                     if auth_res and auth_res.session:
                         # Double check profile status if not found in initial lookup
                         if profile_status is None:
-                            p_check = supabase.table("profiles").select("role, student_id, status, name").eq("id", auth_res.user.id).execute()
+                            p_check = supabase.table("profiles").select("role, student_id, status, name, avatar_url").eq("id", auth_res.user.id).execute()
                             if p_check.data:
                                 profile_status = p_check.data[0].get('status') or 'approved'
                                 role = p_check.data[0].get('role', role)
                                 student_id_to_use = p_check.data[0].get('student_id', student_id_to_use)
                                 profile_name = p_check.data[0].get('name') or profile_name
+                                profile_avatar_url = (p_check.data[0].get('avatar_url') or profile_avatar_url).strip()
 
                         if profile_status == 'pending':
                             pending_notice = "Your account is still pending administrator approval. Please check back once an administrator approves your registration."
@@ -899,6 +1225,7 @@ def login():
                                 'email': auth_res.user.email,
                                 'student_id': student_id_to_use,
                                 'name': profile_name,
+                                'avatar_url': profile_avatar_url,
                             }
                             session['access_token'] = auth_res.session.access_token
                             session['role'] = role
@@ -1166,65 +1493,99 @@ def paginate_items(items, page, per_page=PAPERS_PER_PAGE):
 
 # ----------------- APP PAGES -----------------
 
-def _load_public_landing_stats():
-    stats = {"total_papers": 0, "STEM": 0, "ABM": 0, "HUMSS": 0}
+def _load_public_landing_stats(site_content=None):
+    content = site_content or get_site_content()
+    slot_ids = content.get("featured_papers", {}).get("slot_ids", ["", "", ""])
+    stats = {"total_papers": 0, "STEM": 0, "ABM": 0, "HUMSS": 0, "featured": []}
     if not supabase:
         return stats
     try:
-        res = supabase.table("research_papers").select("strand").execute()
+        res = supabase.table("research_papers").select(
+            "id, title, strand, academic_year, awards, created_at"
+        ).execute()
         rows = res.data or []
         stats["total_papers"] = len(rows)
         for row in rows:
             s = (row.get("strand") or "").upper()
             if s in stats:
                 stats[s] += 1
+
+        stats["featured"] = _resolve_featured_papers(rows, slot_ids, sanitize=True)
     except Exception as e:
         print("Public stats read error:", e)
     return stats
+
+
+def _render_landing_page():
+    content = get_site_content()
+    stats = _load_public_landing_stats(content)
+    hero_cfg = content["landing_hero"]
+    rec_cfg = content["recognition"]
+    landing_media = {
+        "primary_photo": resolve_media_url(hero_cfg.get("primary_photo_url"), DEFAULT_LANDING_PRIMARY_PHOTO),
+        "heritage_photo": resolve_media_url(hero_cfg.get("heritage_photo_url"), DEFAULT_LANDING_HERITAGE_PHOTO),
+        "recognition_photo": resolve_media_url(rec_cfg.get("image_url"), DEFAULT_RECOGNITION_PHOTO),
+    }
+    return render_template('landing.html', stats=stats, site_content=content, landing_media=landing_media)
 
 
 def _render_repository_home():
     recent_papers = []
     best_in_research = []
     research_types = list(STANDARD_RESEARCH_TYPES)
-    
+    content = get_site_content()
+    slot_ids = content.get("featured_papers", {}).get("slot_ids", ["", "", ""])
+
     if supabase:
         try:
             papers_res = supabase.table("research_papers").select("*").order("created_at", desc=True).execute()
             if papers_res.data:
                 recent_papers = papers_res.data
                 research_types = get_distinct_research_types(recent_papers)
-                
-            best_res = supabase.table("research_papers").select("*").not_.is_("awards", "null").neq("awards", "").execute()
-            if best_res.data:
-                sorted_best = sorted(best_res.data, key=lambda p: (p.get('academic_year', ''), p.get('created_at', '')), reverse=True)
-                best_in_research = sorted_best[:3]
+                best_in_research = _resolve_featured_papers(recent_papers, slot_ids, sanitize=False)
         except Exception as e:
             print("DB read failed:", e)
-            
-    return render_template('home.html', recent_papers=recent_papers, best_in_research=best_in_research, research_types=research_types)
+
+    slides_urls = [
+        {
+            "src": resolve_media_url(s.get("url"), s.get("static_path")),
+            "alt": s.get("alt") or "Campus Gallery Photo",
+        }
+        for s in content["student_home"]["slides"]
+        if resolve_media_url(s.get("url"), s.get("static_path"))
+    ]
+    recognition_photo_url = resolve_media_url(content["recognition"].get("image_url"), DEFAULT_RECOGNITION_PHOTO)
+    return render_template(
+        'home.html',
+        recent_papers=recent_papers,
+        best_in_research=best_in_research,
+        research_types=research_types,
+        site_content=content,
+        slides_urls=slides_urls,
+        recognition_photo_url=recognition_photo_url,
+    )
 
 
 @app.route('/')
 @student_repository_only
 def home():
     if not is_logged_in():
-        stats = _load_public_landing_stats()
-        return render_template('landing.html', stats=stats)
+        return _render_landing_page()
     return _render_repository_home()
 
 
 @app.route('/landing')
-@student_repository_only
 def landing():
-    stats = _load_public_landing_stats()
-    return render_template('landing.html', stats=stats)
+    if is_admin_session() and request.args.get('preview') != '1':
+        return redirect(url_for('admin_dashboard'))
+    return _render_landing_page()
 
 
 @app.route('/home')
 @login_required
-@student_repository_only
 def repository_home():
+    if is_admin_session() and request.args.get('preview') != '1':
+        return redirect(url_for('admin_dashboard'))
     return _render_repository_home()
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -1242,6 +1603,12 @@ def profile():
             res = supabase.table("profiles").select("*").eq("id", user_id).execute()
             if res.data:
                 profile_data = res.data[0]
+                fresh_avatar = (profile_data.get('avatar_url') or '').strip()
+                if session['user'].get('avatar_url') != fresh_avatar or (profile_data.get('name') and session['user'].get('name') != profile_data.get('name')):
+                    session['user']['avatar_url'] = fresh_avatar
+                    if profile_data.get('name'):
+                        session['user']['name'] = profile_data.get('name')
+                    session.modified = True
         except Exception as e:
             print("DB profile load error:", e)
 
@@ -1299,6 +1666,7 @@ def profile():
             try:
                 # Handle avatar upload
                 avatar_url = profile_data.get('avatar_url')
+                avatar_uploaded = False
                 avatar_file = request.files.get('avatar')
                 if avatar_file and avatar_file.filename:
                     ext = os.path.splitext(avatar_file.filename)[1].lower()
@@ -1312,6 +1680,7 @@ def profile():
                                 pass
                             storage_upload("avatars", avatar_filename, file_bytes, avatar_file.content_type or "image/png")
                             avatar_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{avatar_filename}"
+                            avatar_uploaded = True
                         except Exception as e:
                             print("Error uploading avatar:", e)
                             error = f"Error uploading photo: {str(e)}"
@@ -1357,6 +1726,9 @@ def profile():
                     supabase.table("profiles").update(update_data).eq("id", user_id).execute()
                     profile_data.update(update_data)
                     session['user']['name'] = name
+                    session['user']['avatar_url'] = (avatar_url or '').strip()
+                    if avatar_uploaded:
+                        session['user']['avatar_ver'] = int(datetime.now(timezone.utc).timestamp())
                     session.modified = True
 
                     if email_sent:
@@ -1376,6 +1748,9 @@ def profile():
                     supabase.table("profiles").update(update_data).eq("id", user_id).execute()
                     profile_data.update(update_data)
                     session['user']['name'] = name
+                    session['user']['avatar_url'] = (avatar_url or '').strip()
+                    if avatar_uploaded:
+                        session['user']['avatar_ver'] = int(datetime.now(timezone.utc).timestamp())
                     session.modified = True
                     if not error:
                         success = "Profile updated successfully!"
@@ -1751,8 +2126,16 @@ def paper_detail(paper_id):
         return redirect(url_for(default_portal_endpoint()))
 
     record_paper_view(paper_id)
+    views_count = 0
+    if supabase:
+        try:
+            views_res = supabase.table("paper_views").select("id", count="exact").eq("paper_id", paper_id).execute()
+            views_count = views_res.count if hasattr(views_res, 'count') and views_res.count is not None else len(views_res.data or [])
+        except Exception as e:
+            print("Paper view count read error:", e)
+
     apa_citation = generate_apa_citation(paper)
-    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked, bookmark_count=bookmark_count, recommended_papers=recommended_papers, apa_citation=apa_citation)
+    return render_template('detail.html', paper=paper, is_bookmarked=is_bookmarked, bookmark_count=bookmark_count, views_count=views_count, recommended_papers=recommended_papers, apa_citation=apa_citation)
 
 @app.route('/api/paper/<paper_id>/pdf')
 @login_required
@@ -1814,15 +2197,15 @@ LEGAL_DOCUMENTS = {
                 "points": [
                     "Account registration details: Student or Admin ID, full name, grade & section or department, email address, and encrypted authentication credentials.",
                     "Profile customizations: optional profile photo and saved personal bookmarks for approved research papers.",
-                    "Optional usage telemetry (recorded only after opt-in cookie consent): session-scoped website visits (visit dates and visited paths) and anonymized paper view counts used exclusively in the Admin Dashboard.",
+                    "Aggregate paper readership counts (anonymized paper_id and timestamp) plus optional session-scoped site visits (visit dates and visited paths) when enabled via Cookie Preferences.",
                 ],
             },
             {
                 "heading": "Cookies & Session Telemetry",
-                "body": "Lundayang Marians uses first-party cookies and signed Flask sessions strictly to operate essential portal features and, with your permission, measure campus readership:",
+                "body": "Lundayang Marians uses first-party cookies and signed Flask sessions strictly to operate essential portal features and measure campus readership:",
                 "points": [
                     "Essential cookies & session state: Flask signed session (authenticated user object, access token, and role), language selection (lang), and your saved consent choice (lm_cookie_consent stored for 180 days).",
-                    "Optional analytics telemetry: selecting Accept All enables a session-scoped visitor token (visitor_id) that records non-admin page visits (site_visits) and manuscript views (paper_views); selecting Essential Only disables telemetry immediately.",
+                    "Anonymous read tallies vs. optional session telemetry: opening a paper logs an anonymized read count without user IDs or tracking cookies; selecting Accept All additionally enables a session-scoped visitor token (visitor_id) for site_visits and paper_views attribution, while Essential Only disables visitor_id and site_visits immediately.",
                     "No third-party ad trackers: Lundayang Marians does not deploy advertising pixels, cross-site trackers, or commercial analytics brokers, and you can adjust your preference anytime via Cookie Settings in the footer.",
                 ],
             },
@@ -2233,6 +2616,164 @@ def admin_update_user_status(user_id):
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/admin/site-content')
+@admin_required
+def admin_site_content():
+    """Dedicated Admin workspace for managing Public Landing & Student Home content."""
+    content = get_site_content()
+    papers = []
+    if supabase:
+        try:
+            res = supabase.table("research_papers").select(
+                "id, title, strand, academic_year, awards, created_at"
+            ).execute()
+            papers = sorted(res.data or [], key=lambda p: (p.get("title") or "").lower())
+        except Exception as e:
+            print("Admin site content papers load error:", e)
+
+    hero_cfg = content["landing_hero"]
+    rec_cfg = content["recognition"]
+    resolved_media = {
+        "primary_photo": resolve_media_url(hero_cfg.get("primary_photo_url"), DEFAULT_LANDING_PRIMARY_PHOTO),
+        "heritage_photo": resolve_media_url(hero_cfg.get("heritage_photo_url"), DEFAULT_LANDING_HERITAGE_PHOTO),
+        "recognition_photo": resolve_media_url(rec_cfg.get("image_url"), DEFAULT_RECOGNITION_PHOTO),
+    }
+    resolved_slides = [
+        {
+            "url": s.get("url") or "",
+            "static_path": s.get("static_path") or "",
+            "preview_src": resolve_media_url(s.get("url"), s.get("static_path")),
+            "alt": s.get("alt") or "",
+        }
+        for s in content["student_home"]["slides"]
+    ]
+    resolved_featured = _resolve_featured_papers(
+        papers, content["featured_papers"].get("slot_ids", ["", "", ""]), sanitize=True
+    )
+
+    return render_template(
+        'admin_site_content.html',
+        site_content=content,
+        default_site_content=DEFAULT_SITE_CONTENT,
+        resolved_media=resolved_media,
+        resolved_slides=resolved_slides,
+        all_papers=papers,
+        resolved_featured=resolved_featured,
+        default_slides=DEFAULT_SLIDES,
+        default_paths={
+            "primary_photo": url_for('static', filename=DEFAULT_LANDING_PRIMARY_PHOTO),
+            "heritage_photo": url_for('static', filename=DEFAULT_LANDING_HERITAGE_PHOTO),
+            "recognition_photo": url_for('static', filename=DEFAULT_RECOGNITION_PHOTO),
+        },
+    )
+
+
+@app.route('/admin/site-content/save', methods=['POST'])
+@admin_required
+def admin_save_site_content():
+    """Persist an updated CMS section to site_settings and log audit trail."""
+    if not supabase:
+        return jsonify({"success": False, "error": "Database connection unavailable."}), 500
+
+    body = request.get_json(silent=True) or {}
+    section = (body.get("section") or "").strip()
+    clean_data, err = _sanitize_section_payload(section, body.get("data"))
+    if err:
+        return jsonify({"success": False, "error": err}), 400
+
+    try:
+        admin_id = (session.get("user") or {}).get("id")
+        now_iso = datetime.now(timezone.utc).isoformat()
+        existing = supabase.table("site_settings").select("key").eq("key", section).execute()
+        if existing.data:
+            supabase.table("site_settings").update({
+                "value": clean_data,
+                "updated_by": admin_id,
+                "updated_at": now_iso,
+            }).eq("key", section).execute()
+        else:
+            supabase.table("site_settings").insert({
+                "key": section,
+                "value": clean_data,
+                "updated_by": admin_id,
+                "updated_at": now_iso,
+            }).execute()
+
+        g.pop("_site_content", None)
+        section_label = section.replace("_", " ").title()
+        audit_entry = record_admin_audit(
+            "update_site_content",
+            "site_settings",
+            section,
+            f"Updated {section_label} showcase content",
+        )
+        return jsonify({"success": True, "section": section, "data": clean_data, "audit": audit_entry})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to save content: {str(e)}"}), 500
+
+
+@app.route('/admin/site-content/reset', methods=['POST'])
+@admin_required
+def admin_reset_site_content():
+    """Restore a CMS section back to built-in academy defaults."""
+    if not supabase:
+        return jsonify({"success": False, "error": "Database connection unavailable."}), 500
+
+    body = request.get_json(silent=True) or {}
+    section = (body.get("section") or "").strip()
+    if section not in DEFAULT_SITE_CONTENT:
+        return jsonify({"success": False, "error": "Invalid section key."}), 400
+
+    try:
+        supabase.table("site_settings").delete().eq("key", section).execute()
+        g.pop("_site_content", None)
+        section_label = section.replace("_", " ").title()
+        audit_entry = record_admin_audit(
+            "reset_site_content",
+            "site_settings",
+            section,
+            f"Reset {section_label} content to defaults",
+        )
+        return jsonify({
+            "success": True,
+            "section": section,
+            "data": copy.deepcopy(DEFAULT_SITE_CONTENT[section]),
+            "audit": audit_entry,
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to reset content: {str(e)}"}), 500
+
+
+@app.route('/admin/site-content/upload-image', methods=['POST'])
+@admin_required
+def admin_upload_site_image():
+    """Upload a showcase/slideshow image into public storage under site_cms/."""
+    if not SUPABASE_URL:
+        return jsonify({"success": False, "error": "Storage URL not configured."}), 500
+
+    image_file = request.files.get("image")
+    slot = re.sub(r"[^a-z0-9_-]", "", (request.form.get("slot") or "cms").lower()) or "cms"
+    if not image_file or not image_file.filename:
+        return jsonify({"success": False, "error": "Please select an image file."}), 400
+
+    ext = os.path.splitext(image_file.filename)[1].lower()
+    allowed_exts = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    if ext not in allowed_exts:
+        return jsonify({"success": False, "error": "Supported formats: JPG, PNG, WebP, or GIF."}), 400
+
+    file_bytes = image_file.read()
+    if len(file_bytes) > 5 * 1024 * 1024:
+        return jsonify({"success": False, "error": "Image file must be 5 MB or smaller."}), 400
+
+    try:
+        storage_path = f"site_cms/{slot}_{uuid.uuid4().hex[:12]}{ext}"
+        storage_upload("avatars", storage_path, file_bytes, image_file.content_type or "image/jpeg")
+        public_url = f"{SUPABASE_URL}/storage/v1/object/public/avatars/{storage_path}"
+        return jsonify({"success": True, "url": public_url})
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Upload failed: {str(e)}"}), 500
 
 
 @app.route('/admin/users/bulk-approve', methods=['POST'])
