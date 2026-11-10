@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t(doc.title) }} - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    .legal-page-container {
+        max-width: 1020px;
+        margin: 2.25rem auto 3.5rem auto;
+        padding: 0 1.75rem;
+        width: 100%;
+    }
+
+    .legal-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        padding-bottom: 1.35rem;
+        margin-bottom: 1.75rem;
+        border-bottom: 1.5px solid #cbd5e1;
+    }
+
+    .legal-header-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.1rem;
+        min-width: 0;
+    }
+
+    .legal-title-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+    }
+
+    .legal-meta-pills {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .legal-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        background-color: var(--surface-tint);
+        border: 1px solid #cbd5e1;
+        padding: 0.24rem 0.7rem;
+        border-radius: 999px;
+    }
+
+    .legal-title {
+        font-family: 'Lora', serif;
+        font-size: 1.95rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1.18;
+    }
+
+    .legal-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .legal-doc-switcher {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 0.35rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .legal-switch-link {
+        padding: 0.48rem 0.95rem;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: #334155;
+        text-decoration: none;
+        transition: all 0.16s ease;
+        white-space: nowrap;
+    }
+
+    .legal-switch-link:hover {
+        color: var(--primary-color);
+        background-color: var(--surface-tint);
+    }
+
+    .legal-switch-link.active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .legal-summary-card {
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 1.35rem 1.6rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.95rem;
+    }
+
+    .legal-summary-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background-color: var(--primary-color);
+        color: #facc15;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .legal-summary-text {
+        font-size: 0.94rem;
+        color: #1e293b;
+        line-height: 1.65;
+        margin: 0;
+    }
+
+    .legal-sections-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.15rem;
+    }
+
+    .legal-section-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 1.45rem 1.65rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .legal-section-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-family: 'Lora', serif;
+        font-size: 1.18rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.75rem 0;
+    }
+
+    .legal-section-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background-color: var(--surface-tint);
+        border: 1px solid #cbd5e1;
+        color: var(--primary-color);
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .legal-section-body {
+        font-size: 0.92rem;
+        color: #1e293b;
+        line-height: 1.7;
+        margin: 0;
+        max-width: 78ch;
+    }
+
+    .legal-points-list {
+        margin: 0.75rem 0 0 0;
+        padding-left: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        color: #334155;
+        font-size: 0.9rem;
+        line-height: 1.62;
+    }
+
+    .legal-contact-strip {
+        margin-top: 1.75rem;
+        padding: 1.15rem 1.5rem;
+        border-radius: 14px;
+        border: 1.5px solid #cbd5e1;
+        background-color: var(--surface-tint);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-size: 0.86rem;
+        color: #1e293b;
+    }
+
+    @media (max-width: 768px) {
+        .legal-page-container {
+            padding: 0 1rem;
+            margin: 1.5rem auto 2.5rem auto;
+        }
+
+        .legal-title {
+            font-size: 1.55rem;
+        }
+
+        .legal-doc-switcher {
+            width: 100%;
+        }
+
+        .legal-switch-link {
+            flex: 1;
+            text-align: center;
+        }
+
+        .legal-summary-card,
+        .legal-section-card {
+            padding: 1.15rem 1.15rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <div class="legal-header-row">
+        <div class="legal-header-left">
+            <a href="{{ portal_home_url }}" class="page-back-btn js-smart-back" data-fallback="{{ portal_home_url }}"
+                title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+                <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+            </a>
+            <div class="legal-title-copy">
+                <div class="legal-meta-pills">
+                    <span class="legal-pill">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                        <span>Sta. Maria (Laguna) Academy Inc.</span>
+                    </span>
+                    <span class="legal-pill">
+                        <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                        <span>{{ t('Effective Date') }}: {{ doc.effective_date }}</span>
+                    </span>
+                </div>
+                <h1 class="legal-title">{{ t(doc.title) }}</h1>
+                <p class="legal-subtitle">{{ doc.subtitle }}</p>
+            </div>
+        </div>
+
+        <nav class="legal-doc-switcher" aria-label="Legal documents">
+            <a href="{{ url_for('privacy_policy') }}"
+                class="legal-switch-link {% if doc_key == 'privacy' %}active{% endif %}">
+                {{ t('Privacy Policy') }}
+            </a>
+            <a href="{{ url_for('terms_conditions') }}"
+                class="legal-switch-link {% if doc_key == 'terms' %}active{% endif %}">
+                {{ t('Terms & Conditions') }}
+            </a>
+        </nav>
+    </div>
+
+    <div class="legal-summary-card">
+        <span class="legal-summary-icon">
+            <i data-lucide="{{ doc.icon }}" style="width: 20px; height: 20px;"></i>
+        </span>
+        <p class="legal-summary-text">{{ doc.intro }}</p>
+    </div>
+
+    <div class="legal-sections-stack">
+        {% for sec in doc.sections %}
+        <article class="legal-section-card">
+            <h2 class="legal-section-heading">
+                <span class="legal-section-num">{{ loop.index }}</span>
+                <span>{{ sec.heading }}</span>
+            </h2>
+            <p class="legal-section-body">{{ sec.body }}</p>
+            {% if sec.points %}
+            <ul class="legal-points-list">
+                {% for pt in sec.points %}
+                <li>{{ pt }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="legal-contact-strip">
+        <div>
+            <strong>Questions or Academic Record Inquiries?</strong>
+            Contact the School Library or Research Office at Sta. Maria (Laguna) Academy Inc., Brgy. Poblacion II, Santa Maria, Laguna.
+        </div>
+        <a href="{{ url_for('faq') }}" class="btn btn-secondary btn-sm">
+            <i data-lucide="help-circle" style="width: 15px; height: 15px;"></i>
+            <span>{{ t('FAQ') }}</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

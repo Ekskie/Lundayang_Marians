@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - Lundayang Marians Digital Research Repository{% endblock %}
+
+{% block extra_head %}
+<style>
+    .landing-container {
+        max-width: 1240px;
+        margin: 2.25rem auto 3.5rem auto;
+        padding: 0 1.75rem;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+    }
+
+    /* Hero Split Section */
+    .landing-hero {
+        display: grid;
+        grid-template-columns: 1.12fr 0.88fr;
+        gap: 2.75rem;
+        align-items: center;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 22px;
+        padding: 2.5rem 2.75rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .landing-hero-title {
+        font-family: 'Lora', serif;
+        font-size: clamp(1.9rem, 3.2vw, 2.75rem);
+        font-weight: 700;
+        color: var(--primary-color);
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .landing-hero-desc {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.96rem;
+        color: #334155;
+        line-height: 1.72;
+        margin-bottom: 1.5rem;
+        max-width: 62ch;
+    }
+
+    .landing-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .landing-stats-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .landing-stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .landing-stat-value {
+        font-family: 'Lora', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        font-variant-numeric: tabular-nums;
+        line-height: 1.1;
+    }
+
+    .landing-stat-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-light);
+    }
+
+    .landing-hero-media {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .landing-photo-frame {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 2px solid var(--primary-color);
+        box-shadow: var(--shadow-float);
+        aspect-ratio: 4 / 3;
+        background-color: #e2e8f0;
+    }
+
+    .landing-photo-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .landing-photo-caption {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    /* Floating Strands Preview */
+    .landing-section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.35rem;
+    }
+
+    .landing-section-title {
+        font-family: 'Lora', serif;
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .landing-section-sub {
+        font-size: 0.88rem;
+        color: var(--text-light);
+    }
+
+    .landing-strands-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .floating-strand-card {
+        background: #ffffff;
+        border: 1.5px solid rgba(0, 32, 96, 0.22);
+        border-radius: 18px;
+        padding: 1.65rem 1.35rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.9rem;
+        box-shadow: var(--shadow-float);
+        transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo), border-color 0.25s;
+        animation: strandFloat 5.5s ease-in-out infinite;
+    }
+
+    .floating-strand-card:nth-child(2) {
+        animation-delay: 0.8s;
+    }
+
+    .floating-strand-card:nth-child(3) {
+        animation-delay: 1.6s;
+    }
+
+    .floating-strand-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        border-color: var(--primary-color);
+        box-shadow: 0 24px 44px -10px rgba(0, 32, 96, 0.3);
+        animation-play-state: paused;
+    }
+
+    @keyframes strandFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+
+    .floating-strand-crest {
+        width: 112px;
+        height: 112px;
+        object-fit: contain;
+        transition: transform 0.25s ease;
+    }
+
+    .floating-strand-card:hover .floating-strand-crest {
+        transform: scale(1.06);
+    }
+
+    .floating-strand-name {
+        font-family: 'Lora', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .floating-strand-desc {
+        font-size: 0.84rem;
+        color: #334155;
+        line-height: 1.55;
+    }
+
+    .floating-strand-count {
+        margin-top: auto;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        background-color: var(--surface-tint);
+        padding: 0.32rem 0.85rem;
+        border-radius: 999px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Access & Recognition Callout */
+    .landing-access-panel {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        border-radius: 20px;
+        padding: 2.25rem 2.5rem;
+        display: grid;
+        grid-template-columns: 1.3fr 0.7fr;
+        gap: 2rem;
+        align-items: center;
+        box-shadow: var(--shadow-float);
+    }
+
+    .landing-access-panel h2 {
+        font-family: 'Lora', serif;
+        font-size: 1.6rem;
+        color: #ffffff;
+        margin-bottom: 0.65rem;
+    }
+
+    .landing-access-panel p {
+        font-size: 0.9rem;
+        color: #dbeafe;
+        line-height: 1.65;
+        margin-bottom: 1.1rem;
+    }
+
+    .access-steps-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 1.75rem;
+        font-size: 0.84rem;
+        color: #f8fafc;
+        font-weight: 600;
+    }
+
+    .access-step-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .landing-access-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    .btn-on-navy-primary {
+        background-color: #ffffff;
+        color: var(--primary-color);
+        border: 1.5px solid #ffffff;
+    }
+
+    .btn-on-navy-primary:hover {
+        background-color: #e0f2fe;
+        transform: translateY(-2px);
+    }
+
+    .btn-on-navy-secondary {
+        background-color: transparent;
+        color: #ffffff;
+        border: 1.5px solid rgba(255, 255, 255, 0.55);
+    }
+
+    .btn-on-navy-secondary:hover {
+        background-color: rgba(255, 255, 255, 0.14);
+        border-color: #ffffff;
+    }
+
+    @media (max-width: 960px) {
+        .landing-hero,
+        .landing-strands-grid,
+        .landing-access-panel {
+            grid-template-columns: 1fr;
+        }
+
+        .landing-hero {
+            padding: 1.75rem 1.5rem;
+        }
+    }
+
+    @media (max-width: 540px) {
+        .landing-stats-strip {
+            grid-template-columns: 1fr;
+            gap: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div>
+            <h1 class="landing-hero-title">Lundayang Marians: {{ t('The Cradle of Marian Scholarship') }}</h1>
+            <p class="landing-hero-desc">
+                <strong>{{ t('Lundayang Marians') }}</strong> {{ t('is the web-based research repository of') }}
+                <strong>{{ t('Santa Maria (Laguna) Academy Inc.') }}</strong>, {{ t('envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or focal point, with "Marians", the collective identity of the academy\'s students. This platform centralizes academic outputs, offering a simple interface and organized categories for easy access and exploration.') }}
+            </p>
+
+            <div class="landing-hero-actions">
+                {% if session.get('user') %}
+                <a href="{{ url_for('repository_home') }}" class="btn btn-primary">
+                    <i data-lucide="library" style="width: 18px; height: 18px;"></i>
+                    <span>{{ t('Explore Research Repository') }}</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">
+                    <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                    <span>{{ t('Log In') }}</span>
+                </a>
+                <a href="{{ url_for('signup') }}" class="btn btn-secondary">
+                    <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                    <span>{{ t('Create an Account') }}</span>
+                </a>
+                {% endif %}
+                <a href="#mission-vision" class="btn btn-secondary">
+                    <i data-lucide="compass" style="width: 18px; height: 18px;"></i>
+                    <span>{{ t('Mission & Vision') }}</span>
+                </a>
+            </div>
+
+            <div class="landing-stats-strip">
+                <div class="landing-stat-item">
+                    <span class="landing-stat-value">{{ stats.total_papers }}</span>
+                    <span class="landing-stat-label">{{ t('Research Papers') }}</span>
+                </div>
+                <div class="landing-stat-item">
+                    <span class="landing-stat-value">3 Strands</span>
+                    <span class="landing-stat-label">HUMSS, ABM &amp; STEM</span>
+                </div>
+                <div class="landing-stat-item">
+                    <span class="landing-stat-value">APA 7th</span>
+                    <span class="landing-stat-label">View-Only Archive</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-hero-media">
+            <div class="landing-photo-frame">
+                <img src="{{ url_for('static', filename='images/Photos/School_P.jpg') }}"
+                    alt="Sta. Maria (Laguna) Academy Inc. Campus">
+            </div>
+            <div class="landing-photo-caption">
+                <i data-lucide="map-pin" style="width: 15px; height: 15px; color: var(--primary-color);"></i>
+                <span>Sta. Maria (Laguna) Academy Inc. — Brgy. Poblacion II, Santa Maria, Laguna</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission & Vision Section -->
+    <section id="mission-vision" class="mission-vision-section" style="margin: 0;">
+        <div class="mission-vision-header">
+            <h2 class="mission-vision-heading">{{ t('MISSION & VISION') }}</h2>
+        </div>
+        <div class="mission-vision-grid">
+            <article class="mv-card">
+                <h3 class="mv-card-title">
+                    <span class="mv-icon-badge"><i data-lucide="eye" style="width: 20px; height: 20px;"></i></span>
+                    <span>{{ t(mission_vision.vision_title) }}</span>
+                </h3>
+                <p class="mv-card-text">{{ t(mission_vision.vision_text) }}</p>
+            </article>
+
+            <article class="mv-card">
+                <h3 class="mv-card-title">
+                    <span class="mv-icon-badge"><i data-lucide="target" style="width: 20px; height: 20px;"></i></span>
+                    <span>{{ t(mission_vision.mission_title) }}</span>
+                </h3>
+                <p class="mv-card-text">{{ t(mission_vision.mission_text) }}</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- Floating Strand Showcase -->
+    <section>
+        <div class="landing-section-head">
+            <div>
+                <h2 class="landing-section-title">{{ t('BROWSE RESEARCH') }}</h2>
+                <p class="landing-section-sub">Explore student-led scholarship across Senior High School academic tracks.</p>
+            </div>
+        </div>
+
+        <div class="landing-strands-grid">
+            <a href="{{ url_for('strand', strand_name='HUMSS') if session.get('user') else url_for('login') }}" class="floating-strand-card">
+                <img src="{{ url_for('static', filename='images/Logo_s/HUMSS_no.png') }}" alt="HUMSS Crest" class="floating-strand-crest">
+                <h3 class="floating-strand-name">HUMSS</h3>
+                <p class="floating-strand-desc">Humanities &amp; Social Sciences — exploring culture, psychology, communication, and community studies.</p>
+                <span class="floating-strand-count">{{ stats.HUMSS }} {{ t('research papers') if stats.HUMSS != 1 else t('research paper') }}</span>
+            </a>
+
+            <a href="{{ url_for('strand', strand_name='ABM') if session.get('user') else url_for('login') }}" class="floating-strand-card">
+                <img src="{{ url_for('static', filename='images/Logo_s/ABM_no.png') }}" alt="ABM Crest" class="floating-strand-crest">
+                <h3 class="floating-strand-name">ABM</h3>
+                <p class="floating-strand-desc">Accountancy, Business &amp; Management — studying financial literacy, entrepreneurship, and local enterprise.</p>
+                <span class="floating-strand-count">{{ stats.ABM }} {{ t('research papers') if stats.ABM != 1 else t('research paper') }}</span>
+            </a>
+
+            <a href="{{ url_for('strand', strand_name='STEM') if session.get('user') else url_for('login') }}" class="floating-strand-card">
+                <img src="{{ url_for('static', filename='images/Logo_s/STEM_no.png') }}" alt="STEM Crest" class="floating-strand-crest">
+                <h3 class="floating-strand-name">STEM</h3>
+                <p class="floating-strand-desc">Science, Technology, Engineering &amp; Mathematics — pioneering prototypes, applied science, and sustainable solutions.</p>
+                <span class="floating-strand-count">{{ stats.STEM }} {{ t('research papers') if stats.STEM != 1 else t('research paper') }}</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Verified Student Access Panel -->
+    <section class="landing-access-panel">
+        <div>
+            <h2>Verified Marian Access &amp; Academic Preservation</h2>
+            <p>
+                To safeguard student intellectual property and ensure responsible academic use, full research manuscripts
+                are accessible to approved members of the Sta. Maria (Laguna) Academy Inc. community.
+            </p>
+            <div class="access-steps-inline">
+                <span class="access-step-chip">
+                    <i data-lucide="user-plus" style="width: 16px; height: 16px; color: #facc15;"></i>
+                    <span>Register with Student ID</span>
+                </span>
+                <span class="access-step-chip">
+                    <i data-lucide="shield-check" style="width: 16px; height: 16px; color: #facc15;"></i>
+                    <span>Admin Verification &amp; Approval</span>
+                </span>
+                <span class="access-step-chip">
+                    <i data-lucide="book-open-check" style="width: 16px; height: 16px; color: #facc15;"></i>
+                    <span>Search, Read &amp; Cite Papers</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="landing-access-actions">
+            {% if session.get('user') %}
+            <a href="{{ url_for('repository_home') }}" class="btn btn-on-navy-primary">
+                <i data-lucide="arrow-right" style="width: 17px; height: 17px;"></i>
+                <span>Open Repository Home</span>
+            </a>
+            {% else %}
+            <a href="{{ url_for('signup') }}" class="btn btn-on-navy-primary">
+                <i data-lucide="user-plus" style="width: 17px; height: 17px;"></i>
+                <span>{{ t('Create an Account') }}</span>
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-on-navy-secondary">
+                <i data-lucide="log-in" style="width: 17px; height: 17px;"></i>
+                <span>{{ t('Log In') }}</span>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}

@@ -16,44 +16,25 @@
     .faq-header-container {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
-        margin-bottom: 3rem;
-    }
-
-    .faq-back-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background-color: #4b5563; /* Dark gray circle background */
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.2s, transform 0.2s;
-        text-decoration: none;
-        flex-shrink: 0;
-    }
-
-    .faq-back-btn:hover {
-        background-color: #374151; /* Darker gray */
-        transform: scale(1.05);
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
     }
 
     .faq-title-bar {
-        background-color: #002060;
+        background-color: var(--primary-color);
         color: #ffffff;
-        padding: 10px 30px;
+        padding: 10px 28px;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        font-weight: bold;
+        font-size: 1.3rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        border-radius: 10px;
         display: inline-block;
-        min-width: 380px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 340px;
+        box-shadow: var(--shadow-sm);
         width: 100%;
-        max-width: 550px;
+        max-width: 560px;
     }
 
     /* FAQ List layout */
@@ -114,8 +95,9 @@
 
     <!-- Header bar with back button and title -->
     <div class="faq-header-container">
-        <a href="{{ url_for('home') }}" class="faq-back-btn" title="Go Back">
-            <i data-lucide="chevron-left" style="width: 24px; height: 24px;"></i>
+        <a href="{{ portal_home_url }}" class="page-back-btn js-smart-back" data-fallback="{{ portal_home_url }}"
+            title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
         </a>
         <div class="faq-title-bar">
             {{ t('FREQUENTLY ASKED QUESTIONS') }}

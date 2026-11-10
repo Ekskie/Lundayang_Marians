@@ -1,0 +1,902 @@
+<!-- Reusable Upload / Edit Research Paper Modal -->
+<style>
+    .pem-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 4800;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .pem-overlay.open {
+        display: flex;
+    }
+
+    .pem-dialog {
+        background: #ffffff;
+        border: 2px solid var(--primary-color);
+        border-radius: 16px;
+        box-shadow: var(--shadow-float);
+        width: 100%;
+        max-width: 960px;
+        max-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .pem-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.15rem 1.5rem;
+        border-bottom: 1.5px solid #e2e8f0;
+        background-color: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .pem-header-copy {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 0;
+    }
+
+    .pem-header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background-color: var(--primary-color);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .pem-title {
+        font-family: 'Lora', serif;
+        font-size: 1.28rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .pem-subtitle {
+        font-size: 0.82rem;
+        color: var(--text-light);
+        margin: 0.15rem 0 0 0;
+    }
+
+    .pem-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+
+    .pem-close-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: var(--surface-tint);
+    }
+
+    .pem-body {
+        padding: 1.4rem 1.5rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .pem-alert {
+        display: none;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.1rem;
+        font-size: 0.86rem;
+        font-weight: 600;
+    }
+
+    .pem-alert.error {
+        display: flex;
+        background-color: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        color: var(--danger-text);
+    }
+
+    .pem-form-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 1.35rem;
+        align-items: start;
+    }
+
+    .pem-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.95rem;
+        min-width: 0;
+    }
+
+    .pem-grid-2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 0.85rem;
+    }
+
+    .pem-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        min-width: 0;
+    }
+
+    .pem-label {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .pem-req {
+        color: #dc2626;
+    }
+
+    .pem-control {
+        width: 100%;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 9px;
+        padding: 0.62rem 0.85rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.88rem;
+        background-color: #f8fafc;
+        color: #0f172a;
+        box-sizing: border-box;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+    }
+
+    .pem-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(0, 32, 96, 0.12);
+    }
+
+    select.pem-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23002060' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.8rem center;
+        padding-right: 2.25rem;
+    }
+
+    textarea.pem-control {
+        min-height: 220px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .pem-hint {
+        font-size: 0.78rem;
+        color: var(--text-light);
+    }
+
+    .pem-drop-zone {
+        border: 2px dashed var(--primary-color);
+        border-radius: 12px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        background-color: #f8fafc;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        transition: background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .pem-drop-zone:hover,
+    .pem-drop-zone.dragover {
+        background-color: var(--surface-tint);
+        border-color: var(--primary-light);
+    }
+
+    .pem-drop-title {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .pem-drop-sub {
+        font-size: 0.78rem;
+        color: var(--text-light);
+    }
+
+    .pem-current-pdf {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface-tint);
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        word-break: break-all;
+    }
+
+    .pem-file-badge {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.65rem;
+        background-color: var(--success-bg);
+        border: 1.5px solid var(--success-border);
+        border-radius: 10px;
+        padding: 0.65rem 0.9rem;
+    }
+
+    .pem-file-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        min-width: 0;
+    }
+
+    .pem-file-name {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--success-text);
+        word-break: break-all;
+    }
+
+    .pem-file-size {
+        font-size: 0.78rem;
+        color: var(--success-text);
+    }
+
+    .pem-remove-file {
+        background: transparent;
+        border: none;
+        color: #dc2626;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .pem-remove-file:hover {
+        background-color: #fee2e2;
+    }
+
+    .pem-progress-wrap {
+        display: none;
+        flex-direction: column;
+        gap: 0.35rem;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 0.75rem 0.95rem;
+        margin-top: 0.75rem;
+    }
+
+    .pem-progress-wrap.active {
+        display: flex;
+    }
+
+    .pem-progress-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .pem-progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .pem-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--primary-color), #2563eb);
+        transition: width 0.18s ease-out;
+    }
+
+    .pem-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-top: 1.5px solid #e2e8f0;
+        background-color: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 820px) {
+        .pem-form-grid,
+        .pem-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .pem-body,
+        .pem-header,
+        .pem-footer {
+            padding: 1rem 1.1rem;
+        }
+
+        .pem-footer .btn {
+            flex: 1;
+            justify-content: center;
+            white-space: nowrap;
+        }
+    }
+</style>
+
+<div class="pem-overlay" id="paper-editor-modal" role="dialog" aria-modal="true"
+    aria-labelledby="pem-modal-title" aria-describedby="pem-modal-subtitle">
+    <div class="pem-dialog">
+        <div class="pem-header">
+            <div class="pem-header-copy">
+                <span class="pem-header-icon">
+                    <i data-lucide="file-plus" id="pem-header-lucide" style="width: 20px; height: 20px;"></i>
+                </span>
+                <div>
+                    <h2 class="pem-title" id="pem-modal-title">{{ t('Upload Research Paper') }}</h2>
+                    <p class="pem-subtitle" id="pem-modal-subtitle">Publish a vetted study directly into the digital archive.</p>
+                </div>
+            </div>
+            <button type="button" class="pem-close-btn" id="pem-close-btn" aria-label="Close modal">
+                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+        </div>
+
+        <form id="pem-form" method="POST" enctype="multipart/form-data" style="display: contents;">
+            <input type="hidden" id="pem-pdf-path" name="pdf_path" value="">
+
+            <div class="pem-body">
+                <div class="pem-alert" id="pem-alert" role="alert">
+                    <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                    <span id="pem-alert-text"></span>
+                </div>
+
+                <div class="pem-form-grid">
+                    <!-- Column 1: Core Classification & Authors -->
+                    <div class="pem-col">
+                        <div class="pem-group">
+                            <label for="pem-title-input" class="pem-label">{{ t('Research Title') }} <span class="pem-req">*</span></label>
+                            <input type="text" id="pem-title-input" name="title" class="pem-control"
+                                placeholder="e.g. KALAT MO, SAGOT KO: PROTOTYPE WASTE SEGREGATOR..." required>
+                        </div>
+
+                        <div class="pem-grid-2">
+                            <div class="pem-group">
+                                <label for="pem-strand" class="pem-label">{{ t('Strand') }} <span class="pem-req">*</span></label>
+                                <select id="pem-strand" name="strand" class="pem-control" required>
+                                    <option value="">Select Strand</option>
+                                    <option value="HUMSS">HUMSS</option>
+                                    <option value="ABM">ABM</option>
+                                    <option value="STEM">STEM</option>
+                                </select>
+                            </div>
+
+                            <div class="pem-group">
+                                <label for="pem-academic-year" class="pem-label">{{ t('Academic Year') }} <span class="pem-req">*</span></label>
+                                <input type="text" id="pem-academic-year" name="academic_year" class="pem-control"
+                                    placeholder="e.g. 2024-2025" required>
+                            </div>
+                        </div>
+
+                        <div class="pem-grid-2">
+                            <div class="pem-group">
+                                <label for="pem-research-type-select" class="pem-label">{{ t('Research Type') }} <span class="pem-req">*</span></label>
+                                <select id="pem-research-type-select" class="pem-control" required>
+                                    <option value="">Select Type</option>
+                                    <option value="Quantitative">Quantitative</option>
+                                    <option value="Qualitative">Qualitative</option>
+                                    <option value="Mixed Methods">Mixed Methods</option>
+                                    <option value="Experimental">Experimental</option>
+                                    <option value="Descriptive">Descriptive</option>
+                                    <option value="Action Research">Action Research</option>
+                                    <option value="__CUSTOM__">Other (Specify below)</option>
+                                </select>
+                                <input type="text" id="pem-research-type-custom" class="pem-control"
+                                    placeholder="Type custom research type..." style="display: none;">
+                                <input type="hidden" id="pem-research-type" name="research_type" value="">
+                            </div>
+
+                            <div class="pem-group">
+                                <label for="pem-subject-area-select" class="pem-label">{{ t('Subject Area') }} <span class="pem-req">*</span></label>
+                                <select id="pem-subject-area-select" class="pem-control" required>
+                                    <option value="">Select Subject</option>
+                                    <option value="Inquiries, Investigations, and Immersion">Inquiries, Investigations, &amp; Immersion</option>
+                                    <option value="Practical Research 1">Practical Research 1 (Qualitative)</option>
+                                    <option value="Practical Research 2">Practical Research 2 (Quantitative)</option>
+                                    <option value="Applied Science & Technology">Applied Science &amp; Technology</option>
+                                    <option value="Business & Entrepreneurship">Business &amp; Entrepreneurship</option>
+                                    <option value="Humanities & Social Sciences">Humanities &amp; Social Sciences</option>
+                                    <option value="Environmental Science">Environmental Science</option>
+                                    <option value="__CUSTOM__">Other (Specify below)</option>
+                                </select>
+                                <input type="text" id="pem-subject-area-custom" class="pem-control"
+                                    placeholder="Type custom subject area..." style="display: none;">
+                                <input type="hidden" id="pem-subject-area" name="subject_area" value="">
+                            </div>
+                        </div>
+
+                        <div class="pem-group">
+                            <label for="pem-authors" class="pem-label">{{ t('Authors') }} (Comma Separated) <span class="pem-req">*</span></label>
+                            <input type="text" id="pem-authors" name="authors" class="pem-control"
+                                placeholder="e.g. Gabrielle A. Dimatatac, Mark Andrew Y. Montales" required>
+                        </div>
+
+                        <div class="pem-grid-2">
+                            <div class="pem-group">
+                                <label for="pem-adviser" class="pem-label">{{ t('Adviser') }} <span class="pem-req">*</span></label>
+                                <input type="text" id="pem-adviser" name="adviser" class="pem-control"
+                                    placeholder="e.g. Ms. Maureen L. Cruz" required>
+                            </div>
+
+                            <div class="pem-group">
+                                <label for="pem-awards" class="pem-label">{{ t('Awards') }} (Optional)</label>
+                                <input type="text" id="pem-awards" name="awards" class="pem-control"
+                                    placeholder="e.g. Best in Research">
+                            </div>
+                        </div>
+
+                        <div class="pem-group">
+                            <label for="pem-keywords" class="pem-label">{{ t('Keywords') }} (Comma Separated)</label>
+                            <input type="text" id="pem-keywords" name="keywords" class="pem-control"
+                                placeholder="e.g. arduino, recycling, prototype">
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Abstract & PDF Upload Zone -->
+                    <div class="pem-col">
+                        <div class="pem-group">
+                            <label for="pem-abstract" class="pem-label">{{ t('Abstract') }} <span class="pem-req">*</span></label>
+                            <textarea id="pem-abstract" name="abstract" class="pem-control"
+                                placeholder="Enter the full research abstract here..." required></textarea>
+                        </div>
+
+                        <div class="pem-group">
+                            <label class="pem-label">{{ t('PDF Document') }} <span class="pem-req" id="pem-pdf-req">*</span></label>
+
+                            <div class="pem-current-pdf" id="pem-current-pdf">
+                                <i data-lucide="file-text" style="width: 15px; height: 15px; flex-shrink: 0;"></i>
+                                <span id="pem-current-pdf-text"></span>
+                            </div>
+
+                            <div class="pem-drop-zone" id="pem-drop-zone" tabindex="0" role="button" aria-label="Select PDF document">
+                                <i data-lucide="upload-cloud" style="width: 30px; height: 30px; color: var(--primary-color);"></i>
+                                <span class="pem-drop-title" id="pem-drop-title">Drag &amp; Drop PDF here or click to browse</span>
+                                <span class="pem-drop-sub">Only .pdf format accepted (Max 50MB)</span>
+                                <input type="file" id="pem-pdf-file" name="pdf_file" accept=".pdf" style="display: none;">
+                            </div>
+
+                            <div class="pem-file-badge" id="pem-file-badge">
+                                <div class="pem-file-meta">
+                                    <i data-lucide="file-check" style="width: 22px; height: 22px; color: #15803d; flex-shrink: 0;"></i>
+                                    <div style="min-width: 0;">
+                                        <div class="pem-file-name" id="pem-badge-name">document.pdf</div>
+                                        <div class="pem-file-size" id="pem-badge-size">0.0 MB</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="pem-remove-file" id="pem-remove-file" title="Remove selected file">
+                                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
+
+                            <div class="pem-progress-wrap" id="pem-progress-wrap">
+                                <div class="pem-progress-top">
+                                    <span id="pem-progress-status">Uploading PDF...</span>
+                                    <span id="pem-progress-pct">0%</span>
+                                </div>
+                                <div class="pem-progress-bar">
+                                    <div class="pem-progress-fill" id="pem-progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pem-footer">
+                <button type="button" class="btn btn-secondary btn-sm" id="pem-cancel-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="pem-submit-btn">
+                    <i data-lucide="upload-cloud" style="width: 18px; height: 18px;"></i>
+                    <span id="pem-submit-label">{{ t('Submit Paper') }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const modal = document.getElementById("paper-editor-modal");
+        const form = document.getElementById("pem-form");
+        if (!modal || !form) return;
+
+        const titleHeading = document.getElementById("pem-modal-title");
+        const subtitleEl = document.getElementById("pem-modal-subtitle");
+        const submitLabel = document.getElementById("pem-submit-label");
+        const submitBtn = document.getElementById("pem-submit-btn");
+        const closeBtn = document.getElementById("pem-close-btn");
+        const cancelBtn = document.getElementById("pem-cancel-btn");
+        const alertEl = document.getElementById("pem-alert");
+        const alertText = document.getElementById("pem-alert-text");
+
+        const titleInput = document.getElementById("pem-title-input");
+        const strandSelect = document.getElementById("pem-strand");
+        const yearInput = document.getElementById("pem-academic-year");
+        const authorsInput = document.getElementById("pem-authors");
+        const adviserInput = document.getElementById("pem-adviser");
+        const awardsInput = document.getElementById("pem-awards");
+        const keywordsInput = document.getElementById("pem-keywords");
+        const abstractInput = document.getElementById("pem-abstract");
+        const pdfPathInput = document.getElementById("pem-pdf-path");
+
+        const currentPdfEl = document.getElementById("pem-current-pdf");
+        const currentPdfText = document.getElementById("pem-current-pdf-text");
+        const pdfReqStar = document.getElementById("pem-pdf-req");
+        const dropZone = document.getElementById("pem-drop-zone");
+        const dropTitle = document.getElementById("pem-drop-title");
+        const fileInput = document.getElementById("pem-pdf-file");
+        const fileBadge = document.getElementById("pem-file-badge");
+        const badgeName = document.getElementById("pem-badge-name");
+        const badgeSize = document.getElementById("pem-badge-size");
+        const removeFileBtn = document.getElementById("pem-remove-file");
+        const progressWrap = document.getElementById("pem-progress-wrap");
+        const progressStatus = document.getElementById("pem-progress-status");
+        const progressPct = document.getElementById("pem-progress-pct");
+        const progressFill = document.getElementById("pem-progress-fill");
+
+        let mode = "upload";
+        let activePaperId = null;
+        let isSubmitting = false;
+        let onSuccessCallback = null;
+
+        function setupCustomDropdown(prefix) {
+            const selectEl = document.getElementById(`pem-${prefix}-select`);
+            const customEl = document.getElementById(`pem-${prefix}-custom`);
+            const hiddenEl = document.getElementById(`pem-${prefix}`);
+            if (!selectEl || !hiddenEl) return { setVal: () => {}, sync: () => {} };
+
+            const sync = () => {
+                if (selectEl.value === "__CUSTOM__") {
+                    hiddenEl.value = customEl ? customEl.value.trim() : "";
+                } else {
+                    hiddenEl.value = selectEl.value;
+                }
+            };
+
+            const toggleCustom = () => {
+                if (selectEl.value === "__CUSTOM__" && customEl) {
+                    customEl.style.display = "block";
+                    customEl.required = true;
+                } else if (customEl) {
+                    customEl.style.display = "none";
+                    customEl.required = false;
+                    customEl.value = "";
+                }
+                sync();
+            };
+
+            const setVal = (val) => {
+                const clean = (val || "").trim();
+                let matched = false;
+                if (clean) {
+                    for (let i = 0; i < selectEl.options.length; i++) {
+                        if (selectEl.options[i].value.toLowerCase() === clean.toLowerCase()) {
+                            selectEl.selectedIndex = i;
+                            matched = true;
+                            break;
+                        }
+                    }
+                } else {
+                    selectEl.selectedIndex = 0;
+                }
+
+                if (clean && !matched && customEl) {
+                    selectEl.value = "__CUSTOM__";
+                    customEl.value = clean;
+                    customEl.style.display = "block";
+                    customEl.required = true;
+                } else if (customEl) {
+                    customEl.value = "";
+                    customEl.style.display = "none";
+                    customEl.required = false;
+                }
+                sync();
+            };
+
+            selectEl.addEventListener("change", toggleCustom);
+            customEl?.addEventListener("input", sync);
+            return { setVal, sync };
+        }
+
+        const typeCtrl = setupCustomDropdown("research-type");
+        const subjCtrl = setupCustomDropdown("subject-area");
+
+        function clearAlert() {
+            if (alertEl) alertEl.className = "pem-alert";
+            if (alertText) alertText.textContent = "";
+        }
+
+        function showError(msg) {
+            if (!alertEl || !alertText) return;
+            alertEl.className = "pem-alert error";
+            alertText.textContent = msg;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function resetFileState() {
+            fileInput.value = "";
+            fileBadge.style.display = "none";
+            dropZone.style.display = "flex";
+            progressWrap.classList.remove("active");
+            progressFill.style.width = "0%";
+            progressPct.textContent = "0%";
+        }
+
+        function updateFilePreview(file) {
+            badgeName.textContent = file.name;
+            badgeSize.textContent = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+            fileBadge.style.display = "flex";
+            dropZone.style.display = "none";
+            clearAlert();
+        }
+
+        dropZone.addEventListener("click", () => fileInput.click());
+        dropZone.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInput.click();
+            }
+        });
+
+        ["dragenter", "dragover", "dragleave", "drop"].forEach((ev) => {
+            dropZone.addEventListener(ev, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        ["dragenter", "dragover"].forEach((ev) => {
+            dropZone.addEventListener(ev, () => dropZone.classList.add("dragover"));
+        });
+
+        ["dragleave", "drop"].forEach((ev) => {
+            dropZone.addEventListener(ev, () => dropZone.classList.remove("dragover"));
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            const files = e.dataTransfer?.files;
+            if (!files || !files.length) return;
+            const file = files[0];
+            if (file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf") {
+                fileInput.files = files;
+                updateFilePreview(file);
+            } else {
+                showError("Only PDF files are supported.");
+            }
+        });
+
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files?.length) {
+                updateFilePreview(fileInput.files[0]);
+            }
+        });
+
+        removeFileBtn?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            resetFileState();
+        });
+
+        function close() {
+            if (isSubmitting) return;
+            modal.classList.remove("open");
+            document.body.style.overflow = "";
+            if (window.location.hash === "#upload-paper" || window.location.hash.startsWith("#edit=")) {
+                history.replaceState(null, "", window.location.pathname + window.location.search);
+            }
+        }
+
+        closeBtn?.addEventListener("click", close);
+        cancelBtn?.addEventListener("click", close);
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) close();
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modal.classList.contains("open")) {
+                close();
+            }
+        });
+
+        function openUpload(options = {}) {
+            mode = "upload";
+            activePaperId = null;
+            onSuccessCallback = options.onSuccess || null;
+            clearAlert();
+            form.reset();
+            resetFileState();
+            pdfPathInput.value = "";
+            typeCtrl.setVal("");
+            subjCtrl.setVal("");
+
+            titleHeading.textContent = "Upload Research Paper";
+            subtitleEl.textContent = "Publish a vetted study directly into the digital archive without leaving this page.";
+            submitLabel.textContent = "Upload & Publish";
+            dropTitle.textContent = "Drag & Drop PDF here or click to browse";
+            currentPdfEl.style.display = "none";
+            pdfReqStar.style.display = "inline";
+            fileInput.required = true;
+
+            modal.classList.add("open");
+            document.body.style.overflow = "hidden";
+            if (window.lucide) window.lucide.createIcons();
+            titleInput.focus();
+        }
+
+        function openEdit(paper, options = {}) {
+            if (!paper) return;
+            mode = "edit";
+            activePaperId = paper.id;
+            onSuccessCallback = options.onSuccess || null;
+            clearAlert();
+            resetFileState();
+
+            titleInput.value = paper.title || "";
+            strandSelect.value = (paper.strand || "").toUpperCase();
+            yearInput.value = paper.academic_year || "";
+            typeCtrl.setVal(paper.research_type || "");
+            subjCtrl.setVal(paper.subject_area || "");
+            authorsInput.value = Array.isArray(paper.authors) ? paper.authors.join(", ") : (paper.authors || "");
+            adviserInput.value = paper.adviser || "";
+            awardsInput.value = paper.awards || "";
+            keywordsInput.value = Array.isArray(paper.keywords) ? paper.keywords.join(", ") : (paper.keywords || "");
+            abstractInput.value = paper.abstract || "";
+            pdfPathInput.value = paper.pdf_path || "";
+
+            titleHeading.textContent = "Edit Research Paper";
+            subtitleEl.textContent = "Update study details or replace the stored PDF document in place.";
+            submitLabel.textContent = "Save Changes";
+            dropTitle.textContent = "Optional: Drag & Drop replacement PDF";
+            currentPdfEl.style.display = paper.pdf_path ? "flex" : "none";
+            currentPdfText.textContent = paper.pdf_path ? `Current PDF: ${paper.pdf_path}` : "";
+            pdfReqStar.style.display = "none";
+            fileInput.required = false;
+
+            modal.classList.add("open");
+            document.body.style.overflow = "hidden";
+            if (window.lucide) window.lucide.createIcons();
+            titleInput.focus();
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (isSubmitting) return;
+
+            clearAlert();
+            typeCtrl.sync();
+            subjCtrl.sync();
+
+            if (mode === "upload" && (!fileInput.files || !fileInput.files.length) && !pdfPathInput.value.trim()) {
+                showError("Please attach a research PDF document.");
+                return;
+            }
+
+            isSubmitting = true;
+            submitBtn.disabled = true;
+
+            try {
+                const files = fileInput.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    progressWrap.classList.add("active");
+                    progressStatus.textContent = "Authorizing cloud upload...";
+                    progressFill.style.width = "10%";
+                    progressPct.textContent = "10%";
+
+                    const signRes = await fetch("/api/storage/sign-upload", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            strand: strandSelect.value || "GENERAL",
+                            academic_year: yearInput.value || "2025-2026"
+                        })
+                    });
+                    const signData = await signRes.json();
+                    if (!signData.success || !signData.signed_url) {
+                        throw new Error(signData.error || "Failed to generate upload authorization.");
+                    }
+
+                    progressStatus.textContent = `Uploading ${file.name}...`;
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open("PUT", signData.signed_url, true);
+                        xhr.setRequestHeader("Content-Type", "application/pdf");
+                        xhr.upload.onprogress = (ev) => {
+                            if (ev.lengthComputable) {
+                                const pct = Math.min(95, Math.round((ev.loaded / ev.total) * 85) + 10);
+                                progressFill.style.width = `${pct}%`;
+                                progressPct.textContent = `${pct}%`;
+                            }
+                        };
+                        xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300) resolve();
+                            else reject(new Error(`Storage upload failed (HTTP ${xhr.status}).`));
+                        };
+                        xhr.onerror = () => reject(new Error("Network error during direct PDF upload."));
+                        xhr.send(file);
+                    });
+
+                    progressFill.style.width = "100%";
+                    progressPct.textContent = "100%";
+                    progressStatus.textContent = "Saving paper record...";
+                    pdfPathInput.value = signData.pdf_path;
+                    fileInput.value = "";
+                }
+
+                const endpoint = mode === "edit" && activePaperId
+                    ? `/admin/paper/${encodeURIComponent(activePaperId)}/edit`
+                    : "/admin/upload";
+
+                const res = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: new FormData(form)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Failed to save research paper.");
+                }
+
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                close();
+                if (typeof onSuccessCallback === "function") {
+                    onSuccessCallback(data, mode);
+                }
+            } catch (err) {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                progressWrap.classList.remove("active");
+                showError(err.message || "Unexpected error saving research paper.");
+            }
+        });
+
+        window.PaperEditorModal = { openUpload, openEdit, close };
+    })();
+</script>

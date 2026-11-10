@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   grade_section TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   role TEXT DEFAULT 'student' CHECK (role IN ('student', 'admin')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   avatar_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -93,10 +94,114 @@ CREATE POLICY "Users can insert their own bookmarks" ON public.bookmarks
 CREATE POLICY "Users can delete their own bookmarks" ON public.bookmarks
   FOR DELETE USING (auth.uid() = user_id);
 
+-- 8. Create Website Visits Analytics Table
+CREATE TABLE IF NOT EXISTS public.site_visits (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  visitor_token TEXT NOT NULL,
+  visit_date DATE DEFAULT CURRENT_DATE NOT NULL,
+  path TEXT NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_site_visits_date ON public.site_visits (visit_date);
+CREATE INDEX IF NOT EXISTS idx_site_visits_token_date ON public.site_visits (visitor_token, visit_date);
+
+-- 9. Create Research Paper Views Analytics Table
+CREATE TABLE IF NOT EXISTS public.paper_views (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  paper_id UUID REFERENCES public.research_papers(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  viewer_token TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_paper_views_paper_id ON public.paper_views (paper_id);
+
+-- 10. Enable RLS and Policies for Analytics & Admin Account Approval
+ALTER TABLE public.site_visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.paper_views ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view site visits" ON public.site_visits
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Anyone can record site visits" ON public.site_visits
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admins can view paper views" ON public.paper_views
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Authenticated users can record paper views" ON public.paper_views
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Admins can update any profile" ON public.profiles
+  FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles AS admin_prof
+      WHERE admin_prof.id = auth.uid() AND admin_prof.role = 'admin'
+    )
+  );
+
+-- 11. Admin Activity Audit Logs
+CREATE TABLE IF NOT EXISTS public.admin_audit_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  admin_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  admin_name TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_type TEXT NOT NULL,
+  target_id TEXT,
+  summary TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created_at
+  ON public.admin_audit_logs (created_at DESC);
+
+ALTER TABLE public.admin_audit_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view audit logs" ON public.admin_audit_logs
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles AS admin_prof
+      WHERE admin_prof.id = auth.uid() AND admin_prof.role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can insert audit logs" ON public.admin_audit_logs
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles AS admin_prof
+      WHERE admin_prof.id = auth.uid() AND admin_prof.role = 'admin'
+    )
+  );
+
 -- ============================================================
--- MIGRATION: If you already have the profiles table, run this:
--- ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+-- MIGRATION: Run these statements if upgrading an existing database
+-- Existing users default to 'approved' so they are not locked out,
+-- then new signups default to 'pending'.
 -- ============================================================
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'approved';
+UPDATE public.profiles SET status = 'approved' WHERE status IS NULL;
+ALTER TABLE public.profiles ALTER COLUMN status SET DEFAULT 'pending';
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_status_check'
+  ) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT profiles_status_check CHECK (status IN ('pending', 'approved', 'rejected'));
+  END IF;
+END $$;
 
 -- ============================================================
 -- SEED DATA: Insert mock research papers

@@ -14,29 +14,32 @@
     }
 
     .bookmarks-title-container {
-        margin-bottom: 3rem;
+        margin-bottom: 2.5rem;
         display: flex;
+        align-items: center;
+        gap: 1.25rem;
         justify-content: flex-start;
     }
 
     .bookmarks-title-bar {
-        background-color: #002060;
+        background-color: var(--primary-color);
         color: #ffffff;
-        padding: 10px 30px;
+        padding: 10px 28px;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        font-weight: bold;
+        font-size: 1.3rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        border-radius: 10px;
         display: inline-block;
-        min-width: 380px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 320px;
+        box-shadow: var(--shadow-sm);
     }
 
     .bookmarks-list {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1.25rem;
         width: 100%;
         max-width: 1000px;
         margin: 0 auto 4rem auto;
@@ -44,21 +47,23 @@
 
     .bookmark-card {
         background-color: #ffffff;
-        border: 3px solid #000000;
-        padding: 1.25rem 2rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 1.15rem 1.75rem;
         display: flex;
         align-items: center;
-        gap: 2rem;
-        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        gap: 1.75rem;
+        transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s, border-color 0.2s;
         text-decoration: none;
         box-sizing: border-box;
         width: 100%;
+        box-shadow: var(--shadow-sm);
     }
 
     .bookmark-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.1);
-        border-color: #002060;
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
     }
 
     .bookmark-ribbon-container {
@@ -148,8 +153,12 @@
 {% block content %}
 <div class="bookmarks-page-container">
 
-    <!-- Title Bar -->
+    <!-- Title Bar with Consistent Back Button -->
     <div class="bookmarks-title-container">
+        <a href="{{ url_for('home') }}" class="page-back-btn js-smart-back" data-fallback="{{ url_for('home') }}"
+            title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+        </a>
         <div class="bookmarks-title-bar">
             {{ t('BOOKMARK') if t('BOOKMARK') != 'BOOKMARK' else 'BOOKMARK' }}
         </div>

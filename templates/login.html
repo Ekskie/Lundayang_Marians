@@ -5,49 +5,72 @@
 {% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
+        <div class="auth-top-nav">
+            <a href="{{ url_for('home') }}" class="auth-back-link js-smart-back" data-fallback="{{ url_for('home') }}"
+                title="{{ t('Go Back') }}">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Back to Home') }}</span>
+            </a>
+        </div>
+
         <div class="auth-header">
-            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 1.25rem;">{{ t('Log In') }}
-            </h1>
+            <h1>{{ t('Log In') }}</h1>
+            <p class="auth-subtitle">{{ t('Enter your student credentials to continue') }}</p>
         </div>
 
         {% if msg %}
-        <div class="alert alert-success" style="margin-bottom: 1rem;">
+        <div class="alert alert-success">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
             <span>{{ msg }}</span>
         </div>
         {% endif %}
 
+        {% if pending_notice %}
+        <div class="alert alert-warning">
+            <i data-lucide="clock" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span>{{ pending_notice }}</span>
+        </div>
+        {% endif %}
+
         {% if error %}
-        <div class="alert alert-danger" style="margin-bottom: 1rem;">
+        <div class="alert alert-danger">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
             <span>{{ error }}</span>
         </div>
         {% endif %}
 
         <form action="{{ url_for('login') }}" method="POST">
-            <!-- Student ID or Email Field -->
             <div class="form-group">
-                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID or Email') }}"
-                    required>
+                <label for="student_id" class="form-label">{{ t('Student ID or Email') }}</label>
+                <input type="text" id="student_id" name="student_id" class="form-control"
+                    placeholder="{{ t('Student ID or Email') }}" required>
             </div>
 
-            <!-- Password Field -->
-            <div class="form-group" style="position: relative;">
-                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="{{ t('Password') }}"
-                    required>
-                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility">
-                    <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
-                </button>
+            <div class="form-group">
+                <label for="password" class="form-label">{{ t('Password') }}</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="password" name="password" class="form-control form-control-password"
+                        placeholder="{{ t('Password') }}" required>
+                    <button type="button" class="password-toggle-btn"
+                        onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility"
+                        aria-label="Toggle password visibility">
+                        <i data-lucide="eye" style="width: 19px; height: 19px;"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Submit Button -->
-            <button type="submit" class="btn-auth-submit">{{ t('Log In') }}</button>
+            <button type="submit" class="btn-auth-submit">
+                <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+                <span>{{ t('Log In') }}</span>
+            </button>
         </form>
 
-        <!-- Registration & Forgot Password links -->
-        <div class="auth-footer" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.25rem;">
+        <div class="auth-footer">
             <div>
                 <a href="{{ url_for('forgot_password') }}">{{ t('Forgot Password?') }}</a>
             </div>
             <div>
+                <span>{{ t("Don't have an account?") }}</span>
                 <a href="{{ url_for('signup') }}">{{ t('Create an Account') }}</a>
             </div>
         </div>

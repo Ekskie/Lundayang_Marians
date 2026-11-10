@@ -4,106 +4,97 @@
 
 {% block extra_head %}
 <style>
-    /* Premium Home Split Grid Layout */
+    /* Home Split Grid Layout */
     .home-split-grid {
         display: grid;
         grid-template-columns: 1.15fr 0.85fr;
-        gap: 3.5rem;
+        gap: 3rem;
         align-items: start;
-        margin-top: 1.5rem;
-        margin-bottom: 3rem;
+        margin-top: 1.25rem;
+        margin-bottom: 2.5rem;
     }
 
-    .home-left-col {
-        display: flex;
-        flex-direction: column;
-        gap: 2.5rem;
-    }
-
+    .home-left-col,
     .home-right-col {
         display: flex;
         flex-direction: column;
-        gap: 2.5rem;
+        gap: 2.25rem;
     }
 
     /* SEARCH Block Component */
     .search-block-container {
         width: 100%;
-        max-width: 380px;
+        max-width: 500px;
+        background-color: #ffffff;
+        border: 1.5px solid var(--primary-color);
+        border-radius: 14px;
+        box-shadow: var(--shadow-md);
+        overflow: visible;
     }
 
     .search-block-header {
-        background-color: #002060;
+        background-color: var(--primary-color);
         color: #ffffff;
-        padding: 8px 20px;
+        padding: 10px 20px;
         font-family: 'Poppins', sans-serif;
-        font-weight: bold;
-        font-size: 1.1rem;
+        font-weight: 700;
+        font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .search-block-body {
-        border: 2px solid #002060;
-        border-top: none;
-        background-color: transparent;
-        padding: 1rem;
+        border-radius: 12px 12px 0 0;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: 0.5rem;
     }
 
+    .search-block-body {
+        padding: 1.15rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
     .search-block-label {
-        font-size: 0.9rem;
+        font-size: 0.86rem;
         font-family: 'Poppins', sans-serif;
         font-weight: 600;
-        color: #000000;
+        color: var(--text-dark);
     }
 
     .search-form-row {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.55rem;
         width: 100%;
+        align-items: stretch;
     }
 
     .search-input-box {
-        flex: 1;
-        border: 2px solid #002060;
-        border-radius: 4px;
-        padding: 0.4rem 0.6rem;
-        font-size: 0.95rem;
+        width: 100%;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 0.52rem 0.8rem;
+        font-size: 0.92rem;
         font-family: 'Poppins', sans-serif;
         background-color: #ffffff;
+        color: var(--text-dark);
         min-width: 0;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .search-submit-btn {
-        background-color: #f1f5f9;
-        border: 2px solid #002060;
-        border-radius: 4px;
-        padding: 0.4rem 1rem;
-        font-size: 0.85rem;
-        font-family: 'Poppins', sans-serif;
-        font-weight: bold;
-        color: #002060;
-        cursor: pointer;
-        transition: all 0.2s;
+    .search-input-box:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 32, 96, 0.12);
     }
 
-    .search-submit-btn:hover {
-        background-color: #002060;
-        color: #ffffff;
-    }
-
-    /* BROWSE RESEARCH Section */
+    /* BROWSE RESEARCH Floating Strand Cards */
     .browse-header-title {
         font-family: 'Lora', serif;
         font-size: 1.5rem;
-        font-weight: bold;
-        color: #002060;
+        font-weight: 700;
+        color: var(--primary-color);
         text-transform: uppercase;
-        margin-bottom: 1.2rem;
+        margin-bottom: 1.25rem;
         letter-spacing: 0.02em;
     }
 
@@ -114,33 +105,48 @@
         align-items: stretch;
     }
 
+    @keyframes strandFloatIdle {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-7px); }
+    }
+
     .browse-crest-card {
-        background-color: #eaedf2;
-        border: 2px solid #002060;
-        border-radius: 14px;
-        padding: 1.25rem 0.75rem 1rem 0.75rem;
+        background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
+        border: 1.5px solid rgba(0, 32, 96, 0.28);
+        border-radius: 18px;
+        padding: 1.35rem 0.85rem 1.1rem 0.85rem;
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
         text-decoration: none;
-        box-shadow: 0 4px 10px rgba(0, 32, 96, 0.08);
-        box-sizing: border-box;
+        box-shadow: var(--shadow-float);
         height: 100%;
+        position: relative;
+        animation: strandFloatIdle 5s ease-in-out infinite;
+        transition: transform 0.28s var(--ease-out-expo), box-shadow 0.28s var(--ease-out-expo), border-color 0.25s, background 0.25s;
+    }
+
+    .browse-crest-card:nth-child(2) {
+        animation-delay: 0.7s;
+    }
+
+    .browse-crest-card:nth-child(3) {
+        animation-delay: 1.4s;
     }
 
     .browse-crest-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 32, 96, 0.18);
-        border-color: #002060;
-        background-color: #ffffff;
+        transform: translateY(-12px) scale(1.03);
+        box-shadow: 0 24px 44px -10px rgba(0, 32, 96, 0.32), 0 8px 18px -4px rgba(0, 32, 96, 0.16);
+        border-color: var(--primary-color);
+        background: #ffffff;
+        animation-play-state: paused;
     }
 
     .crest-img-box {
         width: 100%;
-        height: 140px;
+        height: 136px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -151,14 +157,15 @@
     .crest-img {
         max-height: 100%;
         max-width: 100%;
-        height: 130px;
+        height: 126px;
         width: auto;
         object-fit: contain;
-        transition: transform 0.25s ease;
+        filter: drop-shadow(0 6px 10px rgba(0, 32, 96, 0.14));
+        transition: transform 0.25s var(--ease-out-expo);
     }
 
     .browse-crest-card:hover .crest-img {
-        transform: scale(1.06);
+        transform: scale(1.07);
     }
 
     .crest-label-box {
@@ -173,7 +180,7 @@
     .crest-label {
         font-size: 0.72rem;
         font-weight: 800;
-        color: #002060;
+        color: var(--primary-color);
         text-transform: uppercase;
         letter-spacing: 0.02em;
         font-family: 'Poppins', sans-serif;
@@ -183,27 +190,27 @@
 
     /* RESEARCH RECOGNITION Spotlight Block */
     .rec-box-container {
-        background-color: #eaedf2;
-        border: 2px solid #002060;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 1.5rem 1.65rem;
+        box-shadow: var(--shadow-sm);
     }
 
     .rec-title-header {
         font-family: 'Lora', serif;
         font-size: 1.4rem;
-        font-weight: bold;
-        color: #002060;
-        margin-bottom: 0.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
     }
 
     .rec-title-sub {
         font-family: 'Poppins', sans-serif;
         font-size: 0.85rem;
-        color: #000000;
+        color: var(--text-light);
         margin-bottom: 1.2rem;
-        line-height: 1.3;
+        line-height: 1.35;
     }
 
     .rec-content-split {
@@ -216,10 +223,10 @@
         width: 140px;
         margin-right: 1.5rem;
         margin-bottom: 0.75rem;
-        border: 2px solid #002060;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        border: 1.5px solid var(--primary-color);
+        box-shadow: var(--shadow-sm);
         background-color: #ffffff;
-        border-radius: 4px;
+        border-radius: 6px;
         transition: transform 0.2s;
     }
 
@@ -229,28 +236,25 @@
 
     .rec-content-text {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.8rem;
-        line-height: 1.6;
-        color: #000000;
+        font-size: 0.82rem;
+        line-height: 1.65;
+        color: #1e293b;
         text-align: justify;
     }
 
     /* Slideshow Carousel */
     .carousel-wrapper {
         position: relative;
-        padding: 0;
         width: 100%;
-        margin-bottom: 0.5rem;
-        opacity: 1;
     }
 
     .carousel-container {
         width: 100%;
-        height: 220px;
-        border-radius: 12px;
+        height: 230px;
+        border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-        border: 2px solid #002060;
+        box-shadow: var(--shadow-md);
+        border: 2px solid var(--primary-color);
     }
 
     .carousel-img {
@@ -263,23 +267,23 @@
     /* Repository text description */
     .repo-desc-text {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.85rem;
-        line-height: 1.65;
-        color: #000000;
+        font-size: 0.87rem;
+        line-height: 1.68;
+        color: #1e293b;
         text-align: justify;
     }
 
     .repo-desc-text strong {
-        font-weight: bold;
-        color: #002060;
+        font-weight: 700;
+        color: var(--primary-color);
     }
 
     /* BEST IN RESEARCH section */
     .best-header-title {
         font-family: 'Lora', serif;
         font-size: 1.4rem;
-        font-weight: bold;
-        color: #002060;
+        font-weight: 700;
+        color: var(--primary-color);
         text-transform: uppercase;
         margin-bottom: 0.2rem;
     }
@@ -287,46 +291,39 @@
     .best-header-sub {
         font-family: 'Poppins', sans-serif;
         font-size: 0.85rem;
-        color: #475569;
-        margin-bottom: 1.2rem;
+        color: var(--text-light);
+        margin-bottom: 1.15rem;
     }
 
     .best-card-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.9rem;
     }
 
     .best-paper-row-card {
         background-color: #ffffff;
-        border: 2px solid #002060;
-        border-radius: 8px;
-        padding: 0.6rem 0.8rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
         display: flex;
         align-items: center;
-        gap: 1.25rem;
-        transition: transform 0.2s, box-shadow 0.2s;
+        gap: 1.15rem;
+        transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s, border-color 0.2s;
         text-decoration: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
     }
 
     .best-paper-row-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 32, 96, 0.12);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-color);
     }
 
     .best-paper-row-card .mock-doc-cover {
-        width: 48px;
-        height: 68px;
-        border: 1.5px solid #002060;
-        border-radius: 3px;
-        background-color: #ffffff;
+        width: 50px;
+        height: 70px;
         padding: 4px 3px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
         flex-shrink: 0;
         margin: 0;
     }
@@ -334,56 +331,48 @@
     .best-paper-row-card .mock-doc-title {
         font-size: 5px;
         line-height: 1.15;
-        color: #002060;
-        font-family: 'Poppins', sans-serif;
-        font-weight: 700;
-        text-align: center;
     }
 
     .best-paper-row-card .mock-doc-line {
-        width: 80%;
         height: 1px;
-        background-color: #cbd5e1;
         margin: 1px 0;
     }
 
     .best-paper-row-card .mock-doc-footer {
-        font-size: 4px;
-        color: #64748b;
-        font-family: 'Poppins', sans-serif;
-        font-weight: 600;
+        font-size: 4.5px;
     }
 
     .best-details {
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.22rem;
         flex: 1;
+        min-width: 0;
     }
 
     .best-details-title {
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.85rem;
-        font-weight: bold;
-        color: #002060;
+        font-family: 'Lora', serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--primary-color);
         text-decoration: underline;
+        text-underline-offset: 2px;
         text-transform: uppercase;
         line-height: 1.35;
     }
 
     .best-details-desc {
         font-family: 'Poppins', sans-serif;
-        font-size: 0.72rem;
-        color: #475569;
-        line-height: 1.3;
+        font-size: 0.76rem;
+        color: var(--text-light);
+        line-height: 1.4;
         text-align: justify;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 992px) {
         .home-split-grid {
             grid-template-columns: 1fr;
-            gap: 3rem;
+            gap: 2.5rem;
         }
 
         .search-block-container {
@@ -410,6 +399,10 @@
         .best-details-desc {
             text-align: center;
         }
+
+        .search-form-row {
+            flex-direction: column;
+        }
     }
 </style>
 {% endblock %}
@@ -417,25 +410,35 @@
 {% block content %}
 <div class="main-container">
 
-    <!-- Top Grid Section (Search, Strands, Slideshow, Description) -->
+    <!-- Top Grid Section (Search, Research Type Filters, Floating Strands, Slideshow, Description) -->
     <div class="home-split-grid">
 
-        <!-- Left Column: Search and Strands -->
+        <!-- Left Column: Search, Research Type Filtering, and Floating Strands -->
         <div class="home-left-col">
 
-            <!-- Search Block -->
+            <!-- Search Block with Live Autosuggest -->
             <div class="search-block-container">
-                <div class="search-block-header">{{ t('SEARCH') }}</div>
+                <div class="search-block-header">
+                    <i data-lucide="search" style="width: 17px; height: 17px;"></i>
+                    <span>{{ t('SEARCH') }}</span>
+                </div>
                 <div class="search-block-body">
                     <span class="search-block-label">{{ t('Enter search item:') }}</span>
                     <form action="{{ url_for('search') }}" method="GET" class="search-form-row">
-                        <input type="text" name="q" class="search-input-box" required>
-                        <button type="submit" class="search-submit-btn">{{ t('Search') }}</button>
+                        <div class="search-autocomplete-wrap">
+                            <input type="text" name="q" class="search-input-box js-search-suggest"
+                                placeholder="{{ t('Search papers, authors, keywords...') }}" autocomplete="off" required>
+                            <div class="search-autocomplete-menu" aria-label="Search suggestions"></div>
+                        </div>
+                        <button type="submit" class="search-submit-btn">
+                            <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+                            <span>{{ t('Search') }}</span>
+                        </button>
                     </form>
                 </div>
             </div>
 
-            <!-- BROWSE RESEARCH Section -->
+            <!-- BROWSE RESEARCH Floating Strand Cards -->
             <div>
                 <h2 class="browse-header-title" style="font-style: italic;">{{ t('BROWSE RESEARCH') }}</h2>
 
@@ -490,7 +493,6 @@
                 </div>
             </div>
 
-            <!-- Descriptive paragraph matching layout -->
             <p class="repo-desc-text">
                 <strong><em>{{ t('Lundayang Marians') }}</em></strong> {{ t('is the web-based research repository of') }} <strong>{{ t('Santa Maria (Laguna) Academy Inc.') }}</strong>, {{ t('envisioned as the cradle of Marian scholarship. The name combines "Lundayan", meaning cradle or focal point, with "Marians", the collective identity of the academy\'s students. This platform centralizes academic outputs, offering a simple interface and organized categories for easy access and exploration.') }}
             </p>
@@ -502,20 +504,42 @@
 
     </div>
 
-    <!-- Bottom Grid Section (Research Recognition and Best in Research perfectly aligned) -->
+    <!-- Mission & Vision Section -->
+    <section id="mission-vision" class="mission-vision-section">
+        <div class="mission-vision-header">
+            <h2 class="mission-vision-heading">{{ t('MISSION & VISION') }}</h2>
+        </div>
+        <div class="mission-vision-grid">
+            <article class="mv-card">
+                <h3 class="mv-card-title">
+                    <span class="mv-icon-badge"><i data-lucide="eye" style="width: 20px; height: 20px;"></i></span>
+                    <span>{{ t(mission_vision.vision_title) }}</span>
+                </h3>
+                <p class="mv-card-text">{{ t(mission_vision.vision_text) }}</p>
+            </article>
+
+            <article class="mv-card">
+                <h3 class="mv-card-title">
+                    <span class="mv-icon-badge"><i data-lucide="target" style="width: 20px; height: 20px;"></i></span>
+                    <span>{{ t(mission_vision.mission_title) }}</span>
+                </h3>
+                <p class="mv-card-text">{{ t(mission_vision.mission_text) }}</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- Bottom Grid Section (Research Recognition and Best in Research) -->
     <div class="home-split-grid" style="margin-top: 2rem;">
 
         <!-- Left Column: Research Recognition -->
         <div class="home-left-col">
 
-            <!-- RESEARCH RECOGNITION Block -->
             <div class="rec-box-container">
                 <h3 class="rec-title-header" style="font-style: italic;">{{ t('RESEARCH RECOGNITION') }}</h3>
                 <p class="rec-title-sub">{{ t('This Research has been officially Recognized by the Municipality of Santa Maria, Laguna') }}</p>
 
                 <div class="rec-content-split">
                     <div class="rec-content-text">
-                        <!-- Real JPG cover preview -->
                         <img src="{{ url_for('static', filename='images/municipality_recognises/KALAT_MO_SAGOT_KO_THE_ACCEPTABILITY_OF_THE_PROTOTYPE_WASTE_SEGREGATOR_MACHINE_IN_SANTA_MARIA_LAGUNA.jpg') }}"
                             alt="Research Recognition Document" class="rec-doc-img">
                         <p>
@@ -538,9 +562,8 @@
         <!-- Right Column: Best in Research -->
         <div class="home-right-col">
 
-            <!-- BEST IN RESEARCH Rows -->
             <div>
-                <hr style="border-top: 3px solid #002060; margin-bottom: 1rem;" class="w-full">
+                <hr style="border-top: 2px solid var(--primary-color); margin-bottom: 1rem;" class="w-full">
                 <h3 class="best-header-title" style="font-style: italic;">{{ t('BEST IN RESEARCH') }}</h3>
                 <p class="best-header-sub">{{ t('Recognizing Outstanding Research Achievements in Recent Years') }}</p>
 
@@ -581,7 +604,6 @@
 {% block extra_js %}
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        // Dynamic premium slide list using all photos inside the "school photos" and facade image
         const slides = [
             "{{ url_for('static', filename='images/Photos/School_P.jpg') }}",
             "{{ url_for('static', filename='images/school_photos/741481012_1033089102523494_5220187940140632359_n.jpg') }}",
@@ -597,43 +619,20 @@
 
         let currentIndex = 0;
         const imgEl = document.querySelector(".carousel-img");
-        const prevEl = document.querySelector(".arrow-left");
-        const nextEl = document.querySelector(".arrow-right");
 
         function updateSlide(index) {
-            imgEl.style.opacity = "0"; // Trigger fade out
+            if (!imgEl) return;
+            imgEl.style.opacity = "0";
             setTimeout(() => {
                 currentIndex = (index + slides.length) % slides.length;
                 imgEl.src = slides[currentIndex];
-                imgEl.style.opacity = "1"; // Trigger fade in
+                imgEl.style.opacity = "1";
             }, 300);
         }
 
-        if (prevEl) {
-            prevEl.addEventListener("click", () => {
-                updateSlide(currentIndex - 1);
-                resetAutoPlay();
-            });
-        }
-
-        if (nextEl) {
-            nextEl.addEventListener("click", () => {
-                updateSlide(currentIndex + 1);
-                resetAutoPlay();
-            });
-        }
-
-        // Auto-rotation every 5 seconds
-        let autoPlayInterval = setInterval(() => {
+        setInterval(() => {
             updateSlide(currentIndex + 1);
         }, 5000);
-
-        function resetAutoPlay() {
-            clearInterval(autoPlayInterval);
-            autoPlayInterval = setInterval(() => {
-                updateSlide(currentIndex + 1);
-            }, 5000);
-        }
     });
 </script>
 {% endblock %}

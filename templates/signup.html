@@ -4,61 +4,109 @@
 
 {% block content %}
 <div class="auth-wrapper">
-    <div class="auth-card">
+    <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-top-nav">
+            <a href="{{ url_for('home') }}" class="auth-back-link js-smart-back" data-fallback="{{ url_for('home') }}"
+                title="{{ t('Go Back') }}">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Back to Home') }}</span>
+            </a>
+        </div>
+
         <div class="auth-header">
-            <h1 style="font-family: Georgia, serif; font-size: 2rem; font-weight: bold; margin-bottom: 2rem;">{{ t('Create an Account') }}</h1>
+            <h1>{{ t('Create an Account') }}</h1>
+            <p class="auth-subtitle">{{ t('Join the Lundayang Marians research community') }}</p>
         </div>
 
         {% if error %}
-        <div class="alert alert-danger" style="margin-bottom: 1.5rem;">
+        <div class="alert alert-danger">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
             <span>{{ error }}</span>
         </div>
         {% endif %}
 
         <form action="{{ url_for('signup') }}" method="POST">
-            <!-- Student ID Field -->
             <div class="form-group">
-                <input type="text" id="student_id" name="student_id" class="form-control" placeholder="{{ t('Student ID') }}" required>
+                <label for="student_id" class="form-label">{{ t('Student ID') }}</label>
+                <input type="text" id="student_id" name="student_id" class="form-control"
+                    placeholder="e.g. 2024-00123" required>
             </div>
 
-            <!-- Full Name Field -->
             <div class="form-group">
-                <input type="text" id="name" name="name" class="form-control" placeholder="{{ t('Full Name') }}" required>
+                <label for="name" class="form-label">{{ t('Full Name') }}</label>
+                <input type="text" id="name" name="name" class="form-control"
+                    placeholder="e.g. Juan A. Dela Cruz" required>
             </div>
 
-            <!-- Grade & Section Field -->
             <div class="form-group">
-                <input type="text" id="grade_section" name="grade_section" class="form-control" placeholder="{{ t('Grade & Section') }}" required>
+                <label for="grade_section" class="form-label">{{ t('Grade & Section') }}</label>
+                <input type="text" id="grade_section" name="grade_section" class="form-control"
+                    placeholder="e.g. Grade 12 - STEM" required>
             </div>
 
-            <!-- Email Field -->
             <div class="form-group">
-                <input type="email" id="email" name="email" class="form-control" placeholder="{{ t('Email Address') }}" required>
+                <label for="email" class="form-label">{{ t('Email Address') }}</label>
+                <input type="email" id="email" name="email" class="form-control"
+                    placeholder="name@example.com" required>
             </div>
-            
-            <!-- Enter Password Field -->
-            <div class="form-group" style="position: relative;">
-                <input type="password" id="password" name="password" class="form-control form-control-password" placeholder="{{ t('Password') }}" required>
-                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility">
-                    <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
-                </button>
+
+            <div class="form-group">
+                <label for="password" class="form-label">{{ t('Password') }}</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="password" name="password" class="form-control form-control-password"
+                        placeholder="Create a strong password" data-pw-strength="signup-pw-meter" required>
+                    <button type="button" class="password-toggle-btn"
+                        onclick="togglePasswordVisibility('password', this)" title="Toggle password visibility"
+                        aria-label="Toggle password visibility">
+                        <i data-lucide="eye" style="width: 19px; height: 19px;"></i>
+                    </button>
+                </div>
+
+                <div class="pw-strength-box" id="signup-pw-meter">
+                    <div class="pw-strength-header">
+                        <span>Password Strength</span>
+                        <span class="pw-strength-label">Enter a password</span>
+                    </div>
+                    <div class="pw-strength-track">
+                        <div class="pw-strength-fill"></div>
+                    </div>
+                    <ul class="pw-rules-list">
+                        <li class="pw-rule-item" data-rule="length"><i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i><span>8+ characters</span></li>
+                        <li class="pw-rule-item" data-rule="upper"><i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i><span>Uppercase (A-Z)</span></li>
+                        <li class="pw-rule-item" data-rule="lower"><i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i><span>Lowercase (a-z)</span></li>
+                        <li class="pw-rule-item" data-rule="digit"><i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i><span>Number (0-9)</span></li>
+                    </ul>
+                </div>
             </div>
-            
-            <!-- Confirm Password Field -->
-            <div class="form-group" style="position: relative;">
-                <input type="password" id="confirm_password" name="confirm_password" class="form-control form-control-password" placeholder="{{ t('Confirm Password') }}" required>
-                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)" title="Toggle password visibility">
-                    <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
-                </button>
+
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">{{ t('Confirm Password') }}</label>
+                <div class="password-input-wrap">
+                    <input type="password" id="confirm_password" name="confirm_password"
+                        class="form-control form-control-password" placeholder="Re-enter your password" required>
+                    <button type="button" class="password-toggle-btn"
+                        onclick="togglePasswordVisibility('confirm_password', this)" title="Toggle password visibility"
+                        aria-label="Toggle password visibility">
+                        <i data-lucide="eye" style="width: 19px; height: 19px;"></i>
+                    </button>
+                </div>
             </div>
-            
-            <!-- Submit Button -->
-            <button type="submit" class="btn-auth-submit">{{ t('Sign Up') }}</button>
+
+            <p class="auth-legal-note">
+                By creating an account, you agree to our
+                <a href="{{ url_for('terms_conditions') }}">{{ t('Terms & Conditions') }}</a>
+                and
+                <a href="{{ url_for('privacy_policy') }}">{{ t('Privacy Policy') }}</a>.
+            </p>
+
+            <button type="submit" class="btn-auth-submit">
+                <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                <span>{{ t('Sign Up') }}</span>
+            </button>
         </form>
-        
-        <!-- Login Link -->
+
         <div class="auth-footer">
-            <a href="{{ url_for('login') }}">{{ t('Already have an account?') }}</a>
+            <span>{{ t('Already have an account?') }} <a href="{{ url_for('login') }}">{{ t('Log In') }}</a></span>
         </div>
     </div>
 </div>

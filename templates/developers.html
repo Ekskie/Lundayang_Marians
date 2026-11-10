@@ -14,23 +14,26 @@
     }
 
     .developers-title-container {
-        margin-bottom: 3rem;
+        margin-bottom: 2.5rem;
         display: flex;
+        align-items: center;
+        gap: 1.25rem;
         justify-content: flex-start;
     }
 
     .developers-title-bar {
-        background-color: #002060;
+        background-color: var(--primary-color);
         color: #ffffff;
-        padding: 10px 30px;
+        padding: 10px 28px;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        font-weight: bold;
+        font-size: 1.3rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        border-radius: 10px;
         display: inline-block;
-        min-width: 380px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 320px;
+        box-shadow: var(--shadow-sm);
     }
 
     .developers-grid {
@@ -237,8 +240,12 @@
 {% block content %}
 <div class="developers-page-container">
 
-    <!-- Title Bar -->
+    <!-- Title Bar with Consistent Back Button -->
     <div class="developers-title-container">
+        <a href="{{ portal_home_url }}" class="page-back-btn js-smart-back" data-fallback="{{ portal_home_url }}"
+            title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+        </a>
         <div class="developers-title-bar">
             {{ t('THE DEVELOPERS') }}
         </div>

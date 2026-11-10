@@ -1,0 +1,2405 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ t('Admin Dashboard') }} - Lundayang Marians{% endblock %}
+
+{% block extra_head %}
+<style>
+    .dashboard-page-container {
+        max-width: 1320px;
+        margin: 2rem auto 3.5rem auto;
+        padding: 0 1.75rem;
+        width: 100%;
+    }
+
+    /* Executive Command Header */
+    .exec-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-bottom: 1.75rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1.5px solid #cbd5e1;
+    }
+
+    .exec-title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .exec-kicker-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .exec-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--primary-color);
+        background-color: var(--surface-tint);
+        border: 1px solid #cbd5e1;
+        padding: 0.22rem 0.65rem;
+        border-radius: 999px;
+    }
+
+    .exec-pending-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--warning-text);
+        background-color: var(--warning-bg);
+        border: 1px solid var(--warning-border);
+        padding: 0.22rem 0.7rem;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+
+    .exec-pending-pill:hover {
+        transform: translateY(-1px);
+    }
+
+    .dashboard-title {
+        font-family: 'Lora', serif;
+        font-size: 1.95rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1.15;
+    }
+
+    .dashboard-subtitle {
+        font-size: 0.88rem;
+        color: var(--text-light);
+        margin: 0;
+    }
+
+    .exec-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* KPI Strip */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1.15rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .kpi-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 1.2rem 1.35rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .kpi-card.kpi-clickable {
+        cursor: pointer;
+    }
+
+    .kpi-card.kpi-clickable:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .kpi-card.has-pending {
+        border-color: var(--warning-border);
+        background: linear-gradient(180deg, #fffbeb 0%, #ffffff 48%);
+    }
+
+    .kpi-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .kpi-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-light);
+    }
+
+    .kpi-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background-color: var(--surface-tint);
+        color: var(--primary-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .kpi-card.has-pending .kpi-icon-wrap {
+        background-color: var(--warning-bg);
+        color: var(--warning-text);
+    }
+
+    .kpi-value {
+        font-family: 'Lora', serif;
+        font-size: 2.15rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .kpi-meta {
+        font-size: 0.78rem;
+        color: #334155;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        align-items: center;
+        margin-top: auto;
+        min-height: 24px;
+    }
+
+    .kpi-meta-truncate {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .strand-pill-mini {
+        background-color: var(--surface-tint);
+        color: var(--primary-color);
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Workspace Switcher Bar */
+    .workspace-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 0.55rem 0.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .workspace-tabs {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .workspace-tab-btn {
+        background: transparent;
+        border: 1.5px solid transparent;
+        color: #334155;
+        border-radius: 10px;
+        padding: 0.55rem 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.86rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.18s ease;
+    }
+
+    .workspace-tab-btn:hover {
+        background-color: var(--surface-tint);
+        color: var(--primary-color);
+    }
+
+    .workspace-tab-btn.active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .workspace-count-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .workspace-tab-btn.active .workspace-count-pill {
+        background-color: rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+    }
+
+    .workspace-count-pill.alert-pill {
+        background-color: #facc15;
+        color: #002060;
+    }
+
+    .workspace-panel {
+        display: none;
+    }
+
+    .workspace-panel.active {
+        display: block;
+    }
+
+    /* Overview Analytics Insights Row */
+    .insights-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .insights-grid > *,
+    .overview-bottom-grid > * {
+        min-width: 0;
+    }
+
+    .dash-panel {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 1.45rem 1.65rem;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+    }
+
+    .dash-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 1.15rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dash-panel-title {
+        font-family: 'Lora', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin: 0;
+    }
+
+    .chart-legend {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        display: inline-block;
+        margin-right: 0.3rem;
+    }
+
+    /* 7-Day Dual Bar Chart */
+    .engagement-chart {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 0.65rem;
+        align-items: end;
+        height: 195px;
+        padding: 1.1rem 0.5rem 0.35rem 0.5rem;
+        border-bottom: 1.5px solid #cbd5e1;
+        background-image: linear-gradient(to top, rgba(203, 213, 225, 0.35) 1px, transparent 1px);
+        background-size: 100% 25%;
+    }
+
+    .eng-day-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        justify-content: flex-end;
+        gap: 0.4rem;
+    }
+
+    .eng-bars-pair {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+        height: 145px;
+    }
+
+    .eng-bar-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+        width: 16px;
+        position: relative;
+    }
+
+    .eng-bar {
+        width: 100%;
+        border-radius: 5px 5px 0 0;
+        transition: height 0.35s ease;
+        min-height: 2px;
+    }
+
+    .eng-bar.visits-bar {
+        background: linear-gradient(180deg, #002060 0%, #1d4ed8 100%);
+    }
+
+    .eng-bar.views-bar {
+        background: linear-gradient(180deg, #c9972c 0%, #eab308 100%);
+    }
+
+    .eng-bar-val {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 2px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .eng-day-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-light);
+        white-space: nowrap;
+    }
+
+    /* Strand Share + Top Papers */
+    .strand-bars-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .strand-bar-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .strand-bar-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #1e293b;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .strand-track {
+        width: 100%;
+        height: 9px;
+        background-color: #f1f5f9;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .strand-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--primary-color) 0%, #2563eb 100%);
+    }
+
+    .strand-fill.abm {
+        background: linear-gradient(90deg, #b45309 0%, #c9972c 100%);
+    }
+
+    .strand-fill.humss {
+        background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+    }
+
+    .top-papers-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .top-paper-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0.7rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background-color: #f8fafc;
+        text-decoration: none;
+        color: #0f172a;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .top-paper-item:hover {
+        border-color: var(--primary-color);
+        background-color: #ffffff;
+    }
+
+    .top-paper-left {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .top-rank {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background-color: var(--primary-color);
+        color: #ffffff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .top-paper-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .top-paper-views {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        background-color: #ffffff;
+        border: 1px solid #cbd5e1;
+        padding: 2px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Overview Bottom Split */
+    .overview-bottom-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+
+    .feed-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .feed-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background-color: #f8fafc;
+        font-size: 0.83rem;
+        min-width: 0;
+    }
+
+    .feed-item-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .feed-item-meta {
+        font-size: 0.74rem;
+        color: var(--text-light);
+    }
+
+    /* Filter Toolbars */
+    .panel-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .dash-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .dash-tab-btn,
+    .strand-filter-btn {
+        background-color: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+        border-radius: 999px;
+        padding: 0.36rem 0.85rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.79rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        transition: all 0.16s ease;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dash-tab-btn:hover,
+    .strand-filter-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .dash-tab-btn.active,
+    .strand-filter-btn.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .dash-filter-input,
+    .dash-filter-select {
+        border: 1.5px solid #cbd5e1;
+        border-radius: 9px;
+        padding: 0.45rem 0.8rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.83rem;
+        background-color: #ffffff;
+        color: #0f172a;
+    }
+
+    .dash-filter-input {
+        min-width: 245px;
+    }
+
+    .dash-filter-input:focus,
+    .dash-filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 32, 96, 0.12);
+    }
+
+    /* Tables */
+    .dash-table-wrap {
+        width: 100%;
+    }
+
+    .dash-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .dash-table th {
+        text-align: left;
+        padding: 0.72rem 0.85rem;
+        background-color: #f8fafc;
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-bottom: 2px solid #cbd5e1;
+        white-space: nowrap;
+    }
+
+    .dash-table td {
+        padding: 0.8rem 0.85rem;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+        color: #1e293b;
+    }
+
+    .dash-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: capitalize;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background-color: var(--warning-bg);
+        color: var(--warning-text);
+        border: 1px solid var(--warning-border);
+    }
+
+    .status-approved,
+    .tone-approved,
+    .tone-upload {
+        background-color: var(--success-bg);
+        color: var(--success-text);
+        border: 1px solid var(--success-border);
+    }
+
+    .status-rejected,
+    .tone-rejected {
+        background-color: var(--danger-bg);
+        color: var(--danger-text);
+        border: 1px solid var(--danger-border);
+    }
+
+    .tone-role,
+    .tone-edit {
+        background-color: var(--surface-tint);
+        color: var(--primary-color);
+        border: 1px solid #cbd5e1;
+    }
+
+    .table-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.42rem;
+        flex-wrap: wrap;
+    }
+
+    .paper-link-title {
+        font-weight: 600;
+        color: var(--primary-color);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .paper-link-title:hover {
+        color: var(--primary-light);
+    }
+
+    .dash-empty-row td {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+
+    /* Table Pagination */
+    .table-footer-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .table-range-info {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .dash-pagination {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .dash-page-btn {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 0.6rem;
+        border-radius: 8px;
+        border: 1.5px solid #cbd5e1;
+        background-color: #ffffff;
+        color: #1e293b;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .dash-page-btn:hover:not(:disabled) {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .dash-page-btn.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #ffffff;
+    }
+
+    .dash-page-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    /* Confirmation Dialog Modal */
+    .admin-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        backdrop-filter: blur(4px);
+        z-index: 5000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .admin-modal-overlay.open {
+        display: flex;
+    }
+
+    .admin-modal-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 2px solid var(--primary-color);
+        box-shadow: var(--shadow-float);
+        max-width: 440px;
+        width: 100%;
+        padding: 1.65rem 1.75rem;
+        text-align: left;
+    }
+
+    .admin-modal-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .admin-modal-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--warning-bg);
+        color: var(--warning-text);
+        flex-shrink: 0;
+    }
+
+    .admin-modal-icon.danger {
+        background-color: var(--danger-bg);
+        color: var(--danger-text);
+    }
+
+    .admin-modal-title {
+        font-family: 'Lora', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+    }
+
+    .admin-modal-body {
+        font-size: 0.9rem;
+        color: #334155;
+        line-height: 1.55;
+        margin: 0 0 1.4rem 0;
+    }
+
+    .admin-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 1080px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .insights-grid,
+        .overview-bottom-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Mobile Stacked Card Transformation for Tables */
+    @media (max-width: 768px) {
+        .dashboard-page-container {
+            padding: 0 1rem;
+            margin: 1.5rem auto 2.5rem auto;
+        }
+
+        .dash-panel {
+            padding: 1.15rem 1rem;
+        }
+
+        .exec-actions {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .exec-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .toolbar-right {
+            width: 100%;
+        }
+
+        .workspace-tab-btn {
+            padding: 0.45rem 0.75rem;
+            font-size: 0.78rem;
+        }
+
+        .dash-filter-input,
+        .dash-filter-select {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .dash-table thead {
+            display: none;
+        }
+
+        .dash-table,
+        .dash-table tbody {
+            display: block;
+            width: 100%;
+        }
+
+        .dash-table tbody tr:not(.dash-empty-row) {
+            display: block;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 0.75rem 0.95rem;
+            margin-bottom: 0.85rem;
+            background: #ffffff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dash-table tbody tr.dash-empty-row {
+            display: block;
+        }
+
+        .dash-table tbody tr.dash-empty-row td {
+            display: block;
+            border-bottom: none;
+        }
+
+        .dash-table td {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.42rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+            text-align: right;
+            max-width: 100% !important;
+            word-break: break-word;
+        }
+
+        .dash-table td:last-child {
+            border-bottom: none;
+            padding-top: 0.65rem;
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .dash-table td::before {
+            content: attr(data-label);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-light);
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .dash-table td:last-child::before {
+            display: none;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .kpi-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .engagement-chart {
+            gap: 0.2rem;
+            padding: 1rem 0.15rem 0.35rem 0.15rem;
+        }
+
+        .eng-bar-wrap {
+            width: 11px;
+        }
+
+        .eng-day-label {
+            font-size: 0.72rem;
+            letter-spacing: -0.02em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page-container">
+
+    <!-- Executive Command Header -->
+    <div class="exec-header">
+        <div class="exec-title-wrap">
+            <div class="exec-kicker-row">
+                <span class="exec-kicker">
+                    <i data-lucide="shield" style="width: 13px; height: 13px;"></i>
+                    <span>{{ t('Admin Workspace') }}</span>
+                </span>
+                {% if metrics.pending_approvals > 0 %}
+                <button type="button" class="exec-pending-pill js-jump-workspace" data-target="approvals" data-user-tab="pending">
+                    <i data-lucide="clock" style="width: 13px; height: 13px;"></i>
+                    <span><strong id="header-pending-num">{{ metrics.pending_approvals }}</strong> pending review</span>
+                </button>
+                {% endif %}
+            </div>
+            <h1 class="dashboard-title">{{ t('Admin Dashboard') }}</h1>
+            <p class="dashboard-subtitle">Repository metrics, engagement trends, user approvals, and audit controls.</p>
+        </div>
+
+        <div class="exec-actions">
+            <a href="{{ url_for('admin_export_papers_csv') }}" class="btn btn-secondary">
+                <i data-lucide="download" style="width: 17px; height: 17px;"></i>
+                <span>{{ t('Export CSV') }}</span>
+            </a>
+            <button type="button" class="btn btn-primary" id="open-upload-modal-btn">
+                <i data-lucide="file-plus" style="width: 18px; height: 18px;"></i>
+                <span>{{ t('Upload Research Paper') }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Dynamic Status Feedback Banner -->
+    <div id="dash-feedback" class="alert alert-success" style="display: none; margin-bottom: 1.25rem;">
+        <i data-lucide="check-circle" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+        <span id="dash-feedback-text"></span>
+    </div>
+
+    <!-- 4 Accented Analytics KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card kpi-clickable js-jump-workspace" data-target="papers" role="button" tabindex="0">
+            <div class="kpi-card-top">
+                <span class="kpi-label">{{ t('Total Papers') }}</span>
+                <span class="kpi-icon-wrap"><i data-lucide="book-open" style="width: 19px; height: 19px;"></i></span>
+            </div>
+            <div class="kpi-value" id="kpi-total-papers">{{ metrics.total_papers }}</div>
+            <div class="kpi-meta">
+                <span class="strand-pill-mini">STEM: <span id="kpi-stem-count">{{ metrics.strand_counts.STEM }}</span></span>
+                <span class="strand-pill-mini">ABM: <span id="kpi-abm-count">{{ metrics.strand_counts.ABM }}</span></span>
+                <span class="strand-pill-mini">HUMSS: <span id="kpi-humss-count">{{ metrics.strand_counts.HUMSS }}</span></span>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-card-top">
+                <span class="kpi-label">{{ t('Website Visits') }}</span>
+                <span class="kpi-icon-wrap"><i data-lucide="globe" style="width: 19px; height: 19px;"></i></span>
+            </div>
+            <div class="kpi-value">{{ metrics.total_visits }}</div>
+            <div class="kpi-meta tabular-nums">
+                <span><strong>{{ metrics.unique_visitors }}</strong> unique sessions</span>
+                <span>&bull;</span>
+                <span><strong>{{ metrics.today_visits }}</strong> today</span>
+            </div>
+        </div>
+
+        <div class="kpi-card kpi-clickable js-jump-workspace" data-target="papers" role="button" tabindex="0">
+            <div class="kpi-card-top">
+                <span class="kpi-label">{{ t('Paper Views') }}</span>
+                <span class="kpi-icon-wrap"><i data-lucide="eye" style="width: 19px; height: 19px;"></i></span>
+            </div>
+            <div class="kpi-value">{{ metrics.total_paper_views }}</div>
+            <div class="kpi-meta">
+                {% if metrics.top_paper %}
+                <span class="kpi-meta-truncate" title="{{ metrics.top_paper.title }} ({{ metrics.top_paper.view_count }})">
+                    Top: <strong>{{ metrics.top_paper.title }}</strong> ({{ metrics.top_paper.view_count }})
+                </span>
+                {% else %}
+                <span>No recorded paper views yet</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="kpi-pending-card"
+            class="kpi-card kpi-clickable {% if metrics.pending_approvals > 0 %}has-pending{% endif %} js-jump-workspace"
+            data-target="approvals" data-user-tab="pending" role="button" tabindex="0">
+            <div class="kpi-card-top">
+                <span class="kpi-label">{{ t('Pending Approvals') }}</span>
+                <span class="kpi-icon-wrap"><i data-lucide="user-check" style="width: 19px; height: 19px;"></i></span>
+            </div>
+            <div class="kpi-value" id="kpi-pending-count">{{ metrics.pending_approvals }}</div>
+            <div class="kpi-meta tabular-nums">
+                <span><strong id="kpi-approved-count">{{ approved_users|length }}</strong> approved</span>
+                <span>&bull;</span>
+                <span><strong>{{ all_users|length }}</strong> total accounts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workspace Switcher Tabs -->
+    <nav class="workspace-nav" aria-label="Admin workspace sections">
+        <div class="workspace-tabs" role="tablist">
+            <button type="button" class="workspace-tab-btn active" role="tab" aria-selected="true"
+                data-workspace="overview" id="tab-btn-overview">
+                <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Overview') }}</span>
+            </button>
+
+            <button type="button" class="workspace-tab-btn" role="tab" aria-selected="false"
+                data-workspace="approvals" id="tab-btn-approvals">
+                <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Account Approvals') }}</span>
+                <span class="workspace-count-pill {% if pending_users|length > 0 %}alert-pill{% endif %}"
+                    id="workspace-badge-pending">{{ pending_users|length }}</span>
+            </button>
+
+            <button type="button" class="workspace-tab-btn" role="tab" aria-selected="false"
+                data-workspace="papers" id="tab-btn-papers">
+                <i data-lucide="library" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Research Papers') }}</span>
+                <span class="workspace-count-pill" id="workspace-badge-papers">{{ papers|length }}</span>
+            </button>
+
+            <button type="button" class="workspace-tab-btn" role="tab" aria-selected="false"
+                data-workspace="audit" id="tab-btn-audit">
+                <i data-lucide="history" style="width: 16px; height: 16px;"></i>
+                <span>{{ t('Activity Log') }}</span>
+                <span class="workspace-count-pill" id="workspace-badge-audit">{{ audit_logs|length }}</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- WORKSPACE 1: OVERVIEW (Charts, Strand Share, Top Papers, Quick Activity) -->
+    <section class="workspace-panel active" id="panel-overview" role="tabpanel" aria-labelledby="tab-btn-overview">
+        <div class="insights-grid">
+            <!-- Left Card: 7-Day Engagement Dual-Bar Chart -->
+            <div class="dash-panel" style="margin-bottom: 0;">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
+                        <span>7-Day Visits &amp; Paper Views</span>
+                    </h2>
+                    <div class="chart-legend">
+                        <span><span class="legend-dot" style="background-color: #002060;"></span>Visits</span>
+                        <span><span class="legend-dot" style="background-color: #c9972c;"></span>Paper Views</span>
+                    </div>
+                </div>
+
+                <div class="engagement-chart" aria-label="Last 7 days visits and paper views chart">
+                    {% for day in daily_engagement %}
+                    <div class="eng-day-col" title="{{ day.date }}: {{ day.visits }} visit(s), {{ day.paper_views }} paper view(s)">
+                        <div class="eng-bars-pair">
+                            <div class="eng-bar-wrap">
+                                {% if day.visits > 0 %}<span class="eng-bar-val">{{ day.visits }}</span>{% endif %}
+                                <div class="eng-bar visits-bar" style="height: {{ day.visit_pct }}%;"></div>
+                            </div>
+                            <div class="eng-bar-wrap">
+                                {% if day.paper_views > 0 %}<span class="eng-bar-val">{{ day.paper_views }}</span>{% endif %}
+                                <div class="eng-bar views-bar" style="height: {{ day.view_pct }}%;"></div>
+                            </div>
+                        </div>
+                        <span class="eng-day-label">{{ day.label }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Card: Strand Breakdown & Top Viewed Papers -->
+            <div class="dash-panel" style="margin-bottom: 0;">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <i data-lucide="bar-chart-3" style="width: 20px; height: 20px;"></i>
+                        <span>Strand Share &amp; Top Papers</span>
+                    </h2>
+                </div>
+
+                <div class="strand-bars-list">
+                    {% for s in strand_stats %}
+                    <div class="strand-bar-row">
+                        <div class="strand-bar-meta">
+                            <span>{{ s.code }}</span>
+                            <span>{{ s.count }} paper{{ '' if s.count == 1 else 's' }} ({{ s.pct }}%) &bull; {{ s.views }} view{{ '' if s.views == 1 else 's' }}</span>
+                        </div>
+                        <div class="strand-track">
+                            <div class="strand-fill {{ s.code|lower }}" style="width: {{ s.pct }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="top-papers-list">
+                    {% if top_papers %}
+                        {% for tp in top_papers[:3] %}
+                        <a href="{{ url_for('paper_detail', paper_id=tp.id) }}" class="top-paper-item">
+                            <span class="top-paper-left">
+                                <span class="top-rank">{{ loop.index }}</span>
+                                <span class="top-paper-title">{{ tp.title }}</span>
+                            </span>
+                            <span class="top-paper-views">{{ tp.view_count }} views</span>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                    <p style="font-size: 0.84rem; color: var(--text-light); margin: 0;">{{ t('No research papers available yet.') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="overview-bottom-grid" style="margin-top: 1.25rem;">
+            <!-- Pending Queue Preview -->
+            <div class="dash-panel" style="margin-bottom: 0;">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <i data-lucide="user-plus" style="width: 20px; height: 20px;"></i>
+                        <span>Pending Account Queue</span>
+                    </h2>
+                    <button type="button" class="btn btn-secondary btn-sm js-jump-workspace" data-target="approvals" data-user-tab="pending">
+                        <span>Manage All</span>
+                    </button>
+                </div>
+
+                {% if pending_users %}
+                <div class="feed-list">
+                    {% for pu in pending_users[:3] %}
+                    <div class="feed-item">
+                        <div class="feed-item-main">
+                            <strong>{{ pu.name }}</strong>
+                            <span class="feed-item-meta">{{ pu.student_id }} &bull; {{ pu.grade_section }} &bull; {{ pu.email }}</span>
+                        </div>
+                        <span class="status-badge status-pending">{{ t('Pending') }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p style="font-size: 0.85rem; color: var(--text-light); margin: 0;">All student account registrations have been reviewed.</p>
+                {% endif %}
+            </div>
+
+            <!-- Recent Admin Activity Preview -->
+            <div class="dash-panel" style="margin-bottom: 0;">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <i data-lucide="history" style="width: 20px; height: 20px;"></i>
+                        <span>Recent Admin Activity</span>
+                    </h2>
+                    <button type="button" class="btn btn-secondary btn-sm js-jump-workspace" data-target="audit">
+                        <span>Full Log</span>
+                    </button>
+                </div>
+
+                <div class="feed-list" id="overview-audit-feed">
+                    {% if recent_audit_logs %}
+                        {% for item in recent_audit_logs[:4] %}
+                        <div class="feed-item">
+                            <div class="feed-item-main">
+                                <strong>{{ item.summary }}</strong>
+                                <span class="feed-item-meta">{{ item.admin_name }} &bull; {{ item.display_time }}</span>
+                            </div>
+                            <span class="status-badge tone-{{ item.action_tone }}">{{ item.action_label }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <p id="overview-audit-empty" style="font-size: 0.85rem; color: var(--text-light); margin: 0;">No admin actions logged yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WORKSPACE 2: ACCOUNT APPROVALS -->
+    <section class="workspace-panel" id="panel-approvals" role="tabpanel" aria-labelledby="tab-btn-approvals">
+        <div class="dash-panel">
+            <div class="dash-panel-header">
+                <h2 class="dash-panel-title">
+                    <i data-lucide="shield-check" style="width: 21px; height: 21px;"></i>
+                    <span>{{ t('Account Approvals') }}</span>
+                </h2>
+
+                {% if pending_users|length > 0 %}
+                <button type="button" class="btn btn-primary btn-sm" id="bulk-approve-btn">
+                    <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
+                    <span>{{ t('Approve All Pending') }} (<span id="bulk-approve-count">{{ pending_users|length }}</span>)</span>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="panel-toolbar">
+                <div class="toolbar-left">
+                    <div class="dash-tabs" role="tablist">
+                        <button type="button" class="dash-tab-btn active" data-user-filter="pending">
+                            {{ t('Pending') }} (<span id="tab-count-pending">{{ pending_users|length }}</span>)
+                        </button>
+                        <button type="button" class="dash-tab-btn" data-user-filter="approved">
+                            {{ t('Approved') }} (<span id="tab-count-approved">{{ approved_users|length }}</span>)
+                        </button>
+                        <button type="button" class="dash-tab-btn" data-user-filter="rejected">
+                            {{ t('Rejected') }} (<span id="tab-count-rejected">{{ rejected_users|length }}</span>)
+                        </button>
+                        <button type="button" class="dash-tab-btn" data-user-filter="all">
+                            All (<span id="tab-count-all">{{ all_users|length }}</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="toolbar-right">
+                    <input type="search" id="dash-user-filter" class="dash-filter-input"
+                        placeholder="Search by Student ID, name, or email..." aria-label="Search accounts">
+                </div>
+            </div>
+
+            <div class="dash-table-wrap">
+                <table class="dash-table" id="users-approval-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t('Student ID') }}</th>
+                            <th>{{ t('Full Name') }}</th>
+                            <th>{{ t('Grade & Section') }}</th>
+                            <th>{{ t('Email') }}</th>
+                            <th>{{ t('Role') }}</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr class="user-row"
+                            data-user-id="{{ user.id }}"
+                            data-user-label="{{ user.name }} ({{ user.student_id }})"
+                            data-status="{{ user.status }}"
+                            data-search="{{ (user.student_id ~ ' ' ~ user.name ~ ' ' ~ user.grade_section ~ ' ' ~ user.email)|lower }}">
+                            <td class="tabular-nums" data-label="{{ t('Student ID') }}"><strong>{{ user.student_id }}</strong></td>
+                            <td data-label="{{ t('Full Name') }}">{{ user.name }}</td>
+                            <td data-label="{{ t('Grade & Section') }}">{{ user.grade_section }}</td>
+                            <td data-label="{{ t('Email') }}">{{ user.email }}</td>
+                            <td style="text-transform: capitalize;" class="user-role-cell" data-label="{{ t('Role') }}">{{ user.role }}</td>
+                            <td class="user-status-cell" data-label="Status">
+                                <span class="status-badge status-{{ user.status }}">{{ t(user.status|capitalize) }}</span>
+                            </td>
+                            <td data-label="Actions">
+                                <div class="table-actions">
+                                    {% if user.status != 'approved' %}
+                                    <button type="button" class="btn btn-primary btn-sm js-user-action"
+                                        data-user-id="{{ user.id }}" data-status="approved">
+                                        <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                        <span>{{ t('Approve') }}</span>
+                                    </button>
+                                    {% endif %}
+                                    {% if user.status != 'rejected' and user.id != current_admin_id %}
+                                    <button type="button" class="btn btn-danger btn-sm js-user-action"
+                                        data-user-id="{{ user.id }}" data-status="rejected">
+                                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                        <span>{{ t('Reject') }}</span>
+                                    </button>
+                                    {% endif %}
+                                    {% if user.status == 'approved' and user.id != current_admin_id %}
+                                    <button type="button" class="btn btn-secondary btn-sm js-user-role"
+                                        data-user-id="{{ user.id }}"
+                                        data-next-role="{{ 'admin' if user.role == 'student' else 'student' }}">
+                                        <span>{{ 'Make Admin' if user.role == 'student' else 'Set Student' }}</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="users-empty-row" class="dash-empty-row" style="display: none;">
+                            <td colspan="7">No user accounts match this filter.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer-bar">
+                <span class="table-range-info" id="users-range-label"></span>
+                <div class="dash-pagination" id="users-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WORKSPACE 3: RESEARCH PAPERS & ANALYTICS -->
+    <section class="workspace-panel" id="panel-papers" role="tabpanel" aria-labelledby="tab-btn-papers">
+        <div class="dash-panel">
+            <div class="dash-panel-header">
+                <h2 class="dash-panel-title">
+                    <i data-lucide="bar-chart-3" style="width: 21px; height: 21px;"></i>
+                    <span>Research Papers &amp; View Analytics</span>
+                </h2>
+                <a href="{{ url_for('admin_export_papers_csv') }}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Export CSV') }}</span>
+                </a>
+            </div>
+
+            <div class="panel-toolbar">
+                <div class="toolbar-left" id="paper-strand-filters">
+                    <button type="button" class="strand-filter-btn active" data-strand="ALL">All Strands</button>
+                    <button type="button" class="strand-filter-btn" data-strand="STEM">STEM</button>
+                    <button type="button" class="strand-filter-btn" data-strand="ABM">ABM</button>
+                    <button type="button" class="strand-filter-btn" data-strand="HUMSS">HUMSS</button>
+                </div>
+
+                <div class="toolbar-right">
+                    <select id="dash-year-filter" class="dash-filter-select" aria-label="Filter by academic year">
+                        <option value="">All Academic Years</option>
+                        {% for yr in academic_years %}
+                        <option value="{{ yr }}">{{ yr }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="dash-paper-sort" class="dash-filter-select" aria-label="Sort papers">
+                        <option value="views_desc">Most Viewed</option>
+                        <option value="bookmarks_desc">Most Bookmarked</option>
+                        <option value="newest">Newest Uploaded</option>
+                        <option value="title_asc">Title A&ndash;Z</option>
+                    </select>
+
+                    <input type="search" id="dash-paper-filter" class="dash-filter-input"
+                        placeholder="Search papers by title, type, or author..." aria-label="Filter papers">
+                </div>
+            </div>
+
+            <div class="dash-table-wrap">
+                <table class="dash-table" id="papers-analytics-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t('Title') }}</th>
+                            <th>{{ t('Strand') }}</th>
+                            <th>{{ t('Research Type') }}</th>
+                            <th>{{ t('Academic Year') }}</th>
+                            <th>Views</th>
+                            <th>{{ t('Bookmarks') }}</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="papers-analytics-tbody">
+                        {% for paper in papers %}
+                        <tr class="paper-row"
+                            data-paper-id="{{ paper.id }}"
+                            data-title="{{ paper.title|lower }}"
+                            data-paper-title="{{ paper.title }}"
+                            data-strand="{{ paper.strand|upper }}"
+                            data-year="{{ paper.academic_year }}"
+                            data-views="{{ paper.view_count }}"
+                            data-bookmarks="{{ paper.bookmark_count }}"
+                            data-created="{{ paper.created_at or '' }}"
+                            data-search="{{ (paper.title ~ ' ' ~ paper.strand ~ ' ' ~ paper.research_type ~ ' ' ~ paper.academic_year ~ ' ' ~ (paper.authors|join(' ')))|lower }}">
+                            <td style="max-width: 340px;" data-label="{{ t('Title') }}">
+                                <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="paper-link-title">
+                                    {{ paper.title }}
+                                </a>
+                            </td>
+                            <td data-label="{{ t('Strand') }}"><span class="strand-pill-mini">{{ paper.strand }}</span></td>
+                            <td data-label="{{ t('Research Type') }}">{{ paper.research_type }}</td>
+                            <td class="tabular-nums" data-label="{{ t('Academic Year') }}">{{ paper.academic_year }}</td>
+                            <td class="tabular-nums" data-label="Views"><strong>{{ paper.view_count }}</strong></td>
+                            <td class="tabular-nums" data-label="{{ t('Bookmarks') }}">{{ paper.bookmark_count }}</td>
+                            <td data-label="Actions">
+                                <div class="table-actions">
+                                    <a href="{{ url_for('paper_detail', paper_id=paper.id) }}" class="btn btn-secondary btn-sm" title="Preview Paper">
+                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-secondary btn-sm js-dash-edit-paper"
+                                        data-paper-id="{{ paper.id }}" title="Edit Paper">
+                                        <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm js-dash-delete-paper"
+                                        data-paper-id="{{ paper.id }}" data-paper-title="{{ paper.title }}"
+                                        data-paper-strand="{{ paper.strand|upper }}" title="Delete Paper">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="papers-empty-row" class="dash-empty-row" style="{% if papers %}display: none;{% endif %}">
+                            <td colspan="7">No research papers match your selected filters.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer-bar">
+                <span class="table-range-info" id="papers-range-label"></span>
+                <div class="dash-pagination" id="papers-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WORKSPACE 4: ACTIVITY AUDIT LOG -->
+    <section class="workspace-panel" id="panel-audit" role="tabpanel" aria-labelledby="tab-btn-audit">
+        <div class="dash-panel">
+            <div class="dash-panel-header">
+                <h2 class="dash-panel-title">
+                    <i data-lucide="history" style="width: 21px; height: 21px;"></i>
+                    <span>{{ t('Activity Log') }}</span>
+                </h2>
+            </div>
+
+            <div class="panel-toolbar">
+                <div class="toolbar-left">
+                    <select id="dash-audit-group" class="dash-filter-select" aria-label="Filter activity type">
+                        <option value="all">All Activities</option>
+                        <option value="user">Approvals &amp; Roles</option>
+                        <option value="paper">Uploads &amp; Edits</option>
+                        <option value="delete">Deletions</option>
+                    </select>
+                </div>
+
+                <div class="toolbar-right">
+                    <input type="search" id="dash-audit-filter" class="dash-filter-input"
+                        placeholder="Search logs by admin or action details..." aria-label="Search audit logs">
+                </div>
+            </div>
+
+            <div class="dash-table-wrap">
+                <table class="dash-table" id="audit-log-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Administrator</th>
+                            <th>Action</th>
+                            <th>Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-log-tbody">
+                        {% for item in audit_logs %}
+                        <tr class="audit-row"
+                            data-group="{{ item.action_group }}"
+                            data-search="{{ (item.admin_name ~ ' ' ~ item.action_label ~ ' ' ~ item.summary)|lower }}">
+                            <td class="tabular-nums" data-label="Timestamp">{{ item.display_time }}</td>
+                            <td data-label="Administrator"><strong>{{ item.admin_name }}</strong></td>
+                            <td data-label="Action">
+                                <span class="status-badge tone-{{ item.action_tone }}">{{ item.action_label }}</span>
+                            </td>
+                            <td data-label="Summary">{{ item.summary }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr id="audit-empty-row" class="dash-empty-row" style="{% if audit_logs %}display: none;{% endif %}">
+                            <td colspan="4">No admin audit activities recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Accessible In-Page Confirmation Modal -->
+<div class="admin-modal-overlay" id="admin-confirm-modal" role="dialog" aria-modal="true"
+    aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-body">
+    <div class="admin-modal-card">
+        <div class="admin-modal-header">
+            <span class="admin-modal-icon" id="confirm-modal-icon">
+                <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+            </span>
+            <h3 class="admin-modal-title" id="confirm-modal-title">Confirm Action</h3>
+        </div>
+        <p class="admin-modal-body" id="confirm-modal-body"></p>
+        <div class="admin-modal-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="confirm-modal-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" id="confirm-modal-accept">Confirm</button>
+        </div>
+    </div>
+</div>
+
+{% include '_paper_editor_modal.html' %}
+<script type="application/json" id="admin-papers-data">{{ papers | tojson }}</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const PAGE_SIZE = 8;
+        const feedbackEl = document.getElementById("dash-feedback");
+        const feedbackTextEl = document.getElementById("dash-feedback-text");
+        const currentAdminId = "{{ current_admin_id or '' }}";
+
+        function showFeedback(message, isError = false) {
+            if (!feedbackEl || !feedbackTextEl) return;
+            feedbackEl.className = isError ? "alert alert-danger" : "alert alert-success";
+            feedbackEl.style.display = "flex";
+            feedbackTextEl.textContent = message;
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Styled confirmation modal helper
+        const modalEl = document.getElementById("admin-confirm-modal");
+        const modalTitleEl = document.getElementById("confirm-modal-title");
+        const modalBodyEl = document.getElementById("confirm-modal-body");
+        const modalIconEl = document.getElementById("confirm-modal-icon");
+        const modalCancelBtn = document.getElementById("confirm-modal-cancel");
+        const modalAcceptBtn = document.getElementById("confirm-modal-accept");
+        let confirmResolver = null;
+
+        function askAdminConfirm({ title, message, confirmText = "Confirm", tone = "primary" }) {
+            if (!modalEl) return Promise.resolve(true);
+            modalTitleEl.textContent = title;
+            modalBodyEl.textContent = message;
+            modalAcceptBtn.textContent = confirmText;
+            modalAcceptBtn.className = tone === "danger" ? "btn btn-danger btn-sm" : "btn btn-primary btn-sm";
+            modalIconEl.className = tone === "danger" ? "admin-modal-icon danger" : "admin-modal-icon";
+            modalEl.classList.add("open");
+            modalAcceptBtn.focus();
+            if (window.lucide) window.lucide.createIcons();
+
+            return new Promise((resolve) => {
+                confirmResolver = resolve;
+            });
+        }
+
+        function closeConfirmModal(accepted) {
+            if (!modalEl) return;
+            modalEl.classList.remove("open");
+            if (confirmResolver) {
+                const fn = confirmResolver;
+                confirmResolver = null;
+                fn(Boolean(accepted));
+            }
+        }
+
+        modalCancelBtn?.addEventListener("click", () => closeConfirmModal(false));
+        modalAcceptBtn?.addEventListener("click", () => closeConfirmModal(true));
+        modalEl?.addEventListener("click", (e) => {
+            if (e.target === modalEl) closeConfirmModal(false);
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modalEl?.classList.contains("open")) {
+                closeConfirmModal(false);
+            }
+        });
+
+        // Append live audit entry to table & Overview feed using safe DOM APIs
+        function appendLiveAuditEntry(entry) {
+            if (!entry) return;
+            const tbody = document.getElementById("audit-log-tbody");
+            const emptyAuditRow = document.getElementById("audit-empty-row");
+            if (tbody) {
+                const tr = document.createElement("tr");
+                tr.className = "audit-row";
+                tr.setAttribute("data-group", entry.action_group || "user");
+                tr.setAttribute("data-search", `${entry.admin_name || ""} ${entry.action_label || ""} ${entry.summary || ""}`.toLowerCase());
+
+                const tdTime = document.createElement("td");
+                tdTime.className = "tabular-nums";
+                tdTime.setAttribute("data-label", "Timestamp");
+                tdTime.textContent = entry.display_time || "Just now";
+
+                const tdAdmin = document.createElement("td");
+                tdAdmin.setAttribute("data-label", "Administrator");
+                const strong = document.createElement("strong");
+                strong.textContent = entry.admin_name || "Administrator";
+                tdAdmin.appendChild(strong);
+
+                const tdAction = document.createElement("td");
+                tdAction.setAttribute("data-label", "Action");
+                const badge = document.createElement("span");
+                badge.className = `status-badge tone-${entry.action_tone || "role"}`;
+                badge.textContent = entry.action_label || entry.action || "Action";
+                tdAction.appendChild(badge);
+
+                const tdSummary = document.createElement("td");
+                tdSummary.setAttribute("data-label", "Summary");
+                tdSummary.textContent = entry.summary || "";
+
+                tr.append(tdTime, tdAdmin, tdAction, tdSummary);
+                tbody.insertBefore(tr, tbody.firstChild);
+                if (emptyAuditRow) emptyAuditRow.style.display = "none";
+
+                const auditBadge = document.getElementById("workspace-badge-audit");
+                if (auditBadge) {
+                    auditBadge.textContent = tbody.querySelectorAll(".audit-row").length;
+                }
+            }
+
+            const overviewFeed = document.getElementById("overview-audit-feed");
+            if (overviewFeed) {
+                document.getElementById("overview-audit-empty")?.remove();
+                const card = document.createElement("div");
+                card.className = "feed-item";
+                const main = document.createElement("div");
+                main.className = "feed-item-main";
+                const title = document.createElement("strong");
+                title.textContent = entry.summary || "";
+                const meta = document.createElement("span");
+                meta.className = "feed-item-meta";
+                meta.textContent = `${entry.admin_name || "Administrator"} • ${entry.display_time || "Just now"}`;
+                main.append(title, meta);
+
+                const badge = document.createElement("span");
+                badge.className = `status-badge tone-${entry.action_tone || "role"}`;
+                badge.textContent = entry.action_label || entry.action || "Action";
+
+                card.append(main, badge);
+                overviewFeed.insertBefore(card, overviewFeed.firstChild);
+                while (overviewFeed.children.length > 4) {
+                    overviewFeed.lastElementChild.remove();
+                }
+            }
+        }
+
+        // Workspace Tab Switcher & Hash Sync
+        const workspaceBtns = document.querySelectorAll(".workspace-tab-btn");
+        const workspacePanels = {
+            overview: document.getElementById("panel-overview"),
+            approvals: document.getElementById("panel-approvals"),
+            papers: document.getElementById("panel-papers"),
+            audit: document.getElementById("panel-audit"),
+        };
+
+        function switchWorkspace(target) {
+            const key = workspacePanels[target] ? target : "overview";
+            workspaceBtns.forEach((btn) => {
+                const isActive = btn.getAttribute("data-workspace") === key;
+                btn.classList.toggle("active", isActive);
+                btn.setAttribute("aria-selected", isActive ? "true" : "false");
+            });
+            Object.entries(workspacePanels).forEach(([k, panel]) => {
+                if (panel) panel.classList.toggle("active", k === key);
+            });
+        }
+
+        workspaceBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                switchWorkspace(btn.getAttribute("data-workspace"));
+            });
+        });
+
+        document.querySelectorAll(".js-jump-workspace").forEach((el) => {
+            el.addEventListener("click", () => {
+                const target = el.getAttribute("data-target") || "overview";
+                switchWorkspace(target);
+                const userTab = el.getAttribute("data-user-tab");
+                if (target === "approvals" && userTab) {
+                    activeUserFilter = userTab;
+                    userPage = 1;
+                    userTabButtons.forEach((b) => b.classList.toggle("active", b.getAttribute("data-user-filter") === userTab));
+                    applyUserFilter();
+                }
+            });
+            if (el.getAttribute("role") === "button") {
+                el.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        el.click();
+                    }
+                });
+            }
+        });
+
+        function syncWorkspaceFromHash() {
+            const hash = window.location.hash;
+            if (hash === "#account-approvals") switchWorkspace("approvals");
+            else if (hash === "#research-papers") switchWorkspace("papers");
+            else if (hash === "#activity-log") switchWorkspace("audit");
+            else if (hash === "#upload-paper") triggerUploadModal();
+            else if (hash.startsWith("#edit=")) {
+                const editId = decodeURIComponent(hash.slice(6));
+                if (papersById[editId]) triggerEditModal(papersById[editId]);
+            }
+        }
+        window.addEventListener("hashchange", syncWorkspaceFromHash);
+
+        // In-memory paper store + live Upload / Edit Modal integration
+        const papersById = {};
+        try {
+            const rawPapers = JSON.parse(document.getElementById("admin-papers-data")?.textContent || "[]");
+            rawPapers.forEach((p) => {
+                if (p && p.id) papersById[String(p.id)] = p;
+            });
+        } catch (err) {
+            console.error("Failed to parse papers JSON:", err);
+        }
+
+        function updateStrandBadgeDelta(strandCode, delta) {
+            const code = (strandCode || "").toUpperCase();
+            if (["STEM", "ABM", "HUMSS"].includes(code)) {
+                const el = document.getElementById(`kpi-${code.toLowerCase()}-count`);
+                if (el) el.textContent = Math.max(0, (parseInt(el.textContent, 10) || 0) + delta);
+            }
+        }
+
+        function syncYearDropdownOption(yearStr) {
+            if (!yearStr || !paperYearSelect) return;
+            const exists = Array.from(paperYearSelect.options).some((opt) => opt.value === yearStr);
+            if (!exists) {
+                const opt = document.createElement("option");
+                opt.value = yearStr;
+                opt.textContent = yearStr;
+                paperYearSelect.appendChild(opt);
+            }
+        }
+
+        function createOrUpdatePaperRow(paper, isEditMode) {
+            if (!paperTbody || !paper || !paper.id) return;
+            const pid = String(paper.id);
+            const prev = papersById[pid];
+            const prevStrand = (prev?.strand || "").toUpperCase();
+            const nextStrand = (paper.strand || "").toUpperCase();
+            papersById[pid] = {
+                ...(prev || {}),
+                ...paper,
+                view_count: paper.view_count ?? prev?.view_count ?? 0,
+                bookmark_count: paper.bookmark_count ?? prev?.bookmark_count ?? 0,
+            };
+            const merged = papersById[pid];
+
+            let row = paperTbody.querySelector(`.paper-row[data-paper-id="${CSS.escape(pid)}"]`);
+            if (!row) {
+                row = document.createElement("tr");
+                row.className = "paper-row";
+                row.setAttribute("data-paper-id", pid);
+
+                const tdTitle = document.createElement("td");
+                tdTitle.style.maxWidth = "340px";
+                tdTitle.setAttribute("data-label", "Title");
+                const titleLink = document.createElement("a");
+                titleLink.className = "paper-link-title";
+                tdTitle.appendChild(titleLink);
+
+                const tdStrand = document.createElement("td");
+                tdStrand.setAttribute("data-label", "Strand");
+                const strandPill = document.createElement("span");
+                strandPill.className = "strand-pill-mini";
+                tdStrand.appendChild(strandPill);
+
+                const tdType = document.createElement("td");
+                tdType.setAttribute("data-label", "Research Type");
+
+                const tdYear = document.createElement("td");
+                tdYear.className = "tabular-nums";
+                tdYear.setAttribute("data-label", "Academic Year");
+
+                const tdViews = document.createElement("td");
+                tdViews.className = "tabular-nums";
+                tdViews.setAttribute("data-label", "Views");
+                const viewsStrong = document.createElement("strong");
+                tdViews.appendChild(viewsStrong);
+
+                const tdBm = document.createElement("td");
+                tdBm.className = "tabular-nums";
+                tdBm.setAttribute("data-label", "Bookmarks");
+
+                const tdAct = document.createElement("td");
+                tdAct.setAttribute("data-label", "Actions");
+                const actionsWrap = document.createElement("div");
+                actionsWrap.className = "table-actions";
+
+                const previewLink = document.createElement("a");
+                previewLink.className = "btn btn-secondary btn-sm";
+                previewLink.title = "Preview Paper";
+                previewLink.innerHTML = '<i data-lucide="eye" style="width: 14px; height: 14px;"></i>';
+
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.className = "btn btn-secondary btn-sm js-dash-edit-paper";
+                editBtn.title = "Edit Paper";
+                editBtn.setAttribute("data-paper-id", pid);
+                editBtn.innerHTML = '<i data-lucide="pencil" style="width: 14px; height: 14px;"></i>';
+
+                const delBtn = document.createElement("button");
+                delBtn.type = "button";
+                delBtn.className = "btn btn-danger btn-sm js-dash-delete-paper";
+                delBtn.title = "Delete Paper";
+                delBtn.setAttribute("data-paper-id", pid);
+                delBtn.innerHTML = '<i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>';
+
+                actionsWrap.append(previewLink, editBtn, delBtn);
+                tdAct.appendChild(actionsWrap);
+                row.append(tdTitle, tdStrand, tdType, tdYear, tdViews, tdBm, tdAct);
+                paperTbody.insertBefore(row, paperTbody.firstChild);
+            }
+
+            const authorsList = Array.isArray(merged.authors) ? merged.authors : [];
+            row.setAttribute("data-title", (merged.title || "").toLowerCase());
+            row.setAttribute("data-paper-title", merged.title || "");
+            row.setAttribute("data-strand", nextStrand);
+            row.setAttribute("data-year", merged.academic_year || "");
+            row.setAttribute("data-views", String(merged.view_count || 0));
+            row.setAttribute("data-bookmarks", String(merged.bookmark_count || 0));
+            row.setAttribute("data-created", merged.created_at || "");
+            row.setAttribute(
+                "data-search",
+                `${merged.title || ""} ${nextStrand} ${merged.research_type || ""} ${merged.academic_year || ""} ${authorsList.join(" ")}`.toLowerCase()
+            );
+
+            const titleAnchor = row.querySelector(".paper-link-title");
+            if (titleAnchor) {
+                titleAnchor.href = `/paper/${encodeURIComponent(pid)}`;
+                titleAnchor.textContent = merged.title || "";
+            }
+            const strandSpan = row.querySelector(".strand-pill-mini");
+            if (strandSpan) strandSpan.textContent = nextStrand;
+
+            const cells = row.querySelectorAll("td");
+            if (cells[2]) cells[2].textContent = merged.research_type || "";
+            if (cells[3]) cells[3].textContent = merged.academic_year || "";
+            const viewsEl = cells[4]?.querySelector("strong");
+            if (viewsEl) viewsEl.textContent = String(merged.view_count || 0);
+            if (cells[5]) cells[5].textContent = String(merged.bookmark_count || 0);
+
+            const previewBtn = row.querySelector('a[title="Preview Paper"]');
+            if (previewBtn) previewBtn.href = `/paper/${encodeURIComponent(pid)}`;
+            const delBtnRef = row.querySelector(".js-dash-delete-paper");
+            if (delBtnRef) {
+                delBtnRef.setAttribute("data-paper-title", merged.title || "");
+                delBtnRef.setAttribute("data-paper-strand", nextStrand);
+            }
+
+            if (!isEditMode) {
+                const totalEl = document.getElementById("kpi-total-papers");
+                if (totalEl) totalEl.textContent = (parseInt(totalEl.textContent, 10) || 0) + 1;
+                const wsPapers = document.getElementById("workspace-badge-papers");
+                if (wsPapers) wsPapers.textContent = (parseInt(wsPapers.textContent, 10) || 0) + 1;
+                updateStrandBadgeDelta(nextStrand, 1);
+            } else if (prevStrand && nextStrand && prevStrand !== nextStrand) {
+                updateStrandBadgeDelta(prevStrand, -1);
+                updateStrandBadgeDelta(nextStrand, 1);
+            }
+
+            syncYearDropdownOption(merged.academic_year);
+            applyPaperFiltersAndSort();
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function triggerUploadModal() {
+            window.PaperEditorModal?.openUpload({
+                onSuccess: (data) => {
+                    createOrUpdatePaperRow(data.paper, false);
+                    if (data.audit) appendLiveAuditEntry(data.audit);
+                    switchWorkspace("papers");
+                    showFeedback(data.message || "Research paper uploaded successfully.");
+                }
+            });
+        }
+
+        function triggerEditModal(paper) {
+            if (!paper) return;
+            window.PaperEditorModal?.openEdit(paper, {
+                onSuccess: (data) => {
+                    createOrUpdatePaperRow(data.paper, true);
+                    if (data.audit) appendLiveAuditEntry(data.audit);
+                    showFeedback(data.message || "Research paper updated successfully.");
+                }
+            });
+        }
+
+        document.getElementById("open-upload-modal-btn")?.addEventListener("click", triggerUploadModal);
+
+        // Shared Pagination Helper
+        function renderPagination(container, totalItems, currentPage, onPageSelect) {
+            if (!container) return;
+            const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+            container.innerHTML = "";
+            if (totalItems <= PAGE_SIZE) return;
+
+            const makeBtn = (label, page, disabled = false, active = false) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "dash-page-btn" + (active ? " active" : "");
+                btn.textContent = label;
+                btn.disabled = disabled;
+                btn.addEventListener("click", () => onPageSelect(page));
+                return btn;
+            };
+
+            container.appendChild(makeBtn("Prev", currentPage - 1, currentPage <= 1));
+            for (let p = 1; p <= totalPages; p++) {
+                container.appendChild(makeBtn(String(p), p, false, p === currentPage));
+            }
+            container.appendChild(makeBtn("Next", currentPage + 1, currentPage >= totalPages));
+        }
+
+        // 1. Account Approvals Filter, Search & Pagination
+        let activeUserFilter = "pending";
+        let userPage = 1;
+        const userTabButtons = document.querySelectorAll(".dash-tab-btn");
+        const userSearchInput = document.getElementById("dash-user-filter");
+        const usersEmptyRow = document.getElementById("users-empty-row");
+        const usersRangeLabel = document.getElementById("users-range-label");
+        const usersPagination = document.getElementById("users-pagination");
+
+        function buildUserActionsCell(cell, userId, status, role) {
+            if (!cell) return;
+            cell.innerHTML = "";
+            if (status !== "approved") {
+                const btnApprove = document.createElement("button");
+                btnApprove.type = "button";
+                btnApprove.className = "btn btn-primary btn-sm js-user-action";
+                btnApprove.setAttribute("data-user-id", userId);
+                btnApprove.setAttribute("data-status", "approved");
+                btnApprove.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i><span>Approve</span>';
+                cell.appendChild(btnApprove);
+            }
+            if (status !== "rejected" && userId !== currentAdminId) {
+                const btnReject = document.createElement("button");
+                btnReject.type = "button";
+                btnReject.className = "btn btn-danger btn-sm js-user-action";
+                btnReject.setAttribute("data-user-id", userId);
+                btnReject.setAttribute("data-status", "rejected");
+                btnReject.innerHTML = '<i data-lucide="x" style="width: 14px; height: 14px;"></i><span>Reject</span>';
+                cell.appendChild(btnReject);
+            }
+            if (status === "approved" && userId !== currentAdminId) {
+                const targetRole = role === "student" ? "admin" : "student";
+                const btnRole = document.createElement("button");
+                btnRole.type = "button";
+                btnRole.className = "btn btn-secondary btn-sm js-user-role";
+                btnRole.setAttribute("data-user-id", userId);
+                btnRole.setAttribute("data-next-role", targetRole);
+                const span = document.createElement("span");
+                span.textContent = role === "student" ? "Make Admin" : "Set Student";
+                btnRole.appendChild(span);
+                cell.appendChild(btnRole);
+            }
+        }
+
+        function applyUserFilter() {
+            const rows = Array.from(document.querySelectorAll("#users-approval-table .user-row"));
+            const query = (userSearchInput?.value || "").trim().toLowerCase();
+            let pendingCount = 0;
+            let approvedCount = 0;
+            let rejectedCount = 0;
+            const matched = [];
+
+            rows.forEach((row) => {
+                const status = row.getAttribute("data-status") || "approved";
+                const haystack = row.getAttribute("data-search") || "";
+                if (status === "pending") pendingCount++;
+                else if (status === "approved") approvedCount++;
+                else if (status === "rejected") rejectedCount++;
+
+                const tabOk = activeUserFilter === "all" || status === activeUserFilter;
+                const searchOk = !query || haystack.includes(query);
+                if (tabOk && searchOk) matched.push(row);
+                row.style.display = "none";
+            });
+
+            const totalMatched = matched.length;
+            const totalPages = Math.max(1, Math.ceil(totalMatched / PAGE_SIZE));
+            if (userPage > totalPages) userPage = totalPages;
+            const start = (userPage - 1) * PAGE_SIZE;
+            const end = Math.min(totalMatched, start + PAGE_SIZE);
+            matched.slice(start, end).forEach((row) => {
+                row.style.display = "";
+            });
+
+            if (usersEmptyRow) usersEmptyRow.style.display = totalMatched === 0 ? "" : "none";
+            if (usersRangeLabel) {
+                usersRangeLabel.textContent = totalMatched === 0
+                    ? "0 accounts shown"
+                    : `Showing ${start + 1}–${end} of ${totalMatched} accounts`;
+            }
+            renderPagination(usersPagination, totalMatched, userPage, (nextPage) => {
+                userPage = nextPage;
+                applyUserFilter();
+            });
+
+            document.getElementById("kpi-pending-count").textContent = pendingCount;
+            document.getElementById("kpi-approved-count").textContent = approvedCount;
+            document.getElementById("tab-count-pending").textContent = pendingCount;
+            document.getElementById("tab-count-approved").textContent = approvedCount;
+            document.getElementById("tab-count-rejected").textContent = rejectedCount;
+            document.getElementById("tab-count-all").textContent = rows.length;
+
+            const kpiPendingCard = document.getElementById("kpi-pending-card");
+            if (kpiPendingCard) kpiPendingCard.classList.toggle("has-pending", pendingCount > 0);
+            const wsBadgePending = document.getElementById("workspace-badge-pending");
+            if (wsBadgePending) {
+                wsBadgePending.textContent = pendingCount;
+                wsBadgePending.classList.toggle("alert-pill", pendingCount > 0);
+            }
+            const headerPendingNum = document.getElementById("header-pending-num");
+            if (headerPendingNum) headerPendingNum.textContent = pendingCount;
+            const bulkBtn = document.getElementById("bulk-approve-btn");
+            const bulkCount = document.getElementById("bulk-approve-count");
+            if (bulkCount) bulkCount.textContent = pendingCount;
+            if (bulkBtn) bulkBtn.style.display = pendingCount > 0 ? "" : "none";
+        }
+
+        userTabButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                userTabButtons.forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+                activeUserFilter = btn.getAttribute("data-user-filter") || "pending";
+                userPage = 1;
+                applyUserFilter();
+            });
+        });
+
+        userSearchInput?.addEventListener("input", () => {
+            userPage = 1;
+            applyUserFilter();
+        });
+
+        applyUserFilter();
+
+        // Single Account Status / Role Handler (with confirmation on Reject & Role Change)
+        document.getElementById("users-approval-table")?.addEventListener("click", async (e) => {
+            const actionBtn = e.target.closest(".js-user-action, .js-user-role");
+            if (!actionBtn) return;
+
+            const userId = actionBtn.getAttribute("data-user-id");
+            const status = actionBtn.getAttribute("data-status");
+            const nextRole = actionBtn.getAttribute("data-next-role");
+            const row = actionBtn.closest(".user-row");
+            if (!userId || !row) return;
+            const userLabel = row.getAttribute("data-user-label") || "this user";
+
+            if (status === "rejected") {
+                const ok = await askAdminConfirm({
+                    title: "Reject Registration?",
+                    message: `Decline account access for ${userLabel}? They will be blocked from signing in unless re-approved later.`,
+                    confirmText: "Reject Account",
+                    tone: "danger",
+                });
+                if (!ok) return;
+            } else if (nextRole) {
+                const ok = await askAdminConfirm({
+                    title: nextRole === "admin" ? "Grant Admin Privileges?" : "Change Role to Student?",
+                    message: nextRole === "admin"
+                        ? `Promote ${userLabel} to Administrator? They will gain access to the Admin Dashboard, user approvals, and repository management.`
+                        : `Remove Administrator access for ${userLabel} and switch their role to Student?`,
+                    confirmText: nextRole === "admin" ? "Make Admin" : "Set Student",
+                    tone: "primary",
+                });
+                if (!ok) return;
+            }
+
+            const payload = {};
+            if (status) payload.status = status;
+            if (nextRole) payload.role = nextRole;
+
+            try {
+                actionBtn.disabled = true;
+                const res = await fetch(`/admin/users/${encodeURIComponent(userId)}/status`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    showFeedback(data.error || "Failed to update account.", true);
+                    actionBtn.disabled = false;
+                    return;
+                }
+
+                const actionsCell = row.querySelector(".table-actions");
+                const currentRole = data.role || (row.querySelector(".user-role-cell")?.textContent || "student").trim().toLowerCase();
+
+                if (data.status) {
+                    row.setAttribute("data-status", data.status);
+                    const badge = row.querySelector(".user-status-cell .status-badge");
+                    if (badge) {
+                        badge.className = `status-badge status-${data.status}`;
+                        badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                    }
+                    buildUserActionsCell(actionsCell, userId, data.status, currentRole);
+                    showFeedback(`Account status updated to ${data.status}.`);
+                    applyUserFilter();
+                }
+
+                if (data.role) {
+                    const roleCell = row.querySelector(".user-role-cell");
+                    if (roleCell) roleCell.textContent = data.role;
+                    buildUserActionsCell(actionsCell, userId, row.getAttribute("data-status") || "approved", data.role);
+                    showFeedback(`Account role updated to ${data.role}.`);
+                }
+
+                if (data.audit) appendLiveAuditEntry(data.audit);
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                showFeedback("Network error while updating account.", true);
+                actionBtn.disabled = false;
+            }
+        });
+
+        // Bulk Approve Pending Users
+        document.getElementById("bulk-approve-btn")?.addEventListener("click", async () => {
+            const pendingNow = document.querySelectorAll('#users-approval-table .user-row[data-status="pending"]').length;
+            if (pendingNow === 0) return;
+
+            const ok = await askAdminConfirm({
+                title: "Approve All Pending Accounts?",
+                message: `Approve all ${pendingNow} pending user registration(s) so they can immediately sign in to the repository?`,
+                confirmText: "Approve All",
+                tone: "primary",
+            });
+            if (!ok) return;
+
+            try {
+                const res = await fetch("/admin/users/bulk-approve", { method: "POST" });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    showFeedback(data.error || "Failed to approve pending accounts.", true);
+                    return;
+                }
+                (data.approved_ids || []).forEach((uid) => {
+                    const row = document.querySelector(`#users-approval-table .user-row[data-user-id="${CSS.escape(uid)}"]`);
+                    if (!row) return;
+                    row.setAttribute("data-status", "approved");
+                    const badge = row.querySelector(".user-status-cell .status-badge");
+                    if (badge) {
+                        badge.className = "status-badge status-approved";
+                        badge.textContent = "Approved";
+                    }
+                    const role = (row.querySelector(".user-role-cell")?.textContent || "student").trim().toLowerCase();
+                    buildUserActionsCell(row.querySelector(".table-actions"), uid, "approved", role);
+                });
+                applyUserFilter();
+                if (data.audit) appendLiveAuditEntry(data.audit);
+                showFeedback(`Approved ${data.approved_count || 0} pending account(s).`);
+                if (window.lucide) window.lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+                showFeedback("Network error during bulk approval.", true);
+            }
+        });
+
+        // 2. Research Papers Strand Filter, Year, Search, Sort & Pagination
+        let activePaperStrand = "ALL";
+        let paperPage = 1;
+        const paperTbody = document.getElementById("papers-analytics-tbody");
+        const paperSearchInput = document.getElementById("dash-paper-filter");
+        const paperYearSelect = document.getElementById("dash-year-filter");
+        const paperSortSelect = document.getElementById("dash-paper-sort");
+        const papersEmptyRow = document.getElementById("papers-empty-row");
+        const papersRangeLabel = document.getElementById("papers-range-label");
+        const papersPagination = document.getElementById("papers-pagination");
+
+        function applyPaperFiltersAndSort() {
+            if (!paperTbody) return;
+            const rows = Array.from(paperTbody.querySelectorAll(".paper-row"));
+            const query = (paperSearchInput?.value || "").trim().toLowerCase();
+            const yearVal = paperYearSelect?.value || "";
+            const sortVal = paperSortSelect?.value || "views_desc";
+
+            rows.sort((a, b) => {
+                if (sortVal === "views_desc") {
+                    return (Number(b.getAttribute("data-views")) || 0) - (Number(a.getAttribute("data-views")) || 0);
+                }
+                if (sortVal === "bookmarks_desc") {
+                    return (Number(b.getAttribute("data-bookmarks")) || 0) - (Number(a.getAttribute("data-bookmarks")) || 0);
+                }
+                if (sortVal === "newest") {
+                    return (b.getAttribute("data-created") || "").localeCompare(a.getAttribute("data-created") || "");
+                }
+                return (a.getAttribute("data-title") || "").localeCompare(b.getAttribute("data-title") || "");
+            });
+            rows.forEach((row) => paperTbody.insertBefore(row, papersEmptyRow));
+
+            const matched = [];
+            rows.forEach((row) => {
+                const strandOk = activePaperStrand === "ALL" || (row.getAttribute("data-strand") || "") === activePaperStrand;
+                const yearOk = !yearVal || (row.getAttribute("data-year") || "") === yearVal;
+                const searchOk = !query || (row.getAttribute("data-search") || "").includes(query);
+                if (strandOk && yearOk && searchOk) matched.push(row);
+                row.style.display = "none";
+            });
+
+            const totalMatched = matched.length;
+            const totalPages = Math.max(1, Math.ceil(totalMatched / PAGE_SIZE));
+            if (paperPage > totalPages) paperPage = totalPages;
+            const start = (paperPage - 1) * PAGE_SIZE;
+            const end = Math.min(totalMatched, start + PAGE_SIZE);
+            matched.slice(start, end).forEach((row) => {
+                row.style.display = "";
+            });
+
+            if (papersEmptyRow) papersEmptyRow.style.display = totalMatched === 0 ? "" : "none";
+            if (papersRangeLabel) {
+                papersRangeLabel.textContent = totalMatched === 0
+                    ? "0 papers shown"
+                    : `Showing ${start + 1}–${end} of ${totalMatched} papers`;
+            }
+            renderPagination(papersPagination, totalMatched, paperPage, (nextPage) => {
+                paperPage = nextPage;
+                applyPaperFiltersAndSort();
+            });
+        }
+
+        document.querySelectorAll("#paper-strand-filters .strand-filter-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#paper-strand-filters .strand-filter-btn").forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+                activePaperStrand = btn.getAttribute("data-strand") || "ALL";
+                paperPage = 1;
+                applyPaperFiltersAndSort();
+            });
+        });
+
+        paperYearSelect?.addEventListener("change", () => {
+            paperPage = 1;
+            applyPaperFiltersAndSort();
+        });
+        paperSortSelect?.addEventListener("change", () => {
+            paperPage = 1;
+            applyPaperFiltersAndSort();
+        });
+        paperSearchInput?.addEventListener("input", () => {
+            paperPage = 1;
+            applyPaperFiltersAndSort();
+        });
+        applyPaperFiltersAndSort();
+
+        // Modal Edit trigger & Safer Paper Deletion with Styled Confirmation
+        paperTbody?.addEventListener("click", async (e) => {
+            const editBtn = e.target.closest(".js-dash-edit-paper");
+            if (editBtn) {
+                const pid = editBtn.getAttribute("data-paper-id");
+                if (pid && papersById[String(pid)]) {
+                    triggerEditModal(papersById[String(pid)]);
+                }
+                return;
+            }
+
+            const btn = e.target.closest(".js-dash-delete-paper");
+            if (!btn) return;
+            const paperId = btn.getAttribute("data-paper-id");
+            const paperTitle = btn.getAttribute("data-paper-title") || "this research paper";
+            const paperStrand = (btn.getAttribute("data-paper-strand") || "").toUpperCase();
+            if (!paperId) return;
+
+            const ok = await askAdminConfirm({
+                title: "Delete Research Paper?",
+                message: `Permanently delete "${paperTitle}" and remove its PDF file? This action cannot be undone.`,
+                confirmText: "Delete Paper",
+                tone: "danger",
+            });
+            if (!ok) return;
+
+            try {
+                btn.disabled = true;
+                const res = await fetch(`/admin/paper/${encodeURIComponent(paperId)}/delete`, {
+                    method: "POST"
+                });
+                const data = await res.json();
+                if (data.success) {
+                    btn.closest(".paper-row")?.remove();
+                    const totalEl = document.getElementById("kpi-total-papers");
+                    if (totalEl) totalEl.textContent = Math.max(0, (parseInt(totalEl.textContent, 10) || 0) - 1);
+                    const wsPapers = document.getElementById("workspace-badge-papers");
+                    if (wsPapers) wsPapers.textContent = Math.max(0, (parseInt(wsPapers.textContent, 10) || 0) - 1);
+                    if (["STEM", "ABM", "HUMSS"].includes(paperStrand)) {
+                        const sEl = document.getElementById(`kpi-${paperStrand.toLowerCase()}-count`);
+                        if (sEl) sEl.textContent = Math.max(0, (parseInt(sEl.textContent, 10) || 0) - 1);
+                    }
+                    applyPaperFiltersAndSort();
+                    if (data.audit) appendLiveAuditEntry(data.audit);
+                    showFeedback("Research paper deleted successfully.");
+                } else {
+                    showFeedback(data.error || "Failed to delete paper.", true);
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                showFeedback("Error deleting paper.", true);
+                btn.disabled = false;
+            }
+        });
+
+        // 3. Audit Log Filtering
+        const auditGroupSelect = document.getElementById("dash-audit-group");
+        const auditSearchInput = document.getElementById("dash-audit-filter");
+        const auditEmptyRow = document.getElementById("audit-empty-row");
+
+        function applyAuditFilter() {
+            const grp = auditGroupSelect?.value || "all";
+            const query = (auditSearchInput?.value || "").trim().toLowerCase();
+            let visible = 0;
+            document.querySelectorAll("#audit-log-tbody .audit-row").forEach((row) => {
+                const groupOk = grp === "all" || (row.getAttribute("data-group") || "") === grp;
+                const searchOk = !query || (row.getAttribute("data-search") || "").includes(query);
+                const show = groupOk && searchOk;
+                row.style.display = show ? "" : "none";
+                if (show) visible++;
+            });
+            if (auditEmptyRow) auditEmptyRow.style.display = visible === 0 ? "" : "none";
+        }
+
+        auditGroupSelect?.addEventListener("change", applyAuditFilter);
+        auditSearchInput?.addEventListener("input", applyAuditFilter);
+        syncWorkspaceFromHash();
+    });
+</script>
+{% endblock %}

@@ -27,31 +27,6 @@
         z-index: 2;
     }
 
-    /* Circular Back Button */
-    .detail-back-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background-color: #475569;
-        color: #ffffff;
-        font-size: 1.6rem;
-        font-family: monospace;
-        font-weight: bold;
-        text-decoration: none;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
-
-    .detail-back-btn:hover {
-        background-color: #002060;
-        transform: scale(1.08);
-    }
-
     /* Center Strand Info Section (Picture 1 Design) */
     .detail-header-center {
         display: flex;
@@ -172,11 +147,11 @@
         right: 15px;
         z-index: 10;
         font-family: 'Poppins', sans-serif;
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         font-weight: 800;
-        color: rgba(255, 255, 255, 0.7);
-        background-color: rgba(0, 32, 96, 0.88);
-        padding: 4px 8px;
+        color: rgba(255, 255, 255, 0.85);
+        background-color: rgba(0, 32, 96, 0.9);
+        padding: 4px 9px;
         border-radius: 4px;
         letter-spacing: 0.05em;
         pointer-events: none;
@@ -539,19 +514,27 @@
 
     .pdf-copy-btn {
         background-color: #ffffff;
-        border: 2px solid #000000;
-        padding: 0.4rem 1.8rem;
+        border: 1.5px solid #002060;
+        border-radius: 8px;
+        padding: 0.48rem 1.4rem;
         font-family: 'Poppins', sans-serif;
         font-weight: 700;
-        font-size: 0.85rem;
-        color: #000000;
+        font-size: 0.84rem;
+        color: #002060;
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s var(--ease-out-expo);
     }
 
     .pdf-copy-btn:hover {
-        background-color: #f1f5f9;
+        background-color: #002060;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .pdf-copy-btn-edit {
+        background-color: #eef3fa;
     }
 
     .detail-abstract-block {
@@ -760,7 +743,10 @@
     <div class="detail-header-row">
         <!-- Back Arrow Button -->
         <div class="detail-header-left">
-            <a href="javascript:history.back()" class="detail-back-btn" title="Go Back">&lt;</a>
+            <a href="{{ portal_home_url }}" class="page-back-btn js-smart-back" data-fallback="{{ portal_home_url }}"
+                title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+                <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+            </a>
         </div>
 
         <!-- Center Strand Info (Matching Mockup Photo Card Design) -->
@@ -882,6 +868,7 @@
 
             <!-- Bookmark Ribbon & PDF Copy/Delete Buttons -->
             <div class="detail-actions-row" style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                {% if not is_admin %}
                 <div class="bookmark-ribbon-container" style="flex-shrink: 0;">
                     <button id="detail-bookmark-btn" class="bookmark-ribbon-btn {% if is_bookmarked %}active{% endif %}"
                         data-paper-id="{{ paper.id }}" title="Bookmark this paper">
@@ -893,17 +880,18 @@
                         {{ bookmark_count | default(0) }}
                     </span>
                 </div>
+                {% endif %}
 
-                {% if session.get('role') == 'admin' %}
+                {% if is_admin %}
                 <div style="display: flex; gap: 0.75rem; flex: 1; flex-wrap: wrap;">
                     <a href="{{ url_for('stream_pdf', paper_id=paper.id) }}" target="_blank" class="pdf-copy-btn"
                         style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; margin: 0; min-width: 110px;">
                         {{ t('PDF COPY') }}
                     </a>
-                    <a href="{{ url_for('edit_paper', paper_id=paper.id) }}" class="pdf-copy-btn"
-                        style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; margin: 0; min-width: 110px; background-color: #e2e8f0;">
+                    <button type="button" id="open-edit-paper-modal-btn" class="pdf-copy-btn pdf-copy-btn-edit"
+                        style="flex: 1; text-align: center; display: inline-flex; align-items: center; justify-content: center; margin: 0; min-width: 110px;">
                         {{ t('EDIT') }}
-                    </a>
+                    </button>
                     <button id="delete-research-btn" class="delete-paper-btn" data-paper-id="{{ paper.id }}"
                         style="flex: 1; min-width: 110px;">
                         {{ t('DELETE') }}
@@ -964,7 +952,7 @@
     </div>
 
     <!-- Researches you might like Recommendation Section -->
-    {% if recommended_papers %}
+    {% if recommended_papers and not is_admin %}
     <div class="rec-section-container">
         <div class="rec-banner-bar">
             <span>{{ t('Researches you might like:') }}</span>
@@ -1008,6 +996,14 @@
     </div>
     {% endif %}
 
+</div>
+{% endblock %}
+
+{% block modals %}
+    {% if is_admin %}
+    {% include '_paper_editor_modal.html' %}
+    <script type="application/json" id="detail-paper-json">{{ paper | tojson }}</script>
+    {% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -1017,6 +1013,7 @@
     // Custom dynamic async bookmark handler for the ribbon toggle 
     document.addEventListener("DOMContentLoaded", () => {
         if (window.lucide) window.lucide.createIcons();
+        {% if not is_admin %}
         const bookmarkBtn = document.getElementById("detail-bookmark-btn");
         const bookmarkCountEl = document.getElementById("bookmark-count-display");
         if (bookmarkBtn) {
@@ -1056,6 +1053,24 @@
                 }
             });
         }
+        {% endif %}
+
+        {% if is_admin %}
+        const openDetailEditBtn = document.getElementById("open-edit-paper-modal-btn");
+        if (openDetailEditBtn) {
+            openDetailEditBtn.addEventListener("click", () => {
+                try {
+                    const rawPaper = JSON.parse(document.getElementById("detail-paper-json")?.textContent || "null");
+                    if (rawPaper) {
+                        window.PaperEditorModal?.openEdit(rawPaper, {
+                            onSuccess: () => window.location.reload()
+                        });
+                    }
+                } catch (err) {
+                    console.error("Failed to open edit modal:", err);
+                }
+            });
+        }
 
         // Admin delete research handler
         const deleteBtn = document.getElementById("delete-research-btn");
@@ -1074,7 +1089,7 @@
                         const result = await response.json();
                         if (result.success) {
                             alert("Research paper successfully deleted.");
-                            window.location.href = "/";
+                            window.location.href = "{{ portal_home_url }}";
                         } else {
                             alert("Error deleting paper: " + result.error);
                         }
@@ -1087,6 +1102,7 @@
                 }
             });
         }
+        {% endif %}
 
         // Abstract expand/collapse toggle handler
         const abstractEl = document.getElementById("detail-abstract-text");

@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Lundayang Marians - Digital Research Repository{% endblock %}</title>
 
-    <!-- Premium Stylesheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Stylesheet & Favicon -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=asset_version) }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" type="image/x-icon">
     <!-- Lucide Icons via CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,76 +16,156 @@
 </head>
 
 <body>
+    <!-- Branded Page Transition & Loading Overlay -->
+    <div id="page-loader" class="page-loader" role="status" aria-live="polite" aria-label="Loading page">
+        <div class="page-loader-card">
+            <div class="page-loader-brand">
+                <div class="page-loader-ring"></div>
+                <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="Sta. Maria Academy Seal"
+                    class="page-loader-seal">
+            </div>
+            <img src="{{ url_for('static', filename='images/logo_photos/LUNDAYANG_MARIANS-removebg.png') }}"
+                alt="Lundayang Marians" class="page-loader-wordmark">
+            <span class="page-loader-text">{{ t('Loading Lundayang Marians...') }}</span>
+        </div>
+    </div>
 
     <!-- Sticky Navbar Top Header -->
     <header>
-        <div class="navbar">
-            <div class="nav-links">
+        <nav class="navbar" aria-label="Main navigation">
+            <span class="mobile-nav-brand">
+                <i data-lucide="{{ 'shield-check' if is_admin else 'book-open' }}" style="width: 15px; height: 15px;"></i>
+                <span>{{ t('Admin Workspace') if is_admin else t('SMLA Archive') }}</span>
+            </span>
+
+            <button type="button" id="mobile-nav-toggle" class="mobile-nav-toggle" aria-expanded="false"
+                aria-controls="nav-links" aria-label="Toggle navigation menu">
+                <i data-lucide="menu" style="width: 17px; height: 17px;"></i>
+                <span>{{ t('Menu') }}</span>
+            </button>
+
+            <div class="nav-links" id="nav-links">
+                {% if not is_admin %}
+                <a href="{{ url_for('home') }}"
+                    class="nav-item {% if current_endpoint in ('home', 'repository_home', 'landing') %}active{% endif %}">
+                    <i data-lucide="home" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Home') }}</span>
+                </a>
+                <a href="{{ url_for('home') }}#mission-vision" class="nav-item">
+                    <i data-lucide="compass" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Mission & Vision') }}</span>
+                </a>
+                {% endif %}
+
+                {% if session.get('user') and is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}"
+                    class="nav-item {% if current_endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Dashboard') }}</span>
+                    {% if pending_approvals_count and pending_approvals_count > 0 %}
+                    <span class="nav-badge" title="{{ pending_approvals_count }} {{ t('Pending Approvals') }}">{{ pending_approvals_count }}</span>
+                    {% endif %}
+                </a>
+                {% endif %}
+
+                <span class="nav-divider" aria-hidden="true"></span>
+
                 <div class="dropdown-container">
-                    <button class="btn-profile-dropdown" style="display: flex; align-items: center; gap: 4px;">
+                    <button type="button" class="btn-profile-dropdown nav-pill-btn" aria-label="Select Language" aria-expanded="false">
+                        <i data-lucide="globe" style="width: 15px; height: 15px;"></i>
                         <span>{{ t('English') if session.get('lang', 'en') == 'en' else t('Tagalog') }}</span>
-                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; display: inline-block;"></i>
+                        <i data-lucide="chevron-down" class="nav-chevron" style="width: 14px; height: 14px;"></i>
                     </button>
                     <div class="dropdown-menu">
                         <a href="{{ url_for('set_language', lang='en') }}"
-                            class="dropdown-item {% if session.get('lang', 'en') == 'en' %}fw-bold{% endif %}">English</a>
+                            class="dropdown-item {% if session.get('lang', 'en') == 'en' %}fw-bold{% endif %}">
+                            <span>English</span>
+                            {% if session.get('lang', 'en') == 'en' %}
+                            <i data-lucide="check" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                            {% endif %}
+                        </a>
                         <a href="{{ url_for('set_language', lang='tl') }}"
-                            class="dropdown-item {% if session.get('lang') == 'tl' %}fw-bold{% endif %}">Tagalog</a>
+                            class="dropdown-item {% if session.get('lang') == 'tl' %}fw-bold{% endif %}">
+                            <span>Tagalog</span>
+                            {% if session.get('lang') == 'tl' %}
+                            <i data-lucide="check" style="width: 14px; height: 14px; margin-left: auto;"></i>
+                            {% endif %}
+                        </a>
                     </div>
                 </div>
 
                 {% if session.get('user') %}
-                <a href="{{ url_for('home') }}" class="nav-item">{{ t('Home') }}</a>
-                <a href="{{ url_for('developers') }}" class="nav-item">{{ t('Developers') }}</a>
-                <a href="{{ url_for('faq') }}" class="nav-item">{{ t('FAQ') }}</a>
-                {% if session.get('role') == 'admin' %}
-                <a href="{{ url_for('admin_upload') }}" class="nav-item">{{ t('Upload') }}</a>
-                {% endif %}
-
                 <div class="dropdown-container">
-                    <button class="btn-profile-dropdown" title="Account Settings">
-                        <i data-lucide="user-circle" style="width: 24px; height: 24px;"></i>
+                    <button type="button" class="btn-profile-dropdown nav-user-chip" title="Account Settings" aria-label="Account Settings" aria-expanded="false">
+                        <span class="nav-avatar-badge {% if is_admin %}is-admin{% endif %}" aria-hidden="true">
+                            {{ nav_user.initials if nav_user else 'LM' }}
+                        </span>
+                        <span class="nav-user-name">{{ nav_user.display if nav_user else 'Account' }}</span>
+                        <i data-lucide="chevron-down" class="nav-chevron" style="width: 14px; height: 14px;"></i>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="{{ url_for('profile') }}" class="dropdown-item">{{ t('My Profile') }}</a>
-                        <a href="{{ url_for('bookmarks') }}" class="dropdown-item">{{ t('Bookmarks') }}</a>
-                        <a href="{{ url_for('change_password') }}" class="dropdown-item">{{ t('Change Password') }}</a>
-                        <div style="border-top: 1px solid #e2e8f0; margin: 0.25rem 0;"></div>
-                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: #dc2626;">{{ t('Log Out')
-                            }}</a>
+                        {% if nav_user %}
+                        <div class="dropdown-user-header">
+                            <div class="dropdown-user-meta">
+                                <strong class="dropdown-user-title">{{ nav_user.full_name }}</strong>
+                                {% if nav_user.student_id %}
+                                <span class="dropdown-user-sub">{{ nav_user.student_id }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="dropdown-role-pill {% if is_admin %}is-admin{% endif %}">
+                                {{ t(nav_user.role_label) }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                            <i data-lucide="user" style="width: 15px; height: 15px;"></i>
+                            <span>{{ t('My Profile') }}</span>
+                        </a>
+                        {% if not is_admin %}
+                        <a href="{{ url_for('bookmarks') }}" class="dropdown-item">
+                            <i data-lucide="bookmark" style="width: 15px; height: 15px;"></i>
+                            <span>{{ t('Bookmarks') }}</span>
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('change_password') }}" class="dropdown-item">
+                            <i data-lucide="key-round" style="width: 15px; height: 15px;"></i>
+                            <span>{{ t('Change Password') }}</span>
+                        </a>
+                        <div style="border-top: 1px solid #e2e8f0; margin: 0.3rem 0;"></div>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: #dc2626;">
+                            <i data-lucide="log-out" style="width: 15px; height: 15px;"></i>
+                            <span>{{ t('Log Out') }}</span>
+                        </a>
                     </div>
                 </div>
+                {% else %}
+                <a href="{{ url_for('login') }}"
+                    class="nav-item nav-login-pill {% if current_endpoint == 'login' %}active{% endif %}">
+                    <i data-lucide="log-in" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Log In') }}</span>
+                </a>
+                <a href="{{ url_for('signup') }}"
+                    class="nav-item nav-signup-pill {% if current_endpoint == 'signup' %}active{% endif %}">
+                    <i data-lucide="user-plus" style="width: 15px; height: 15px;"></i>
+                    <span>{{ t('Sign Up') }}</span>
+                </a>
                 {% endif %}
-
-
             </div>
-        </div>
+        </nav>
     </header>
 
-    <!-- Header Banner Component -->
-    <!-- Header Banner Component (copied from test.html layout) -->
+    <!-- Header Banner Component (Whole brand lockup links to Portal Root) -->
     <div class="header-banner">
         <div class="banner-content">
-            <!-- Left Logo -->
-            <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="School Logo" class="school-logo">
-
-            <!-- Vertical Line -->
-            <div class="divider"></div>
-
-
-            <div class="text-container">
-                <a href="{{url_for('home')}}"><img
-                        src="{{ url_for('static', filename='images/logo_photos/LUNDAYANG_MARIANS-removebg.png') }}"
-                        alt="Logo"></a>
-                <!-- <h1 class="main-title">
-                    <span class="bold">Lundayang</span> <span class="light">Marians</span>
-                </h1>
-
-                 By putting characters in spans, flexbox evenly spreads them
-                <div class="banner-baybayin">
-                    <span>lu</span><span>n</span><span>da</span><span>ya</span><span>G</span><span>ma</span><span>ri</span><span>ya</span><span>n</span><span>s</span>
-                </div> -->
-            </div>
+            <a href="{{ portal_home_url }}" class="banner-home-link"
+                title="Lundayang Marians — {{ t('Admin Dashboard') if is_admin else t('Home') }}">
+                <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="School Logo" class="school-logo">
+                <div class="divider"></div>
+                <div class="text-container">
+                    <img src="{{ url_for('static', filename='images/logo_photos/LUNDAYANG_MARIANS-removebg.png') }}"
+                        alt="Lundayang Marians Logo">
+                </div>
+            </a>
         </div>
     </div>
 
@@ -94,20 +174,191 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Academy Footer -->
-    <footer>
-        <div class="footer-content">
-            <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="SMMA Seal" class="footer-logo">
-            <div class="footer-text">
-                <h3>Sta. Maria (Laguna) Academy Inc.</h3>
-                <p>Brgy. Poblacion II, Santa Maria, Laguna</p>
+    <!-- Academy Multi-Column Footer -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <!-- Column 1: Academy Identity -->
+                <div class="footer-brand-col">
+                    <a href="{{ portal_home_url }}" class="footer-brand-link"
+                        title="{{ t('Admin Dashboard') if is_admin else t('Home') }}">
+                        <img src="{{ url_for('static', filename='images/Logo_s/Logo.png') }}" alt="SMMA Seal" class="footer-logo">
+                        <div class="footer-text">
+                            <h3>Sta. Maria (Laguna) Academy Inc.</h3>
+                            <p>Brgy. Poblacion II, Santa Maria, Laguna</p>
+                        </div>
+                    </a>
+                    <p class="footer-tagline">
+                        <strong>{{ t('Lundayang Marians') }}</strong> &mdash; {{ t('The Cradle of Marian Scholarship') }}.
+                        {{ t('Digital Research Repository') }} preserving student-led studies for future Marian scholars.
+                    </p>
+                    <div class="footer-location-chip">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: #facc15;"></i>
+                        <span>Santa Maria, Laguna, Philippines</span>
+                    </div>
+                </div>
+
+                <!-- Column 2: Explore Repository or Admin Workspace -->
+                <div>
+                    {% if is_admin %}
+                    <p class="footer-col-title">{{ t('Admin Workspace') }}</p>
+                    <ul class="footer-nav-list">
+                        <li>
+                            <a href="{{ url_for('admin_dashboard') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Admin Dashboard') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('admin_dashboard') }}#upload-paper">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Upload Research Paper') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('admin_dashboard') }}#account-approvals">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Account Approvals') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('profile') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('My Profile') }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <p class="footer-col-title">{{ t('Repository') }}</p>
+                    <ul class="footer-nav-list">
+                        <li>
+                            <a href="{{ url_for('home') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Home') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('home') }}#mission-vision">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Mission & Vision') }}</span>
+                            </a>
+                        </li>
+                        {% if session.get('user') %}
+                        <li>
+                            <a href="{{ url_for('strand', strand_name='HUMSS') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>HUMSS {{ t('Research Papers') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('strand', strand_name='ABM') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>ABM {{ t('Research Papers') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('strand', strand_name='STEM') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>STEM {{ t('Research Papers') }}</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li>
+                            <a href="{{ url_for('login') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Log In') }}</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('signup') }}">
+                                <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                                <span>{{ t('Sign Up') }}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Column 3: Resources & Team (Developers & FAQ Spotlight) -->
+                <div>
+                    <p class="footer-col-title">Resources &amp; Team</p>
+                    <div class="footer-spotlight-stack">
+                        <a href="{{ url_for('developers') }}" class="footer-spotlight-link">
+                            <span class="footer-spotlight-icon">
+                                <i data-lucide="users" style="width: 17px; height: 17px;"></i>
+                            </span>
+                            <span class="footer-spotlight-copy">
+                                <strong>{{ t('Developers') }}</strong>
+                                <small>Meet the SMLA team &amp; adviser</small>
+                            </span>
+                            <i data-lucide="arrow-up-right" style="width: 15px; height: 15px; margin-left: auto; opacity: 0.75;"></i>
+                        </a>
+
+                        <a href="{{ url_for('faq') }}" class="footer-spotlight-link">
+                            <span class="footer-spotlight-icon">
+                                <i data-lucide="help-circle" style="width: 17px; height: 17px;"></i>
+                            </span>
+                            <span class="footer-spotlight-copy">
+                                <strong>{{ t('FAQ') }}</strong>
+                                <small>Access guide, rules &amp; answers</small>
+                            </span>
+                            <i data-lucide="arrow-up-right" style="width: 15px; height: 15px; margin-left: auto; opacity: 0.75;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Column 4: Academic Integrity -->
+                <div>
+                    <p class="footer-col-title">Academic Integrity</p>
+                    <div class="footer-policy-box">
+                        <div class="footer-policy-badge">
+                            <i data-lucide="shield-check" style="width: 16px; height: 16px; color: #facc15;"></i>
+                            <span>View-Only Protected Archive</span>
+                        </div>
+                        <p class="footer-policy-note">
+                            {{ t('View-only archive protecting Marian student intellectual property.') }}
+                        </p>
+                        <p class="footer-policy-note" style="margin-top: 0.45rem;">
+                            Includes standardized <strong>APA 7th Edition</strong> citations for responsible scholarly referencing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom-bar">
+                <span>&copy; 2026 Sta. Maria (Laguna) Academy Inc. &mdash; Lundayang Marians Digital Research Repository.</span>
+                <div class="footer-bottom-links">
+                    <a href="{{ url_for('privacy_policy') }}">{{ t('Privacy Policy') }}</a>
+                    <span aria-hidden="true">&bull;</span>
+                    <a href="{{ url_for('terms_conditions') }}">{{ t('Terms & Conditions') }}</a>
+                    {% if not is_admin %}
+                    <span aria-hidden="true">&bull;</span>
+                    <button type="button"
+                            id="open-cookie-settings-btn"
+                            class="footer-cookie-btn"
+                            onclick="if (window.CookieConsentBanner) window.CookieConsentBanner.open(this);">
+                        {{ t('Cookie Settings') }}
+                    </button>
+                    {% endif %}
+                    <span aria-hidden="true">&bull;</span>
+                    <a href="#top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="footer-back-top">
+                        <span>Top</span>
+                        <i data-lucide="arrow-up" style="width: 13px; height: 13px;"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </footer>
 
+    {% block modals %}{% endblock %}
+    {% if not is_admin %}{% include '_cookie_banner.html' %}{% endif %}
+
     <!-- Initialize Lucide Icons -->
     <script>
-        lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     </script>
 
     <!-- Global scripts -->

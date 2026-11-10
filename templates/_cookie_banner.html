@@ -1,0 +1,304 @@
+<aside id="cookie-banner"
+       class="cookie-banner{% if not cookie_consent %} open{% endif %}"
+       role="region"
+       aria-label="{{ t('Cookie Preferences') }}"
+       data-consent="{{ cookie_consent or '' }}">
+    <div class="cookie-banner-card">
+        <div class="cookie-banner-header">
+            <div class="cookie-banner-title-group">
+                <span class="cookie-banner-badge" aria-hidden="true">
+                    <i data-lucide="shield-check" style="width: 17px; height: 17px;"></i>
+                </span>
+                <div>
+                    <span class="cookie-banner-eyebrow">{{ t('Cookies & Telemetry') }}</span>
+                    <h2 class="cookie-banner-title">{{ t('Cookie Preferences') }}</h2>
+                </div>
+            </div>
+            <button type="button"
+                    id="cookie-banner-close-btn"
+                    class="cookie-banner-close"
+                    aria-label="Close"
+                    {% if not cookie_consent %}hidden{% endif %}>
+                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+
+        <p class="cookie-banner-copy">
+            {{ t('Essential cookies keep login sessions and language preferences active. Optional analytics help librarians track campus visits and research views—no third-party ad trackers.') }}
+        </p>
+
+        <div id="cookie-current-status" class="cookie-status-pill" {% if not cookie_consent %}hidden{% endif %}>
+            <i data-lucide="check-circle-2" style="width: 14px; height: 14px;"></i>
+            <span id="cookie-current-status-text">
+                {{ t('Current choice') }}: {{ t('All cookies active') if cookie_consent == 'all' else t('Essential Only') }}
+            </span>
+        </div>
+
+        <p id="cookie-banner-error" class="cookie-banner-error" hidden></p>
+
+        <div class="cookie-banner-footer">
+            <a href="{{ url_for('privacy_policy') }}" class="cookie-policy-link">{{ t('Privacy Policy') }}</a>
+            <div class="cookie-banner-actions">
+                <button type="button" class="cookie-btn-essential" data-consent-choice="essential">
+                    {{ t('Essential Only') }}
+                </button>
+                <button type="button" class="cookie-btn-accept" data-consent-choice="all">
+                    {{ t('Accept All') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Blocker-safe fallback modal shown when Cookie Settings is clicked and #cookie-banner is hidden by browser shields -->
+<div id="lm-prefs-modal"
+     class="lm-prefs-modal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="lm-prefs-title">
+    <div class="lm-prefs-dialog">
+        <div class="lm-prefs-header">
+            <div class="lm-prefs-title-group">
+                <span class="lm-prefs-badge" aria-hidden="true">
+                    <i data-lucide="shield-check" style="width: 19px; height: 19px;"></i>
+                </span>
+                <div>
+                    <span class="lm-prefs-eyebrow">{{ t('Cookies & Telemetry') }}</span>
+                    <h2 id="lm-prefs-title" class="lm-prefs-title">{{ t('Cookie Preferences') }}</h2>
+                </div>
+            </div>
+            <button type="button"
+                    id="lm-prefs-close-btn"
+                    class="lm-prefs-close"
+                    aria-label="Close">
+                <i data-lucide="x" style="width: 17px; height: 17px;"></i>
+            </button>
+        </div>
+
+        <div id="lm-prefs-status" class="lm-prefs-status-pill{% if not cookie_consent %} is-unset{% endif %}">
+            <i data-lucide="check-circle-2" style="width: 14px; height: 14px;"></i>
+            <span id="lm-prefs-status-text">
+                {% if cookie_consent %}
+                {{ t('Current choice') }}: {{ t('All cookies active') if cookie_consent == 'all' else t('Essential Only') }}
+                {% else %}
+                {{ t('Current choice') }}: {{ t('Not yet selected') }}
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="lm-prefs-list">
+            <div class="lm-prefs-item">
+                <div class="lm-prefs-item-head">
+                    <strong>{{ t('Essential Session Data') }}</strong>
+                    <span class="lm-prefs-chip lm-prefs-chip-fixed">{{ t('Always Active') }}</span>
+                </div>
+                <p class="lm-prefs-item-desc">
+                    {{ t('Keeps login authentication, account role, selected language, and your saved preference active.') }}
+                </p>
+            </div>
+            <div class="lm-prefs-item">
+                <div class="lm-prefs-item-head">
+                    <strong>{{ t('Campus Readership Telemetry') }}</strong>
+                    <span class="lm-prefs-chip lm-prefs-chip-opt">{{ t('Optional') }}</span>
+                </div>
+                <p class="lm-prefs-item-desc">
+                    {{ t('Records anonymized campus visits and research view counts for the Admin Dashboard—no third-party ad trackers.') }}
+                </p>
+            </div>
+        </div>
+
+        <p id="lm-prefs-error" class="lm-prefs-error" hidden></p>
+
+        <div class="lm-prefs-footer">
+            <a href="{{ url_for('privacy_policy') }}" class="lm-prefs-policy-link">{{ t('Privacy Policy') }}</a>
+            <div class="lm-prefs-actions">
+                <button type="button"
+                        class="lm-prefs-btn-secondary{% if cookie_consent == 'essential' %} is-active{% endif %}"
+                        data-lm-choice="essential">
+                    {{ t('Essential Only') }}
+                </button>
+                <button type="button"
+                        class="lm-prefs-btn-primary{% if cookie_consent == 'all' %} is-active{% endif %}"
+                        data-lm-choice="all">
+                    {{ t('Accept All') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const banner = document.getElementById('cookie-banner');
+    const prefsModal = document.getElementById('lm-prefs-modal');
+    if (!banner && !prefsModal) return;
+
+    const closeBtn = document.getElementById('cookie-banner-close-btn');
+    const statusPill = document.getElementById('cookie-current-status');
+    const statusText = document.getElementById('cookie-current-status-text');
+    const errorEl = document.getElementById('cookie-banner-error');
+
+    const modalCloseBtn = document.getElementById('lm-prefs-close-btn');
+    const modalStatusPill = document.getElementById('lm-prefs-status');
+    const modalStatusText = document.getElementById('lm-prefs-status-text');
+    const modalErrorEl = document.getElementById('lm-prefs-error');
+
+    const bannerButtons = banner ? Array.from(banner.querySelectorAll('[data-consent-choice]')) : [];
+    const modalButtons = prefsModal ? Array.from(prefsModal.querySelectorAll('[data-lm-choice]')) : [];
+    const allChoiceButtons = [...bannerButtons, ...modalButtons];
+
+    const LABELS = {
+        prefix: {{ t('Current choice') | tojson }},
+        all: {{ t('All cookies active') | tojson }},
+        essential: {{ t('Essential Only') | tojson }},
+        unset: {{ t('Not yet selected') | tojson }},
+        endpoint: {{ url_for('set_cookie_consent') | tojson }}
+    };
+
+    let returnFocusEl = null;
+
+    function getStoredChoice() {
+        return banner ? (banner.dataset.consent || '') : '';
+    }
+
+    function isElementRendered(el) {
+        if (!el) return false;
+        const cs = window.getComputedStyle(el);
+        const rect = el.getBoundingClientRect();
+        return cs.display !== 'none' && cs.visibility !== 'hidden' && rect.height > 0 && rect.width > 0;
+    }
+
+    function syncStatusUI(choice) {
+        const labelValue = choice === 'all' ? LABELS.all : (choice === 'essential' ? LABELS.essential : LABELS.unset);
+        if (banner) banner.dataset.consent = choice || '';
+
+        if (!choice) {
+            if (statusPill) statusPill.hidden = true;
+            if (closeBtn) closeBtn.hidden = true;
+        } else {
+            if (statusText) statusText.textContent = `${LABELS.prefix}: ${labelValue}`;
+            if (statusPill) statusPill.hidden = false;
+            if (closeBtn) closeBtn.hidden = false;
+        }
+
+        if (modalStatusText) modalStatusText.textContent = `${LABELS.prefix}: ${labelValue}`;
+        if (modalStatusPill) modalStatusPill.classList.toggle('is-unset', !choice);
+        modalButtons.forEach((btn) => {
+            btn.classList.toggle('is-active', Boolean(choice) && btn.dataset.lmChoice === choice);
+        });
+    }
+
+    function openFallbackModal() {
+        if (!prefsModal) return;
+        syncStatusUI(getStoredChoice());
+        if (modalErrorEl) modalErrorEl.hidden = true;
+        prefsModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        const primaryBtn = prefsModal.querySelector('.lm-prefs-btn-primary');
+        if (primaryBtn) primaryBtn.focus();
+    }
+
+    function openBanner(triggerEl) {
+        returnFocusEl = triggerEl || document.getElementById('open-cookie-settings-btn');
+        syncStatusUI(getStoredChoice());
+        if (errorEl) errorEl.hidden = true;
+        if (modalErrorEl) modalErrorEl.hidden = true;
+
+        if (banner) {
+            banner.classList.add('open');
+            if (isElementRendered(banner)) {
+                const acceptBtn = banner.querySelector('.cookie-btn-accept');
+                if (acceptBtn) acceptBtn.focus();
+                return;
+            }
+            banner.classList.remove('open');
+        }
+        openFallbackModal();
+    }
+
+    function closeAll() {
+        if (banner) banner.classList.remove('open');
+        if (prefsModal) prefsModal.classList.remove('open');
+        document.body.style.overflow = '';
+        if (returnFocusEl && typeof returnFocusEl.focus === 'function') {
+            returnFocusEl.focus();
+        }
+        returnFocusEl = null;
+    }
+
+    async function saveConsent(choice) {
+        if (errorEl) errorEl.hidden = true;
+        if (modalErrorEl) modalErrorEl.hidden = true;
+        allChoiceButtons.forEach((btn) => { btn.disabled = true; });
+        try {
+            const res = await fetch(LABELS.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    consent: choice,
+                    path: window.location.pathname || '/'
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Unable to save cookie preferences.');
+            }
+            syncStatusUI(data.consent);
+            closeAll();
+        } catch (err) {
+            const msg = err.message || 'Unable to save cookie preferences.';
+            const targetError = (prefsModal && prefsModal.classList.contains('open')) ? modalErrorEl : errorEl;
+            if (targetError) {
+                targetError.textContent = msg;
+                targetError.hidden = false;
+            }
+        } finally {
+            allChoiceButtons.forEach((btn) => { btn.disabled = false; });
+        }
+    }
+
+    allChoiceButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            saveConsent(btn.dataset.consentChoice || btn.dataset.lmChoice);
+        });
+    });
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            if (getStoredChoice()) closeAll();
+        });
+    }
+
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closeAll);
+    }
+
+    if (prefsModal) {
+        prefsModal.addEventListener('click', (e) => {
+            if (e.target === prefsModal) closeAll();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (prefsModal && prefsModal.classList.contains('open')) {
+            closeAll();
+        } else if (banner && banner.classList.contains('open') && getStoredChoice()) {
+            closeAll();
+        }
+    });
+
+    window.CookieConsentBanner = {
+        open: openBanner,
+        openModal: (triggerEl) => {
+            returnFocusEl = triggerEl || document.getElementById('open-cookie-settings-btn');
+            openFallbackModal();
+        },
+        close: closeAll,
+        getConsent: () => getStoredChoice() || null
+    };
+})();
+</script>

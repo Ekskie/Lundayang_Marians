@@ -14,23 +14,26 @@
     }
 
     .profile-title-container {
-        margin-bottom: 3rem;
+        margin-bottom: 2.5rem;
         display: flex;
+        align-items: center;
+        gap: 1.25rem;
         justify-content: flex-start;
     }
 
     .profile-title-bar {
-        background-color: #002060;
+        background-color: var(--primary-color);
         color: #ffffff;
-        padding: 10px 30px;
+        padding: 10px 28px;
         font-family: 'Poppins', sans-serif;
-        font-size: 1.4rem;
-        font-weight: bold;
+        font-size: 1.3rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        border-radius: 10px;
         display: inline-block;
-        min-width: 380px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 320px;
+        box-shadow: var(--shadow-sm);
     }
 
     .profile-content-container {
@@ -117,31 +120,36 @@
 
     .profile-detail-box {
         background-color: #ffffff;
-        border: 3px solid #000000;
-        padding: 0.8rem 1.2rem;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 0.85rem 1.25rem;
         width: 100%;
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 1.35rem;
-        font-weight: bold;
-        color: #000000;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-dark);
         display: flex;
         align-items: center;
         box-sizing: border-box;
+        box-shadow: var(--shadow-sm);
     }
 
     .profile-field-label {
         flex-shrink: 0;
+        color: var(--primary-color);
+        font-weight: 700;
     }
 
     .profile-detail-input {
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 1.35rem;
-        font-weight: bold;
-        color: #000000;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-dark);
         border: none;
+        border-bottom: 1.5px solid var(--primary-color);
         background: transparent;
         width: 100%;
-        padding: 0;
+        padding: 0.1rem 0;
         margin: 0;
         outline: none;
     }
@@ -149,25 +157,34 @@
     .profile-action-container {
         display: flex;
         justify-content: flex-end;
+        gap: 0.75rem;
         width: 100%;
         max-width: 600px;
         margin-top: 1.5rem;
     }
 
     .profile-btn {
-        background-color: #ffffff;
-        border: 3px solid #000000;
-        padding: 0.5rem 2.5rem;
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 1.35rem;
-        font-weight: bold;
-        color: #000000;
+        background-color: var(--primary-color);
+        border: 1.5px solid var(--primary-color);
+        border-radius: 10px;
+        padding: 0.65rem 1.75rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #ffffff;
         cursor: pointer;
-        transition: all 0.2s;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s var(--ease-out-expo);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
     }
 
     .profile-btn:hover {
-        background-color: #f1f5f9;
+        background-color: var(--primary-light);
+        border-color: var(--primary-light);
+        transform: translateY(-1px);
     }
 
     /* Responsiveness */
@@ -235,7 +252,7 @@
         text-align: center;
         position: relative;
         font-family: 'Poppins', sans-serif;
-        animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .modal-close-btn {
@@ -269,7 +286,7 @@
     }
 
     .modal-title {
-        font-family: Georgia, serif;
+        font-family: 'Lora', serif;
         font-size: 1.5rem;
         font-weight: bold;
         color: #002060;
@@ -364,8 +381,12 @@
 {% block content %}
 <div class="profile-page-container">
 
-    <!-- Title Bar -->
+    <!-- Title Bar with Consistent Back Button -->
     <div class="profile-title-container">
+        <a href="{{ portal_home_url }}" class="page-back-btn js-smart-back" data-fallback="{{ portal_home_url }}"
+            title="{{ t('Go Back') }}" aria-label="{{ t('Go Back') }}">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+        </a>
         <div class="profile-title-bar">
             {{ t('PROFILE') if t('PROFILE') != 'PROFILE' else 'PROFILE' }}
         </div>
@@ -401,7 +422,7 @@
                         <i data-lucide="user-circle" style="width: 150px; height: 150px; stroke-width: 1;"></i>
                     </div>
                     {% else %}
-                    <img src="" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" style="display: none;">
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" id="avatar-preview" alt="Profile Picture" class="profile-avatar-img" style="display: none;">
                     <div id="avatar-fallback" style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; background-color: #cbd5e1; color: #002060;">
                         <i data-lucide="user-circle" style="width: 150px; height: 150px; stroke-width: 1;"></i>
                     </div>
@@ -426,9 +447,9 @@
                         <input type="text" name="name" class="edit-input profile-detail-input" value="{{ profile.name }}" required style="display: none;">
                     </div>
 
-                    <!-- Field 2: Grade and Section -->
+                    <!-- Field 2: Grade and Section / Office & Department -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">{{ t('Grade & Section') }}:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Office / Department') if is_admin else t('Grade & Section') }}:&nbsp;</span>
                         <span class="view-value">{{ profile.grade_section }}</span>
                         <input type="text" name="grade_section" class="edit-input profile-detail-input" value="{{ profile.grade_section }}" required style="display: none;">
                     </div>
@@ -440,7 +461,7 @@
                             <span class="view-value">{{ profile.email }}</span>
                             
                             {% if unconfirmed_email %}
-                            <span style="font-size: 0.8rem; color: #d97706; background: #fef3c7; border: 1px solid #fcd34d; padding: 2px 8px; border-radius: 12px; font-family: sans-serif; display: inline-flex; align-items: center; gap: 4px; font-weight: normal;">
+                            <span style="font-size: 0.8rem; color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; padding: 2px 8px; border-radius: 12px; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
                                 <i data-lucide="clock" style="width: 13px; height: 13px;"></i> {{ t('Verification Pending') }}
                             </span>
                             <button type="button" onclick="openVerificationModal()" style="background: none; border: none; color: #002060; text-decoration: underline; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;">
@@ -472,7 +493,7 @@
 
                     <!-- Field 4: School ID (Read-only) -->
                     <div class="profile-detail-box">
-                        <span class="profile-field-label">{{ t('Student ID') }}:&nbsp;</span>
+                        <span class="profile-field-label">{{ t('Admin ID') if is_admin else t('Student ID') }}:&nbsp;</span>
                         <span>{{ profile.student_id }}</span>
                     </div>
 
